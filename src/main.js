@@ -36,6 +36,9 @@ const ui = {
   pause: document.getElementById("pauseButton"),
   mode: document.getElementById("modeSelect"),
   difficultySelect: document.getElementById("difficultySelect"),
+  aiSkill: document.getElementById("aiSkillSelect"),
+  turretSensitivity: document.getElementById("turretSensitivityInput"),
+  turretCurve: document.getElementById("turretCurveInput"),
   trailDuration: document.getElementById("trailDurationInput"),
 };
 
@@ -50,6 +53,11 @@ const missileDefs = MISSILE_DEFS;
 const turretDefs = TURRET_DEFS;
 const enemyDefs = ENEMY_DEFS;
 const upgradeCosts = UPGRADE_COSTS;
+const aiSkills = {
+  normal: { delay: 1.25, aimNoise: 70, lead: 18 },
+  expert: { delay: 0.86, aimNoise: 34, lead: 24 },
+  pro: { delay: 0.58, aimNoise: 12, lead: 30 },
+};
 
 const state = {
   running: false,
@@ -67,6 +75,9 @@ const state = {
   aiTurretTimer: 0,
   turretTurnVelocity: 0,
   globalTurretAngle: -Math.PI / 2,
+  turretSensitivity: 1.7,
+  turretCurve: 1,
+  aiSkill: "normal",
   trailDuration: 1.2,
   playerTurretIndex: 1,
   cities: [],
@@ -588,43 +599,58 @@ function update(dt) {
 
 function updateAi(dt) {
   const mode = ui.mode.value;
+  const skill = aiSkills[state.aiSkill];
   state.aiMissileTimer -= dt;
   state.aiTurretTimer -= dt;
 
   if ((mode === "turret" || mode === "missiles") && mode === "turret" && state.aiMissileTimer <= 0) {
     const target = priorityEnemy();
     if (target) {
-      launchMissile({ x: target.x + target.vx * 24, y: target.y + target.vy * 24 }, pickAiMissile(target), true);
-      state.aiMissileTimer = 900 * difficulty[ui.difficultySelect.value].ai;
+      const aim = noisyAim(target.x + target.vx * skill.lead, target.y + target.vy * skill.lead, skill.aimNoise);
+      launchMissile(aim, pickAiMissile(target), true);
+      state.aiMissileTimer = 900 * difficulty[ui.difficultySelect.value].ai * skill.delay;
     }
   }
 
   if ((mode === "missiles" || mode === "turret") && mode === "missiles" && state.aiTurretTimer <= 0) {
     autoTurrets(dt);
-    state.aiTurretTimer = 80 * difficulty[ui.difficultySelect.value].ai;
+    state.aiTurretTimer = 80 * difficulty[ui.difficultySelect.value].ai * skill.delay;
   }
 
   if (mode === "coop") return;
 }
 
 function autoTurrets(dt) {
+  const skill = aiSkills[state.aiSkill];
   state.cities.forEach((city) => {
     if (city.hp <= 0) return;
     const active = city.weapon !== "launcher" && city.weapons[city.weapon] ? city.weapon : firstTurret(city);
     if (!active) return;
     const target = nearest(state.enemies, city);
     if (!target) return;
-    city.turretAngle = clampAngle(Math.atan2(target.y - city.y, target.x - city.x), -Math.PI + 0.14, -0.14);
+    const aim = noisyAim(target.x, target.y, skill.aimNoise);
+    city.turretAngle = clampAngle(Math.atan2(aim.y - city.y, aim.x - city.x), -Math.PI + 0.14, -0.14);
     fireTurret(city, active, dt, true);
   });
+}
+
+function noisyAim(x, y, radius) {
+  const angle = Math.random() * Math.PI * 2;
+  const distance = Math.random() * radius;
+  return {
+    x: x + Math.cos(angle) * distance,
+    y: y + Math.sin(angle) * distance,
+  };
 }
 
 function updatePlayerTurret(dt) {
   const mode = ui.mode.value;
   if (mode !== "turret" && mode !== "coop") return;
   const input = (state.keys.has("ArrowRight") ? 1 : 0) - (state.keys.has("ArrowLeft") ? 1 : 0);
-  const targetVelocity = input * 1.7;
-  state.turretTurnVelocity += (targetVelocity - state.turretTurnVelocity) * Math.min(1, dt / 110);
+  const shapedInput = input === 0 ? 0 : Math.sign(input) * Math.pow(Math.abs(input), state.turretCurve);
+  const targetVelocity = shapedInput * state.turretSensitivity;
+  const responseMs = 155 - Math.min(1.7, state.turretCurve) * 55;
+  state.turretTurnVelocity += (targetVelocity - state.turretTurnVelocity) * Math.min(1, dt / responseMs);
   state.globalTurretAngle += state.turretTurnVelocity * (dt / 1000);
   state.globalTurretAngle = clampAngle(state.globalTurretAngle, -Math.PI + 0.1, -0.1);
   state.cities.forEach((city) => {
@@ -922,7 +948,6 @@ function draw() {
   drawBullets();
   drawBlasts();
   drawParticles();
-  drawCrosshair();
 }
 
 function drawSky() {
@@ -1242,18 +1267,6 @@ function drawParticles() {
   });
 }
 
-function drawCrosshair() {
-  ctx.strokeStyle = "rgba(85, 214, 190, 0.45)";
-  ctx.lineWidth = 1;
-  state.cities.forEach((city) => {
-    if (!city || !firstTurret(city) || city.hp <= 0) return;
-    ctx.beginPath();
-    ctx.moveTo(city.x, city.y - 24);
-    ctx.lineTo(city.x + Math.cos(city.turretAngle) * 90, city.y - 24 + Math.sin(city.turretAngle) * 90);
-    ctx.stroke();
-  });
-}
-
 function isTurretControlled(city) {
   const mode = ui.mode.value;
   return (mode === "turret" || mode === "coop") && firstTurret(city);
@@ -1300,6 +1313,18 @@ ui.pause.addEventListener("click", () => {
 
 ui.trailDuration.addEventListener("input", () => {
   state.trailDuration = Number(ui.trailDuration.value);
+});
+
+ui.turretSensitivity.addEventListener("input", () => {
+  state.turretSensitivity = Number(ui.turretSensitivity.value);
+});
+
+ui.turretCurve.addEventListener("input", () => {
+  state.turretCurve = Number(ui.turretCurve.value);
+});
+
+ui.aiSkill.addEventListener("change", () => {
+  state.aiSkill = ui.aiSkill.value;
 });
 
 ui.difficultySelect.addEventListener("change", updateUi);
