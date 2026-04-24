@@ -10,6 +10,8 @@ Il gioco mantiene il cuore di Missile Command: protezione delle citta, intercett
 - Giocatore torretta, computer missili
 - Co-op locale: mouse per missili, tastiera per torretta
 
+Il controllo missilistico e globale: ogni click genera una salva convergente da tutti i lanciamissili installati. Il controllo torretta e globale: tutte le torrette condividono una direzione parallela e sparano in modo coordinato.
+
 ## Citta
 
 Ogni citta ha salute, fabbrica, armi installate, livelli arma, munizioni separate per arma e scudo. Le fabbriche generano punti costruzione tra le ondate; citta danneggiate producono meno, citta distrutte non producono.

@@ -70,6 +70,7 @@ const state = {
   aiMissileTimer: 0,
   aiTurretTimer: 0,
   turretTurnVelocity: 0,
+  globalTurretAngle: -Math.PI / 2,
   playerTurretIndex: 1,
   cities: [],
   friendlyMissiles: [],
@@ -89,6 +90,8 @@ function resetGame() {
   state.build = 8;
   state.selectedCity = 0;
   state.playerTurretIndex = 1;
+  state.turretTurnVelocity = 0;
+  state.globalTurretAngle = -Math.PI / 2;
   state.friendlyMissiles = [];
   state.friendlyBullets = [];
   state.enemies = [];
@@ -117,7 +120,7 @@ function resetGame() {
     blastRadiusLevel: 1,
     blastLifeLevel: 1,
     shield: 0,
-    turretAngle: -Math.PI / 2,
+    turretAngle: state.globalTurretAngle,
     ruinSeed: Math.random(),
     cooldown: 0,
     heat: 0,
@@ -245,6 +248,12 @@ function setActiveWeapon(city, weapon) {
   city.weapon = weapon;
   city.weaponLevel = city.weapons[weapon].level;
   if (weapon !== "launcher") state.selectedTurret = weapon;
+}
+
+function setActiveTurretForAll(weapon) {
+  state.cities.forEach((city) => {
+    if (city.weapons?.[weapon]) setActiveWeapon(city, weapon);
+  });
 }
 
 function currentAmmo(city, weapon) {
@@ -379,10 +388,8 @@ function canvasPoint(event) {
   };
 }
 
-function launchMissile(target, type, byAi = false) {
+function launchMissileFromCity(city, target, type, byAi = false) {
   if (state.betweenWaves || state.paused) return false;
-  const launchers = state.cities.filter((city) => city.hp > 0 && city.weapons.launcher && city.disabled <= 0);
-  const city = nearest(launchers.filter((candidate) => currentAmmo(candidate, "launcher") >= missileDefs[type].cost), target) || launchers[0];
   if (!city) return false;
   const def = missileDefs[type];
   const launcherLevel = city.weapons.launcher?.level || 1;
@@ -404,6 +411,19 @@ function launchMissile(target, type, byAi = false) {
   });
   updateUi();
   return true;
+}
+
+function launchMissile(target, type, byAi = false) {
+  if (state.betweenWaves || state.paused) return false;
+  const launchers = state.cities.filter((city) => city.hp > 0 && city.weapons.launcher && city.disabled <= 0);
+  if (byAi) {
+    const city = nearest(launchers.filter((candidate) => currentAmmo(candidate, "launcher") >= missileDefs[type].cost), target) || launchers[0];
+    return launchMissileFromCity(city, target, type, true);
+  }
+  return launchers
+    .filter((city) => currentAmmo(city, "launcher") >= missileDefs[type].cost)
+    .map((city) => launchMissileFromCity(city, target, type, false))
+    .some(Boolean);
 }
 
 function fireTurret(city, type, dt, byAi = false) {
@@ -444,6 +464,16 @@ function fireTurret(city, type, dt, byAi = false) {
   city.cooldown = Math.max(40, def.cooldown - level * 28);
   if (byAi) city.cooldown *= difficulty[ui.difficultySelect.value].ai;
   updateUi();
+}
+
+function firePlayerTurrets(dt) {
+  state.cities.forEach((city) => {
+    if (city.hp <= 0) return;
+    const type = city.weapons[state.selectedTurret] ? state.selectedTurret : firstTurret(city);
+    if (!type) return;
+    if (city.weapon !== type) setActiveWeapon(city, type);
+    fireTurret(city, type, dt);
+  });
 }
 
 function spawnEnemy() {
@@ -574,21 +604,15 @@ function autoTurrets(dt) {
 function updatePlayerTurret(dt) {
   const mode = ui.mode.value;
   if (mode !== "turret" && mode !== "coop") return;
-  const city = state.cities[state.playerTurretIndex] || state.cities[0];
-  if (!city) return;
-  if (!city.weapons[state.selectedTurret]) {
-    const fallback = firstTurret(city);
-    if (!fallback) return;
-    state.selectedTurret = fallback;
-    ui.turretSelect.value = fallback;
-  }
-  if (city.weapon !== state.selectedTurret) setActiveWeapon(city, state.selectedTurret);
   const input = (state.keys.has("ArrowRight") ? 1 : 0) - (state.keys.has("ArrowLeft") ? 1 : 0);
   const targetVelocity = input * 1.7;
   state.turretTurnVelocity += (targetVelocity - state.turretTurnVelocity) * Math.min(1, dt / 110);
-  city.turretAngle += state.turretTurnVelocity * (dt / 1000);
-  city.turretAngle = clampAngle(city.turretAngle, -Math.PI + 0.1, -0.1);
-  if (state.keys.has("Space")) fireTurret(city, state.selectedTurret, dt);
+  state.globalTurretAngle += state.turretTurnVelocity * (dt / 1000);
+  state.globalTurretAngle = clampAngle(state.globalTurretAngle, -Math.PI + 0.1, -0.1);
+  state.cities.forEach((city) => {
+    if (firstTurret(city)) city.turretAngle = state.globalTurretAngle;
+  });
+  if (state.keys.has("Space")) firePlayerTurrets(dt);
 }
 
 function firstTurret(city) {
@@ -918,7 +942,7 @@ function drawCities() {
       ctx.arc(0, -18, 62, Math.PI, Math.PI * 2);
       ctx.stroke();
     }
-    if (alive && city.weapon !== "none") drawWeapon(city, index === state.playerTurretIndex);
+    if (alive && city.weapon !== "none") drawWeapon(city, isTurretControlled(city));
     drawCityReadout(city);
     ctx.restore();
   });
@@ -1066,14 +1090,20 @@ function drawParticles() {
 }
 
 function drawCrosshair() {
-  const city = state.cities[state.playerTurretIndex];
-  if (!city || !firstTurret(city) || city.hp <= 0) return;
   ctx.strokeStyle = "rgba(85, 214, 190, 0.45)";
   ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(city.x, city.y - 24);
-  ctx.lineTo(city.x + Math.cos(city.turretAngle) * 90, city.y - 24 + Math.sin(city.turretAngle) * 90);
-  ctx.stroke();
+  state.cities.forEach((city) => {
+    if (!city || !firstTurret(city) || city.hp <= 0) return;
+    ctx.beginPath();
+    ctx.moveTo(city.x, city.y - 24);
+    ctx.lineTo(city.x + Math.cos(city.turretAngle) * 90, city.y - 24 + Math.sin(city.turretAngle) * 90);
+    ctx.stroke();
+  });
+}
+
+function isTurretControlled(city) {
+  const mode = ui.mode.value;
+  return (mode === "turret" || mode === "coop") && firstTurret(city);
 }
 
 function loop(time) {
@@ -1122,6 +1152,7 @@ ui.missileSelect.addEventListener("change", () => {
 
 ui.turretSelect.addEventListener("change", () => {
   state.selectedTurret = ui.turretSelect.value;
+  setActiveTurretForAll(state.selectedTurret);
   syncWeaponButtons();
 });
 
@@ -1172,8 +1203,7 @@ ui.turretButtons.addEventListener("click", (event) => {
   if (!button) return;
   state.selectedTurret = button.dataset.turret;
   ui.turretSelect.value = state.selectedTurret;
-  const city = state.cities[state.playerTurretIndex];
-  if (city?.weapons[state.selectedTurret]) setActiveWeapon(city, state.selectedTurret);
+  setActiveTurretForAll(state.selectedTurret);
   syncWeaponButtons();
   updateUi();
 });
@@ -1188,14 +1218,17 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "1" || event.key.toLowerCase() === "q") {
     state.selectedTurret = "cannon";
     ui.turretSelect.value = "cannon";
+    setActiveTurretForAll(state.selectedTurret);
   }
   if (event.key === "2" || event.key.toLowerCase() === "w") {
     state.selectedTurret = "mg";
     ui.turretSelect.value = "mg";
+    setActiveTurretForAll(state.selectedTurret);
   }
   if (event.key === "3" || event.key.toLowerCase() === "e") {
     state.selectedTurret = "laser";
     ui.turretSelect.value = "laser";
+    setActiveTurretForAll(state.selectedTurret);
   }
   syncWeaponButtons();
 });

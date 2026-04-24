@@ -24,8 +24,9 @@ Collega il repository GitHub a Netlify e usa le impostazioni sopra.
 ## Controlli
 
 - Mouse: click sul campo per lanciare missili verso il punto scelto
-- Freccia sinistra/destra: ruota la torretta selezionata
-- Spazio: spara con la torretta
+- Mouse: ogni click lancia una salva da tutti i lanciamissili verso lo stesso punto
+- Freccia sinistra/destra: ruota tutte le torrette in parallelo
+- Spazio: spara con tutte le torrette disponibili
 - 1/2/3 oppure Q/W/E: cannoncino, mitragliatrice, laser
 - Footer comandi: avvio/pausa e cambio rapido di missili e torretta
 - Ingranaggio in alto a destra: impostazioni
