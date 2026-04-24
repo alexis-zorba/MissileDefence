@@ -9,7 +9,7 @@
   --warn: #f4bf54;
   --danger: #ff5f5f;
   --blue: #69a9ff;
-  --footer-h: 70px;
+  --footer-h: 92px;
 }
 
 * {
@@ -103,7 +103,6 @@ canvas {
 
 .game-title,
 .stat-row,
-.quick-weapons,
 .city-card,
 .message-overlay,
 .dialog {
@@ -121,8 +120,8 @@ canvas {
 
 .game-title span,
 .stat-row span,
-.quick-weapons span,
 .city-meta,
+.footer-city-name,
 label,
 .build-dialog header span,
 .credit-banner span {
@@ -173,15 +172,17 @@ label,
 }
 
 .message-overlay {
-  top: 72px;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   display: flex;
+  flex-direction: column;
   gap: 12px;
   align-items: center;
+  text-align: center;
   max-width: min(720px, calc(100vw - 24px));
-  padding: 10px 14px;
-  border-radius: 999px;
+  padding: 18px 22px;
+  border-radius: 8px;
   color: var(--muted);
   pointer-events: none;
 }
@@ -191,42 +192,74 @@ label,
 }
 
 .control-footer {
-  left: 12px;
-  right: 12px;
+  left: 0;
+  right: 0;
   bottom: 0;
   min-height: var(--footer-h);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  justify-content: flex-start;
+  gap: 18px;
   border: 0;
   border-top: 1px solid rgba(150, 184, 198, 0.22);
   border-radius: 0;
   background: linear-gradient(180deg, rgba(5, 9, 12, 0.86), rgba(2, 4, 6, 0.98));
   backdrop-filter: none;
-  padding: 8px 12px;
+  padding: 8px 14px;
 }
 
-.quick-weapons {
-  display: grid;
-  grid-template-columns: auto auto;
-  gap: 8px;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  padding: 0;
-}
-
-.button-row {
+.footer-actions {
   display: flex;
-  gap: 4px;
-  margin-top: 4px;
+  justify-content: flex-start;
+  gap: 6px;
+  flex: 0 0 auto;
 }
 
-.button-row button {
-  min-width: 38px;
-  padding: 5px 7px;
+.footer-actions button {
+  height: 28px;
+  padding: 4px 8px;
   font-size: 12px;
+}
+
+.footer-cities {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(160px, 1fr));
+  gap: 12px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.footer-city {
+  min-width: 0;
+}
+
+.footer-city-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 5px;
+  font-size: 12px;
+}
+
+.footer-bars {
+  display: grid;
+  gap: 3px;
+}
+
+.footer-bar {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(36, 48, 55, 0.95);
+  overflow: hidden;
+}
+
+.footer-bar.health {
+  height: 8px;
+}
+
+.footer-bar span {
+  display: block;
+  height: 100%;
 }
 
 .city-dock {
@@ -401,7 +434,7 @@ label {
 
 @media (max-width: 900px) {
   :root {
-    --footer-h: 112px;
+    --footer-h: 150px;
   }
 
   .top-hud {
@@ -420,10 +453,14 @@ label {
 
   .control-footer {
     flex-wrap: wrap;
-    min-height: 112px;
+    min-height: var(--footer-h);
+    align-content: center;
   }
 
-  .quick-weapons,
+  .footer-cities {
+    grid-template-columns: 1fr;
+  }
+
   .build-layout {
     grid-template-columns: 1fr;
   }

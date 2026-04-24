@@ -30,8 +30,7 @@ const ui = {
   buildStartWave: document.getElementById("buildStartWaveButton"),
   buildModal: document.getElementById("buildModalLabel"),
   buildCities: document.getElementById("buildCities"),
-  missileButtons: document.getElementById("missileButtons"),
-  turretButtons: document.getElementById("turretButtons"),
+  footerCities: document.getElementById("footerCities"),
   start: document.getElementById("startButton"),
   next: document.getElementById("nextWaveButton"),
   pause: document.getElementById("pauseButton"),
@@ -186,8 +185,8 @@ function updateUi() {
   ui.buildModal.textContent = state.build;
   ui.score.textContent = state.score;
   renderCities();
+  renderFooterCities();
   renderBuildCities();
-  syncWeaponButtons();
 }
 
 function renderCities() {
@@ -236,6 +235,32 @@ function renderBuildCities() {
       `;
     })
     .join("");
+}
+
+function renderFooterCities() {
+  ui.footerCities.innerHTML = state.cities.map((city) => {
+    const hpPct = city.maxHp > 0 ? Math.max(0, (city.hp / city.maxHp) * 100) : 0;
+    const weaponBars = Object.keys(city.weapons).map((weapon) => {
+      const ammoPct = maxAmmo(city, weapon) > 0 ? Math.min(100, (currentAmmo(city, weapon) / maxAmmo(city, weapon)) * 100) : 0;
+      return `
+        <div class="footer-bar" title="${weaponLabel(weapon)}">
+          <span style="width:${ammoPct}%; background:${weaponColor(weapon)}"></span>
+        </div>
+      `;
+    }).join("");
+    return `
+      <article class="footer-city">
+        <div class="footer-city-head">
+          <strong>${city.name}</strong>
+          <span class="footer-city-name">F${city.factory}</span>
+        </div>
+        <div class="footer-bars">
+          <div class="footer-bar health"><span style="width:${hpPct}%; background:${hpPct > 35 ? "#55d6be" : "#ff5f5f"}"></span></div>
+          ${weaponBars}
+        </div>
+      </article>
+    `;
+  }).join("");
 }
 
 function weaponLabel(id) {
@@ -309,15 +334,6 @@ function showCreditBump() {
   const banner = ui.buildModal.closest(".credit-banner");
   banner.classList.add("bump");
   window.setTimeout(() => banner.classList.remove("bump"), 220);
-}
-
-function syncWeaponButtons() {
-  ui.missileButtons.querySelectorAll("[data-missile]").forEach((button) => {
-    button.classList.toggle("active", button.dataset.missile === state.selectedMissile);
-  });
-  ui.turretButtons.querySelectorAll("[data-turret]").forEach((button) => {
-    button.classList.toggle("active", button.dataset.turret === state.selectedTurret);
-  });
 }
 
 function spendUpgrade(kind) {
@@ -469,9 +485,8 @@ function fireTurret(city, type, dt, byAi = false) {
 function firePlayerTurrets(dt) {
   state.cities.forEach((city) => {
     if (city.hp <= 0) return;
-    const type = city.weapons[state.selectedTurret] ? state.selectedTurret : firstTurret(city);
+    const type = city.weapon !== "launcher" && city.weapons[city.weapon] ? city.weapon : firstTurret(city);
     if (!type) return;
-    if (city.weapon !== type) setActiveWeapon(city, type);
     fireTurret(city, type, dt);
   });
 }
@@ -961,12 +976,23 @@ function drawCities() {
 
 function drawCityReadout(city) {
   const hpPct = city.maxHp > 0 ? Math.max(0, city.hp / city.maxHp) : 0;
+  const weapons = Object.keys(city.weapons);
+  const panelHeight = 14 + weapons.length * 5;
   ctx.fillStyle = "rgba(2, 5, 8, 0.72)";
-  ctx.fillRect(-50, 18, 100, 12);
+  ctx.fillRect(-54, 18, 108, panelHeight);
   ctx.fillStyle = "#23313a";
-  ctx.fillRect(-45, 22, 90, 4);
+  ctx.fillRect(-48, 22, 96, 8);
   ctx.fillStyle = hpPct > 0.35 ? "#55d6be" : "#ff5f5f";
-  ctx.fillRect(-45, 22, 90 * hpPct, 4);
+  ctx.fillRect(-48, 22, 96 * hpPct, 8);
+  weapons.forEach((weapon, index) => {
+    const max = maxAmmo(city, weapon);
+    const ammoPct = max > 0 ? Math.min(1, currentAmmo(city, weapon) / max) : 0;
+    const y = 33 + index * 5;
+    ctx.fillStyle = "#243037";
+    ctx.fillRect(-48, y, 96, 4);
+    ctx.fillStyle = weaponColor(weapon);
+    ctx.fillRect(-48, y, 96 * ammoPct, 4);
+  });
 }
 
 function drawWeapon(city, controlled) {
@@ -993,7 +1019,6 @@ function drawWeapon(city, controlled) {
     ctx.fillRect(8, -42, 28, 8);
     ctx.strokeRect(8, -42, 28, 8);
     ctx.restore();
-    drawAmmoInWeapon(city, "launcher", 0, -21);
     return;
   }
   ctx.save();
@@ -1024,22 +1049,11 @@ function drawWeapon(city, controlled) {
   ctx.ellipse(0, -14, 17, 14, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
-  drawAmmoInWeapon(city, city.weapon, 0, -10);
 }
 
 function weaponColor(weapon) {
   if (weapon === "launcher") return "#8fb7ff";
   return turretDefs[weapon]?.color || "#d6dfe3";
-}
-
-function drawAmmoInWeapon(city, weapon, x, y) {
-  ctx.save();
-  ctx.fillStyle = "#061017";
-  ctx.font = "8px system-ui, sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(String(currentAmmo(city, weapon)), x, y);
-  ctx.restore();
 }
 
 function drawFriendlyMissiles() {
@@ -1209,13 +1223,11 @@ ui.pause.addEventListener("click", () => {
 
 ui.missileSelect.addEventListener("change", () => {
   state.selectedMissile = ui.missileSelect.value;
-  syncWeaponButtons();
 });
 
 ui.turretSelect.addEventListener("change", () => {
   state.selectedTurret = ui.turretSelect.value;
   setActiveTurretForAll(state.selectedTurret);
-  syncWeaponButtons();
 });
 
 ui.difficultySelect.addEventListener("change", updateUi);
@@ -1252,24 +1264,6 @@ ui.buildStartWave.addEventListener("click", () => {
   startWave();
 });
 
-ui.missileButtons.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-missile]");
-  if (!button) return;
-  state.selectedMissile = button.dataset.missile;
-  ui.missileSelect.value = state.selectedMissile;
-  syncWeaponButtons();
-});
-
-ui.turretButtons.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-turret]");
-  if (!button) return;
-  state.selectedTurret = button.dataset.turret;
-  ui.turretSelect.value = state.selectedTurret;
-  setActiveTurretForAll(state.selectedTurret);
-  syncWeaponButtons();
-  updateUi();
-});
-
 document.querySelectorAll("[data-upgrade]").forEach((button) => {
   button.addEventListener("click", () => spendUpgrade(button.dataset.upgrade));
 });
@@ -1277,22 +1271,6 @@ document.querySelectorAll("[data-upgrade]").forEach((button) => {
 document.addEventListener("keydown", (event) => {
   if (["ArrowLeft", "ArrowRight", "Space"].includes(event.code)) event.preventDefault();
   state.keys.add(event.code);
-  if (event.key === "1" || event.key.toLowerCase() === "q") {
-    state.selectedTurret = "cannon";
-    ui.turretSelect.value = "cannon";
-    setActiveTurretForAll(state.selectedTurret);
-  }
-  if (event.key === "2" || event.key.toLowerCase() === "w") {
-    state.selectedTurret = "mg";
-    ui.turretSelect.value = "mg";
-    setActiveTurretForAll(state.selectedTurret);
-  }
-  if (event.key === "3" || event.key.toLowerCase() === "e") {
-    state.selectedTurret = "laser";
-    ui.turretSelect.value = "laser";
-    setActiveTurretForAll(state.selectedTurret);
-  }
-  syncWeaponButtons();
 });
 
 document.addEventListener("keyup", (event) => {

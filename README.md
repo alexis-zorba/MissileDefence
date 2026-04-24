@@ -27,8 +27,7 @@ Collega il repository GitHub a Netlify e usa le impostazioni sopra.
 - Mouse: ogni click lancia una salva da tutti i lanciamissili verso lo stesso punto
 - Freccia sinistra/destra: ruota tutte le torrette in parallelo
 - Spazio: spara con tutte le torrette disponibili
-- 1/2/3 oppure Q/W/E: cannoncino, mitragliatrice, laser
-- Footer comandi: avvio/pausa e cambio rapido di missili e torretta
+- Footer comandi: avvio/pausa e stato visuale delle citta
 - Ingranaggio in alto a destra: impostazioni
 - Icona info in alto a destra: stato citta e arsenali
 - Popup centrale tra le ondate: costruzione, upgrade, riparazioni e credito

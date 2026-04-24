@@ -29,33 +29,16 @@
 
       <div id="overlay" class="message-overlay">
         <strong>Pronto</strong>
-        <span>Mouse: missili. Frecce e spazio: torretta. 1/2/3: arma torretta.</span>
+        <span>Mouse: salva missili. Frecce e spazio: torrette coordinate.</span>
       </div>
 
       <footer class="control-footer">
-        <button id="startButton">Avvia</button>
-        <button id="nextWaveButton" disabled>Prossima ondata</button>
-        <button id="pauseButton">Pausa</button>
-        <div class="quick-weapons">
-          <div>
-            <span>Missili</span>
-            <div class="button-row" id="missileButtons">
-              <button data-missile="standard">Std</button>
-              <button data-missile="he">HE</button>
-              <button data-missile="frag">Frag</button>
-              <button data-missile="guided">Guid</button>
-              <button data-missile="emp">EMP</button>
-            </div>
-          </div>
-          <div>
-            <span>Torretta</span>
-            <div class="button-row" id="turretButtons">
-              <button data-turret="cannon">1 AA</button>
-              <button data-turret="mg">2 MG</button>
-              <button data-turret="laser">3 Laser</button>
-            </div>
-          </div>
+        <div class="footer-actions">
+          <button id="startButton">Avvia</button>
+          <button id="nextWaveButton" disabled>Prossima ondata</button>
+          <button id="pauseButton">Pausa</button>
         </div>
+        <div id="footerCities" class="footer-cities" aria-label="Stato citta"></div>
       </footer>
 
       <dialog id="settingsDialog" class="dialog">
