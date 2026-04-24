@@ -27,8 +27,9 @@ Collega il repository GitHub a Netlify e usa le impostazioni sopra.
 - Freccia sinistra/destra: ruota la torretta selezionata
 - Spazio: spara con la torretta
 - 1/2/3 oppure Q/W/E: cannoncino, mitragliatrice, laser
-- Pulsanti rapidi in basso a destra: cambio missili e torretta
+- Footer comandi: avvio/pausa e cambio rapido di missili e torretta
 - Ingranaggio in alto a destra: impostazioni
+- Icona info in alto a destra: stato citta e arsenali
 - Popup centrale tra le ondate: costruzione, upgrade, riparazioni e credito
 
 ## Struttura

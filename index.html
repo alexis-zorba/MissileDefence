@@ -21,7 +21,10 @@
           <div><span>Credito</span><strong id="buildLabel">0</strong></div>
           <div><span>Punti</span><strong id="scoreLabel">0</strong></div>
         </div>
-        <button id="settingsButton" class="icon-button" aria-label="Impostazioni" title="Impostazioni">⚙</button>
+        <div class="top-actions">
+          <button id="intelButton" class="icon-button" aria-label="Citta e arsenali" title="Citta e arsenali">ⓘ</button>
+          <button id="settingsButton" class="icon-button" aria-label="Impostazioni" title="Impostazioni">⚙</button>
+        </div>
       </section>
 
       <div id="overlay" class="message-overlay">
@@ -29,13 +32,10 @@
         <span>Mouse: missili. Frecce e spazio: torretta. 1/2/3: arma torretta.</span>
       </div>
 
-      <section class="bottom-left">
+      <footer class="control-footer">
         <button id="startButton">Avvia</button>
         <button id="nextWaveButton" disabled>Prossima ondata</button>
         <button id="pauseButton">Pausa</button>
-      </section>
-
-      <section class="bottom-right" aria-label="Armi rapide">
         <div class="quick-weapons">
           <div>
             <span>Missili</span>
@@ -56,9 +56,7 @@
             </div>
           </div>
         </div>
-      </section>
-
-      <section class="city-dock" id="cities" aria-label="Citta e armi installate"></section>
+      </footer>
 
       <dialog id="settingsDialog" class="dialog">
         <form method="dialog">
@@ -104,6 +102,16 @@
         </form>
       </dialog>
 
+      <dialog id="intelDialog" class="dialog intel-dialog">
+        <section>
+          <header>
+            <strong>Citta e arsenali</strong>
+            <button id="closeIntelButton" aria-label="Chiudi">×</button>
+          </header>
+          <div class="city-dock" id="cities" aria-label="Citta e armi installate"></div>
+        </section>
+      </dialog>
+
       <dialog id="buildDialog" class="dialog build-dialog">
         <section>
           <header>
@@ -127,7 +135,10 @@
               <button data-upgrade="mg">Mitragliatrice <span>3</span></button>
               <button data-upgrade="laser">Laser <span>5</span></button>
               <button data-upgrade="shield">Scudo <span>4</span></button>
-              <button data-upgrade="ammo">Munizioni <span>2</span></button>
+              <button data-upgrade="ammo">Munizioni missili <span>3</span></button>
+              <button data-upgrade="turretAmmo">Munizioni torretta <span>6</span></button>
+              <button data-upgrade="blastRadius">Esplosioni + <span>8</span></button>
+              <button data-upgrade="blastLife">Bolla lenta <span>8</span></button>
             </div>
           </div>
           <footer class="build-actions">

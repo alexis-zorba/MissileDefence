@@ -12,7 +12,7 @@ Il gioco mantiene il cuore di Missile Command: protezione delle citta, intercett
 
 ## Citta
 
-Ogni citta ha salute, fabbrica, arma installata, livello arma, munizioni, munizioni speciali e scudo. Le fabbriche generano punti costruzione tra le ondate; citta danneggiate producono meno, citta distrutte non producono.
+Ogni citta ha salute, fabbrica, armi installate, livelli arma, munizioni separate per arma e scudo. Le fabbriche generano punti costruzione tra le ondate; citta danneggiate producono meno, citta distrutte non producono.
 
 ## Armi
 

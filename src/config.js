@@ -18,9 +18,9 @@ export const MISSILE_DEFS = {
 };
 
 export const TURRET_DEFS = {
-  cannon: { label: "Cannoncino", cooldown: 420, heat: 10, damage: 1.25, speed: 9, color: "#f8d16b", unlock: 1 },
-  mg: { label: "Mitragliatrice", cooldown: 82, heat: 7, damage: 0.34, speed: 11, color: "#d8f2ff", unlock: 1 },
-  laser: { label: "Laser", cooldown: 45, heat: 13, damage: 0.08, speed: 0, color: "#67e6ff", unlock: 2 },
+  cannon: { label: "Cannoncino", cooldown: 420, heat: 10, damage: 1.25, speed: 9, color: "#f8d16b", unlock: 1, ammoCost: 1 },
+  mg: { label: "Mitragliatrice", cooldown: 82, heat: 7, damage: 0.34, speed: 11, color: "#d8f2ff", unlock: 1, ammoCost: 1 },
+  laser: { label: "Laser", cooldown: 45, heat: 13, damage: 0.08, speed: 0, color: "#67e6ff", unlock: 2, ammoCost: 1 },
 };
 
 export const ENEMY_DEFS = {
@@ -42,5 +42,8 @@ export const UPGRADE_COSTS = {
   mg: 3,
   laser: 5,
   shield: 4,
-  ammo: 2,
+  ammo: 3,
+  turretAmmo: 6,
+  blastRadius: 8,
+  blastLife: 8,
 };
