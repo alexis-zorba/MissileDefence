@@ -1,15 +1,14 @@
 :root {
   color-scheme: dark;
-  --bg: #07090c;
-  --panel: #111820;
-  --panel-2: #17212b;
-  --line: #2c3b47;
-  --text: #eaf2f5;
-  --muted: #8ea2ae;
+  --panel: rgba(10, 16, 21, 0.78);
+  --panel-solid: #121a22;
+  --line: rgba(150, 184, 198, 0.28);
+  --text: #edf7f8;
+  --muted: #95aab3;
   --accent: #55d6be;
-  --warn: #f1b84b;
+  --warn: #f4bf54;
   --danger: #ff5f5f;
-  --blue: #66a8ff;
+  --blue: #69a9ff;
 }
 
 * {
@@ -18,8 +17,10 @@
 
 body {
   margin: 0;
-  min-height: 100vh;
-  background: radial-gradient(circle at 50% 0%, #18222d 0, #07090c 46rem);
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #020406;
   color: var(--text);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -29,97 +30,10 @@ select {
   font: inherit;
 }
 
-.shell {
-  display: grid;
-  grid-template-rows: auto minmax(320px, 1fr) auto;
-  min-height: 100vh;
-  gap: 12px;
-  padding: 12px;
-}
-
-.hud,
-.panel {
-  display: grid;
-  grid-template-columns: 180px 1fr auto;
-  gap: 12px;
-  align-items: stretch;
-  background: rgba(17, 24, 32, 0.92);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 12px;
-}
-
-.brand {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.kicker,
-.status-grid span,
-.panel-title span,
-label {
-  color: var(--muted);
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0;
-}
-
-h1 {
-  margin: 0;
-  font-size: 28px;
-  line-height: 1;
-}
-
-.status-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(86px, 1fr));
-  gap: 8px;
-}
-
-.status-grid div {
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 8px 10px;
-  background: var(--panel-2);
-}
-
-.status-grid strong {
-  display: block;
-  margin-top: 4px;
-  font-size: 20px;
-}
-
-.controls {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(145px, 1fr));
-  gap: 8px;
-}
-
-label {
-  display: grid;
-  gap: 4px;
-}
-
-select {
-  width: 100%;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: #0b1117;
-  color: var(--text);
-  padding: 8px;
-}
-
-.actions {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(88px, 1fr));
-  gap: 8px;
-}
-
 button {
-  border: 1px solid #3b4e5c;
+  border: 1px solid var(--line);
   border-radius: 6px;
-  background: #1d2a35;
+  background: rgba(24, 36, 46, 0.92);
   color: var(--text);
   padding: 9px 12px;
   cursor: pointer;
@@ -128,88 +42,219 @@ button {
 button:hover:not(:disabled),
 button.active {
   border-color: var(--accent);
-  background: #213b42;
+  background: rgba(28, 60, 62, 0.95);
 }
 
 button:disabled {
-  opacity: 0.42;
   cursor: not-allowed;
+  opacity: 0.45;
 }
 
-.game-wrap {
-  position: relative;
-  min-height: 320px;
+select {
+  width: 100%;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 6px;
+  background: #081018;
+  color: var(--text);
+  padding: 8px;
+}
+
+.game-shell {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
-  background: #020406;
 }
 
 canvas {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
   display: block;
-  min-height: 320px;
 }
 
-.overlay {
+.top-hud,
+.bottom-left,
+.bottom-right,
+.city-dock,
+.message-overlay {
   position: absolute;
-  left: 16px;
-  top: 16px;
-  right: 16px;
+  z-index: 2;
+}
+
+.top-hud {
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 14px;
+  align-items: center;
+  pointer-events: none;
+}
+
+.top-hud button,
+.bottom-left,
+.bottom-right,
+.city-dock {
+  pointer-events: auto;
+}
+
+.game-title,
+.stat-row,
+.quick-weapons,
+.city-card,
+.message-overlay,
+.dialog {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.26);
+}
+
+.game-title {
+  border-radius: 8px;
+  padding: 8px 10px;
+  min-width: 150px;
+}
+
+.game-title span,
+.stat-row span,
+.quick-weapons span,
+.city-meta,
+label,
+.build-dialog header span,
+.credit-banner span {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.game-title strong {
+  display: block;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.stat-row {
+  justify-self: center;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(78px, auto));
+  gap: 4px;
+  border-radius: 999px;
+  padding: 6px;
+}
+
+.stat-row div {
+  min-width: 86px;
+  padding: 4px 10px;
+  text-align: center;
+}
+
+.stat-row strong {
+  display: block;
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.icon-button {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  padding: 0;
+  font-size: 20px;
+}
+
+.message-overlay {
+  top: 72px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   gap: 12px;
   align-items: center;
-  padding: 10px 12px;
-  border: 1px solid rgba(85, 214, 190, 0.35);
-  border-radius: 6px;
-  background: rgba(6, 12, 16, 0.78);
+  max-width: min(720px, calc(100vw - 24px));
+  padding: 10px 14px;
+  border-radius: 999px;
   color: var(--muted);
   pointer-events: none;
 }
 
-.overlay strong {
+.message-overlay strong {
   color: var(--accent);
 }
 
-.panel {
-  grid-template-columns: 1fr 1fr;
-}
-
-.cities {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+.bottom-left {
+  left: 12px;
+  bottom: 14px;
+  display: flex;
   gap: 8px;
 }
 
-.city-card {
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: var(--panel-2);
+.bottom-right {
+  right: 12px;
+  bottom: 14px;
+}
+
+.quick-weapons {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 12px;
+  border-radius: 8px;
   padding: 10px;
-  cursor: pointer;
+}
+
+.button-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 5px;
+}
+
+.button-row button {
+  min-width: 46px;
+  padding: 7px 9px;
+}
+
+.city-dock {
+  left: 19%;
+  right: 19%;
+  bottom: 84px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.city-card {
+  border-radius: 8px;
+  padding: 8px;
 }
 
 .city-card.selected {
   border-color: var(--accent);
 }
 
-.city-card header {
+.city-card header,
+.city-meta {
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 8px;
+}
+
+.city-card header {
+  align-items: baseline;
+  margin-bottom: 6px;
 }
 
 .bars {
   display: grid;
-  gap: 6px;
+  gap: 5px;
 }
 
 .bar {
-  height: 8px;
+  height: 7px;
   border-radius: 999px;
-  background: #0b1117;
+  background: rgba(6, 12, 16, 0.92);
   overflow: hidden;
 }
 
@@ -223,30 +268,98 @@ canvas {
   background: var(--danger);
 }
 
-.city-meta {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 4px 8px;
-  margin-top: 8px;
-  color: var(--muted);
-  font-size: 12px;
+.weapon-select {
+  margin-top: 7px;
 }
 
-.upgrade-panel {
+.dialog {
+  color: var(--text);
+  border-radius: 10px;
+  padding: 0;
+}
+
+.dialog::backdrop {
+  background: rgba(0, 0, 0, 0.46);
+}
+
+.dialog form,
+.build-dialog section {
+  display: grid;
+  gap: 12px;
+  min-width: min(420px, calc(100vw - 32px));
+  padding: 16px;
+}
+
+.dialog header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.dialog header button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+}
+
+label {
+  display: grid;
+  gap: 5px;
+}
+
+.build-dialog section {
+  width: min(860px, calc(100vw - 32px));
+}
+
+.credit-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border: 1px solid rgba(85, 214, 190, 0.36);
+  border-radius: 8px;
+  padding: 12px;
+  background: rgba(24, 54, 56, 0.68);
+}
+
+.credit-banner strong {
+  color: var(--accent);
+  font-size: 32px;
+  line-height: 1;
+  transition: transform 180ms ease, color 180ms ease;
+}
+
+.credit-banner.bump strong {
+  color: var(--warn);
+  transform: scale(1.22);
+}
+
+.build-layout {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 12px;
+}
+
+.build-cities,
+.upgrade-grid {
   display: grid;
   gap: 8px;
 }
 
-.panel-title {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+.build-city {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  background: rgba(11, 18, 24, 0.84);
+  cursor: pointer;
+}
+
+.build-city.selected {
+  border-color: var(--accent);
 }
 
 .upgrade-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .upgrade-grid button {
@@ -259,31 +372,46 @@ canvas {
   color: var(--warn);
 }
 
-@media (max-width: 980px) {
-  .hud,
-  .panel {
-    grid-template-columns: 1fr;
-  }
-
-  .controls,
-  .status-grid,
-  .cities,
-  .upgrade-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.build-actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
-@media (max-width: 560px) {
-  .controls,
-  .status-grid,
-  .cities,
-  .upgrade-grid,
-  .actions {
+.build-actions button {
+  border-color: rgba(85, 214, 190, 0.6);
+  background: rgba(25, 76, 72, 0.9);
+}
+
+@media (max-width: 900px) {
+  .top-hud {
+    grid-template-columns: 1fr auto;
+  }
+
+  .game-title {
+    display: none;
+  }
+
+  .stat-row {
+    justify-self: start;
+    grid-template-columns: repeat(2, minmax(70px, 1fr));
+    border-radius: 8px;
+  }
+
+  .city-dock {
+    left: 12px;
+    right: 12px;
+    bottom: 126px;
     grid-template-columns: 1fr;
   }
 
-  .overlay {
-    position: static;
-    border-radius: 0;
+  .bottom-right {
+    left: 12px;
+    right: auto;
+    bottom: 64px;
+  }
+
+  .quick-weapons,
+  .build-layout {
+    grid-template-columns: 1fr;
   }
 }

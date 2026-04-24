@@ -26,12 +26,14 @@ Collega il repository GitHub a Netlify e usa le impostazioni sopra.
 - Mouse: click sul campo per lanciare missili verso il punto scelto
 - Freccia sinistra/destra: ruota la torretta selezionata
 - Spazio: spara con la torretta
-- 1-5: cambia tipo missile
-- Q/W/E: cannoncino, mitragliatrice, laser
+- 1/2/3 oppure Q/W/E: cannoncino, mitragliatrice, laser
+- Pulsanti rapidi in basso a destra: cambio missili e torretta
+- Ingranaggio in alto a destra: impostazioni
+- Popup centrale tra le ondate: costruzione, upgrade, riparazioni e credito
 
 ## Struttura
 
-- `index.html`: shell applicativa e HUD
+- `index.html`: shell applicativa, overlay HUD, popup impostazioni e costruzione
 - `src/main.js`: loop, stato, sistemi di gioco e input
 - `src/styles.css`: layout e UI
 - `docs/design.md`: regole di gioco, bilanciamento e roadmap

@@ -7,33 +7,65 @@
     <link rel="stylesheet" href="src/styles.css">
   </head>
   <body>
-    <main class="shell">
-      <section class="hud">
-        <div class="brand">
-          <span class="kicker">Missile Command</span>
-          <h1>Reloaded</h1>
-        </div>
+    <main class="game-shell">
+      <canvas id="game" width="1280" height="720" aria-label="Campo di battaglia"></canvas>
 
-        <div class="status-grid">
+      <section class="top-hud" aria-label="Stato partita">
+        <div class="game-title">
+          <span>Missile Command</span>
+          <strong>Reloaded</strong>
+        </div>
+        <div class="stat-row">
+          <div><span>Ondata</span><strong id="waveLabel">1</strong></div>
+          <div><span>Difficolta</span><strong id="difficultyLabel">Normale</strong></div>
+          <div><span>Credito</span><strong id="buildLabel">0</strong></div>
+          <div><span>Punti</span><strong id="scoreLabel">0</strong></div>
+        </div>
+        <button id="settingsButton" class="icon-button" aria-label="Impostazioni" title="Impostazioni">⚙</button>
+      </section>
+
+      <div id="overlay" class="message-overlay">
+        <strong>Pronto</strong>
+        <span>Mouse: missili. Frecce e spazio: torretta. 1/2/3: arma torretta.</span>
+      </div>
+
+      <section class="bottom-left">
+        <button id="startButton">Avvia</button>
+        <button id="nextWaveButton" disabled>Prossima ondata</button>
+        <button id="pauseButton">Pausa</button>
+      </section>
+
+      <section class="bottom-right" aria-label="Armi rapide">
+        <div class="quick-weapons">
           <div>
-            <span>Ondata</span>
-            <strong id="waveLabel">1</strong>
+            <span>Missili</span>
+            <div class="button-row" id="missileButtons">
+              <button data-missile="standard">Std</button>
+              <button data-missile="he">HE</button>
+              <button data-missile="frag">Frag</button>
+              <button data-missile="guided">Guid</button>
+              <button data-missile="emp">EMP</button>
+            </div>
           </div>
           <div>
-            <span>Difficolta</span>
-            <strong id="difficultyLabel">Normale</strong>
-          </div>
-          <div>
-            <span>Costruzione</span>
-            <strong id="buildLabel">0</strong>
-          </div>
-          <div>
-            <span>Punteggio</span>
-            <strong id="scoreLabel">0</strong>
+            <span>Torretta</span>
+            <div class="button-row" id="turretButtons">
+              <button data-turret="cannon">1 AA</button>
+              <button data-turret="mg">2 MG</button>
+              <button data-turret="laser">3 Laser</button>
+            </div>
           </div>
         </div>
+      </section>
 
-        <div class="controls">
+      <section class="city-dock" id="cities" aria-label="Citta e armi installate"></section>
+
+      <dialog id="settingsDialog" class="dialog">
+        <form method="dialog">
+          <header>
+            <strong>Impostazioni</strong>
+            <button aria-label="Chiudi">×</button>
+          </header>
           <label>
             Modalita
             <select id="modeSelect">
@@ -52,7 +84,7 @@
             </select>
           </label>
           <label>
-            Missile
+            Missile mouse
             <select id="missileSelect">
               <option value="standard">Standard</option>
               <option value="he">HE</option>
@@ -62,49 +94,47 @@
             </select>
           </label>
           <label>
-            Torretta
+            Arma tastiera
             <select id="turretSelect">
               <option value="cannon">Cannoncino AA</option>
               <option value="mg">Mitragliatrice</option>
               <option value="laser">Laser</option>
             </select>
           </label>
-        </div>
+        </form>
+      </dialog>
 
-        <div class="actions">
-          <button id="startButton">Avvia</button>
-          <button id="nextWaveButton" disabled>Prossima ondata</button>
-          <button id="pauseButton">Pausa</button>
-        </div>
-      </section>
-
-      <section class="game-wrap">
-        <canvas id="game" width="1280" height="720" aria-label="Campo di battaglia"></canvas>
-        <div id="overlay" class="overlay">
-          <strong>Pronto</strong>
-          <span>Mouse: click per missili. Frecce: torretta. Spazio: fuoco. Tasti 1-5 missili, Q/W/E torrette.</span>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="cities" id="cities"></div>
-        <div class="upgrade-panel">
-          <div class="panel-title">
-            <strong>Costruzione</strong>
-            <span>Spendibile tra le ondate</span>
+      <dialog id="buildDialog" class="dialog build-dialog">
+        <section>
+          <header>
+            <div>
+              <span>Tra un'ondata e l'altra</span>
+              <strong>Costruzione e upgrade</strong>
+            </div>
+            <button id="closeBuildButton" aria-label="Chiudi">×</button>
+          </header>
+          <div class="credit-banner">
+            <span>Credito disponibile</span>
+            <strong id="buildModalLabel">0</strong>
           </div>
-          <div class="upgrade-grid">
-            <button data-upgrade="repair">Ripara citta <span>2</span></button>
-            <button data-upgrade="factory">Fabbrica +1 <span>4</span></button>
-            <button data-upgrade="launcher">Lanciamissili <span>3</span></button>
-            <button data-upgrade="cannon">Cannoncino <span>3</span></button>
-            <button data-upgrade="mg">Mitragliatrice <span>3</span></button>
-            <button data-upgrade="laser">Laser <span>5</span></button>
-            <button data-upgrade="shield">Scudo <span>4</span></button>
-            <button data-upgrade="ammo">Munizioni speciali <span>2</span></button>
+          <div class="build-layout">
+            <div class="build-cities" id="buildCities"></div>
+            <div class="upgrade-grid">
+              <button data-upgrade="repair">Ripara citta <span>2</span></button>
+              <button data-upgrade="factory">Fabbrica +1 <span>4</span></button>
+              <button data-upgrade="launcher">Lanciamissili <span>3</span></button>
+              <button data-upgrade="cannon">Cannoncino <span>3</span></button>
+              <button data-upgrade="mg">Mitragliatrice <span>3</span></button>
+              <button data-upgrade="laser">Laser <span>5</span></button>
+              <button data-upgrade="shield">Scudo <span>4</span></button>
+              <button data-upgrade="ammo">Munizioni <span>2</span></button>
+            </div>
           </div>
-        </div>
-      </section>
+          <footer class="build-actions">
+            <button id="buildStartWaveButton">Avvia ondata</button>
+          </footer>
+        </section>
+      </dialog>
     </main>
 
     <script type="module" src="src/main.js"></script>
