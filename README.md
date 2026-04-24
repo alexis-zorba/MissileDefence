@@ -1,6 +1,6 @@
-# Missile Command Reloaded
+# Missile Defence Multiplayer
 
-Prototipo arcade difensivo ispirato a Missile Command, con controllo missilistico via mouse, torrette manuali via tastiera, supporto co-op locale, IA alleata, fabbriche, punti costruzione, upgrade e ondate progressive.
+Prototipo arcade difensivo con controllo missilistico via mouse, torrette manuali via tastiera, supporto co-op locale, IA alleata, fabbriche, punti costruzione, upgrade e ondate progressive.
 
 ## Avvio
 

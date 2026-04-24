@@ -19,7 +19,7 @@ export const MISSILE_DEFS = {
 
 export const TURRET_DEFS = {
   cannon: { label: "Cannoncino", cooldown: 420, heat: 10, damage: 1.25, speed: 9, color: "#f8d16b", unlock: 1, ammoCost: 1 },
-  mg: { label: "Mitragliatrice", cooldown: 82, heat: 7, damage: 0.34, speed: 11, color: "#d8f2ff", unlock: 1, ammoCost: 1 },
+  mg: { label: "Mitragliatrice", cooldown: 82, heat: 7, damage: 0.42, speed: 11, color: "#d8f2ff", unlock: 1, ammoCost: 1 },
   laser: { label: "Laser", cooldown: 45, heat: 13, damage: 0.08, speed: 0, color: "#67e6ff", unlock: 2, ammoCost: 1 },
 };
 
@@ -28,7 +28,7 @@ export const ENEMY_DEFS = {
   mirv: { hp: 1.2, damage: 22, score: 70, color: "#ff9a57", radius: 8 },
   armored: { hp: 2.4, damage: 36, score: 90, color: "#ff4d7e", radius: 10 },
   hypersonic: { hp: 0.8, damage: 28, score: 80, color: "#ffffff", radius: 5 },
-  drone: { hp: 0.6, damage: 10, score: 35, color: "#7cffbf", radius: 6 },
+  drone: { hp: 0.38, damage: 7, score: 35, color: "#7cffbf", radius: 4 },
   jammer: { hp: 0.9, damage: 8, score: 60, color: "#c794ff", radius: 8 },
   bomber: { hp: 2.1, damage: 0, score: 120, color: "#86a3b8", radius: 14 },
   bomb: { hp: 0.7, damage: 24, score: 40, color: "#f4f17a", radius: 6 },

@@ -512,7 +512,7 @@ function spawnEnemy() {
   const dx = tx - x;
   const dy = ty - y;
   const length = Math.hypot(dx, dy);
-  const base = type === "hypersonic" ? 2.65 : type === "drone" ? 1.95 : 1.15;
+  const base = type === "hypersonic" ? 2.65 : type === "drone" ? 0.86 : 1.15;
   const speed = (base + wave * 0.045 + Math.random() * 0.35) * cfg.speed;
   state.enemies.push({
     type,
@@ -526,6 +526,7 @@ function spawnEnemy() {
     splitAt: type === "mirv" ? 190 + Math.random() * 160 : null,
     radius: enemyDefs[type].radius,
     wobble: Math.random() * Math.PI * 2,
+    trail: [],
   });
 }
 
@@ -676,8 +677,18 @@ function updateEnemies(dt) {
   state.enemies.forEach((enemy) => {
     const def = enemyDefs[enemy.type];
     if (enemy.type === "drone") {
-      enemy.wobble += 0.05;
-      enemy.x += Math.sin(enemy.wobble) * 1.8;
+      enemy.wobble += 0.12;
+      enemy.x += Math.sin(enemy.wobble * 1.7) * 2.6 + Math.sin(enemy.wobble * 4.1) * 0.8;
+      enemy.y += Math.cos(enemy.wobble * 2.3) * 1.15;
+    } else if (enemy.type !== "bomber" && enemy.type !== "bomb") {
+      enemy.trail ||= [];
+      enemy.trail.push({
+        x: enemy.x - enemy.vx * 7 + (Math.random() - 0.5) * 4,
+        y: enemy.y - enemy.vy * 7 + (Math.random() - 0.5) * 4,
+        r: 3 + Math.random() * 5,
+        a: 0.28 + Math.random() * 0.18,
+      });
+      if (enemy.trail.length > 22) enemy.trail.shift();
     }
     enemy.x += enemy.vx;
     enemy.y += enemy.vy;
@@ -964,30 +975,53 @@ function drawWeapon(city, controlled) {
   ctx.strokeStyle = "rgba(5, 12, 16, 0.82)";
   ctx.lineWidth = 2;
   if (city.weapon === "launcher") {
+    ctx.fillStyle = "#293848";
+    ctx.fillRect(-37, -22, 74, 15);
+    ctx.strokeRect(-37, -22, 74, 15);
+    ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(0, -25, 17, 0, Math.PI * 2);
+    ctx.ellipse(0, -27, 18, 16, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
-    ctx.fillRect(-31, -39, 21, 8);
-    ctx.fillRect(10, -39, 21, 8);
+    ctx.save();
+    ctx.rotate(-0.18);
+    ctx.fillRect(-36, -42, 28, 8);
+    ctx.strokeRect(-36, -42, 28, 8);
+    ctx.restore();
+    ctx.save();
+    ctx.rotate(0.18);
+    ctx.fillRect(8, -42, 28, 8);
+    ctx.strokeRect(8, -42, 28, 8);
+    ctx.restore();
     drawAmmoInWeapon(city, "launcher", 0, -21);
     return;
   }
   ctx.save();
   ctx.rotate(city.turretAngle + Math.PI / 2);
   if (city.weapon === "mg") {
-    ctx.fillRect(-8, -55, 5, 42);
-    ctx.fillRect(3, -55, 5, 42);
+    ctx.fillStyle = "#d8f2ff";
+    ctx.fillRect(-10, -55, 4, 43);
+    ctx.fillRect(-2, -58, 4, 46);
+    ctx.fillRect(6, -55, 4, 43);
+    ctx.fillStyle = "#7d98a8";
+    ctx.fillRect(-13, -22, 26, 10);
   } else if (city.weapon === "laser") {
-    ctx.fillRect(-4, -62, 8, 48);
+    ctx.fillStyle = "#67e6ff";
+    ctx.fillRect(-5, -64, 10, 50);
+    ctx.fillStyle = "#1b5260";
+    ctx.fillRect(-12, -34, 24, 16);
     ctx.strokeStyle = "#67e6ff";
-    ctx.strokeRect(-8, -45, 16, 12);
+    ctx.strokeRect(-14, -36, 28, 20);
   } else {
-    ctx.fillRect(-6, -58, 12, 44);
+    ctx.fillStyle = "#f8d16b";
+    ctx.fillRect(-7, -61, 14, 47);
+    ctx.fillStyle = "#655235";
+    ctx.fillRect(-11, -23, 22, 9);
   }
   ctx.restore();
+  ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.arc(0, -14, 14, 0, Math.PI * 2);
+  ctx.ellipse(0, -14, 17, 14, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
   drawAmmoInWeapon(city, city.weapon, 0, -10);
@@ -1029,9 +1063,10 @@ function drawFriendlyMissiles() {
 function drawEnemies() {
   state.enemies.forEach((enemy) => {
     const def = enemyDefs[enemy.type];
+    if (enemy.trail?.length) drawEnemySmokeTrail(enemy.trail);
     ctx.strokeStyle = def.color;
     ctx.lineWidth = 1.5;
-    if (enemy.type !== "bomber") {
+    if (enemy.type !== "bomber" && enemy.type !== "drone") {
       ctx.beginPath();
       ctx.moveTo(enemy.x - enemy.vx * 16, enemy.y - enemy.vy * 16);
       ctx.lineTo(enemy.x, enemy.y);
@@ -1041,11 +1076,38 @@ function drawEnemies() {
     ctx.beginPath();
     if (enemy.type === "bomber") {
       ctx.ellipse(enemy.x, enemy.y, 24, 9, 0, 0, Math.PI * 2);
+    } else if (enemy.type === "drone") {
+      ctx.save();
+      ctx.translate(enemy.x, enemy.y);
+      ctx.rotate(Math.sin(enemy.wobble) * 0.7);
+      ctx.ellipse(0, 0, enemy.radius + 2, enemy.radius, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(124, 255, 191, 0.55)";
+      ctx.beginPath();
+      ctx.moveTo(-8, -2);
+      ctx.lineTo(-15, -7);
+      ctx.moveTo(8, -2);
+      ctx.lineTo(15, -7);
+      ctx.stroke();
+      ctx.restore();
+      return;
     } else {
       ctx.arc(enemy.x, enemy.y, enemy.radius, 0, Math.PI * 2);
     }
     ctx.fill();
   });
+}
+
+function drawEnemySmokeTrail(trail) {
+  trail.forEach((puff, index) => {
+    const fade = index / trail.length;
+    ctx.globalAlpha = puff.a * fade;
+    ctx.fillStyle = "#aab0ad";
+    ctx.beginPath();
+    ctx.arc(puff.x, puff.y, puff.r * (1.3 - fade * 0.4), 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
 }
 
 function drawBullets() {

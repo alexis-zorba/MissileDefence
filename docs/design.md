@@ -2,7 +2,7 @@
 
 ## Pilastri
 
-Il gioco mantiene il cuore di Missile Command: protezione delle citta, intercettazioni anticipate, risorse limitate e priorita sotto pressione. La versione Reloaded aggiunge ruoli asimmetrici, armi costruibili, produzione industriale e progressione tra le ondate.
+Il gioco mantiene il cuore del genere arcade defence: protezione delle citta, intercettazioni anticipate, risorse limitate e priorita sotto pressione. La versione multiplayer aggiunge ruoli asimmetrici, armi costruibili, produzione industriale e progressione tra le ondate.
 
 ## Modalita
 
