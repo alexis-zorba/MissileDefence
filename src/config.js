@@ -31,7 +31,7 @@ export const ENEMY_DEFS = {
   drone: { hp: 0.38, damage: 7, score: 35, color: "#7cffbf", radius: 4 },
   jammer: { hp: 0.9, damage: 8, score: 60, color: "#c794ff", radius: 8 },
   bomber: { hp: 2.1, damage: 0, score: 120, color: "#86a3b8", radius: 14 },
-  bomb: { hp: 0.7, damage: 24, score: 40, color: "#f4f17a", radius: 6 },
+  bomb: { hp: 1.25, damage: 68, score: 75, color: "#d8c783", radius: 11 },
 };
 
 export const UPGRADE_COSTS = {

@@ -60,6 +60,11 @@ select {
   padding: 8px;
 }
 
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
 .game-shell {
   position: relative;
   width: 100vw;
@@ -101,7 +106,6 @@ canvas {
   pointer-events: auto;
 }
 
-.game-title,
 .stat-row,
 .city-card,
 .message-overlay,
@@ -113,8 +117,7 @@ canvas {
 }
 
 .game-title {
-  border-radius: 8px;
-  padding: 8px 10px;
+  padding: 0;
   min-width: 150px;
 }
 
@@ -138,23 +141,28 @@ label,
 }
 
 .stat-row {
-  justify-self: center;
+  position: fixed;
+  top: 60px;
+  right: 12px;
+  justify-self: end;
   display: grid;
-  grid-template-columns: repeat(4, minmax(78px, auto));
-  gap: 4px;
-  border-radius: 999px;
-  padding: 6px;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  border-radius: 8px;
+  padding: 8px;
+  background: rgba(7, 12, 16, 0.64);
+  border-left: 1px solid rgba(150, 184, 198, 0.2);
 }
 
 .stat-row div {
-  min-width: 86px;
-  padding: 4px 10px;
-  text-align: center;
+  min-width: 74px;
+  padding: 3px 8px;
+  text-align: right;
 }
 
 .stat-row strong {
   display: block;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.1;
 }
 
@@ -446,8 +454,8 @@ label {
   }
 
   .stat-row {
-    justify-self: start;
-    grid-template-columns: repeat(2, minmax(70px, 1fr));
+    justify-self: end;
+    grid-template-columns: 1fr;
     border-radius: 8px;
   }
 
