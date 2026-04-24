@@ -36,8 +36,6 @@ const ui = {
   pause: document.getElementById("pauseButton"),
   mode: document.getElementById("modeSelect"),
   difficultySelect: document.getElementById("difficultySelect"),
-  missileSelect: document.getElementById("missileSelect"),
-  turretSelect: document.getElementById("turretSelect"),
   trailDuration: document.getElementById("trailDurationInput"),
 };
 
@@ -61,8 +59,6 @@ const state = {
   score: 0,
   build: 0,
   selectedCity: 0,
-  selectedMissile: "standard",
-  selectedTurret: "cannon",
   keys: new Set(),
   lastTime: 0,
   spawnTimer: 0,
@@ -274,13 +270,6 @@ function setActiveWeapon(city, weapon) {
   if (!city?.weapons?.[weapon]) return;
   city.weapon = weapon;
   city.weaponLevel = city.weapons[weapon].level;
-  if (weapon !== "launcher") state.selectedTurret = weapon;
-}
-
-function setActiveTurretForAll(weapon) {
-  state.cities.forEach((city) => {
-    if (city.weapons?.[weapon]) setActiveWeapon(city, weapon);
-  });
 }
 
 function currentAmmo(city, weapon) {
@@ -406,13 +395,23 @@ function canvasPoint(event) {
   };
 }
 
-function launchMissileFromCity(city, target, type, byAi = false) {
+function missileTypeForLauncher(city) {
+  const level = city.weapons.launcher?.level || 1;
+  if (level >= 5) return "emp";
+  if (level >= 4) return "guided";
+  if (level >= 3) return "frag";
+  if (level >= 2) return "he";
+  return "standard";
+}
+
+function launchMissileFromCity(city, target, type = null, byAi = false) {
   if (state.betweenWaves || state.paused) return false;
   if (!city) return false;
-  const def = missileDefs[type];
+  const requestedType = type || missileTypeForLauncher(city);
+  const def = missileDefs[requestedType];
   const launcherLevel = city.weapons.launcher?.level || 1;
-  const unlocked = launcherLevel >= def.unlock || type === "standard";
-  const useType = unlocked ? type : "standard";
+  const unlocked = launcherLevel >= def.unlock || requestedType === "standard";
+  const useType = unlocked ? requestedType : missileTypeForLauncher(city);
   const useDef = missileDefs[useType];
   if (currentAmmo(city, "launcher") < useDef.cost) return false;
   city.ammoByWeapon.launcher -= useDef.cost;
@@ -439,8 +438,8 @@ function launchMissile(target, type, byAi = false) {
     return launchMissileFromCity(city, target, type, true);
   }
   return launchers
-    .filter((city) => currentAmmo(city, "launcher") >= missileDefs[type].cost)
-    .map((city) => launchMissileFromCity(city, target, type, false))
+    .filter((city) => currentAmmo(city, "launcher") >= missileDefs[missileTypeForLauncher(city)].cost)
+    .map((city) => launchMissileFromCity(city, target, null, false))
     .some(Boolean);
 }
 
@@ -1271,7 +1270,7 @@ function loop(time) {
 canvas.addEventListener("click", (event) => {
   if (event.target !== canvas) return;
   if (ui.mode.value === "turret") return;
-  launchMissile(canvasPoint(event), state.selectedMissile);
+  launchMissile(canvasPoint(event));
 });
 
 ui.settings.addEventListener("click", () => {
@@ -1297,15 +1296,6 @@ ui.pause.addEventListener("click", () => {
   state.paused = !state.paused;
   ui.pause.textContent = state.paused ? "Riprendi" : "Pausa";
   setOverlay(state.paused ? "Pausa" : "", state.paused ? "Simulazione sospesa." : "");
-});
-
-ui.missileSelect.addEventListener("change", () => {
-  state.selectedMissile = ui.missileSelect.value;
-});
-
-ui.turretSelect.addEventListener("change", () => {
-  state.selectedTurret = ui.turretSelect.value;
-  setActiveTurretForAll(state.selectedTurret);
 });
 
 ui.trailDuration.addEventListener("input", () => {
