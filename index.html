@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Missile Command Reloaded</title>
+    <link rel="stylesheet" href="src/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hud">
+        <div class="brand">
+          <span class="kicker">Missile Command</span>
+          <h1>Reloaded</h1>
+        </div>
+
+        <div class="status-grid">
+          <div>
+            <span>Ondata</span>
+            <strong id="waveLabel">1</strong>
+          </div>
+          <div>
+            <span>Difficolta</span>
+            <strong id="difficultyLabel">Normale</strong>
+          </div>
+          <div>
+            <span>Costruzione</span>
+            <strong id="buildLabel">0</strong>
+          </div>
+          <div>
+            <span>Punteggio</span>
+            <strong id="scoreLabel">0</strong>
+          </div>
+        </div>
+
+        <div class="controls">
+          <label>
+            Modalita
+            <select id="modeSelect">
+              <option value="missiles">Giocatore missili, computer torrette</option>
+              <option value="turret">Giocatore torretta, computer missili</option>
+              <option value="coop">Co-op locale</option>
+            </select>
+          </label>
+          <label>
+            Difficolta
+            <select id="difficultySelect">
+              <option value="cadet">Cadetto</option>
+              <option value="normal" selected>Normale</option>
+              <option value="veteran">Veterano</option>
+              <option value="nightmare">Incubo</option>
+            </select>
+          </label>
+          <label>
+            Missile
+            <select id="missileSelect">
+              <option value="standard">Standard</option>
+              <option value="he">HE</option>
+              <option value="frag">Frammentazione</option>
+              <option value="guided">Guidato</option>
+              <option value="emp">EMP</option>
+            </select>
+          </label>
+          <label>
+            Torretta
+            <select id="turretSelect">
+              <option value="cannon">Cannoncino AA</option>
+              <option value="mg">Mitragliatrice</option>
+              <option value="laser">Laser</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button id="startButton">Avvia</button>
+          <button id="nextWaveButton" disabled>Prossima ondata</button>
+          <button id="pauseButton">Pausa</button>
+        </div>
+      </section>
+
+      <section class="game-wrap">
+        <canvas id="game" width="1280" height="720" aria-label="Campo di battaglia"></canvas>
+        <div id="overlay" class="overlay">
+          <strong>Pronto</strong>
+          <span>Mouse: click per missili. Frecce: torretta. Spazio: fuoco. Tasti 1-5 missili, Q/W/E torrette.</span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="cities" id="cities"></div>
+        <div class="upgrade-panel">
+          <div class="panel-title">
+            <strong>Costruzione</strong>
+            <span>Spendibile tra le ondate</span>
+          </div>
+          <div class="upgrade-grid">
+            <button data-upgrade="repair">Ripara citta <span>2</span></button>
+            <button data-upgrade="factory">Fabbrica +1 <span>4</span></button>
+            <button data-upgrade="launcher">Lanciamissili <span>3</span></button>
+            <button data-upgrade="cannon">Cannoncino <span>3</span></button>
+            <button data-upgrade="mg">Mitragliatrice <span>3</span></button>
+            <button data-upgrade="laser">Laser <span>5</span></button>
+            <button data-upgrade="shield">Scudo <span>4</span></button>
+            <button data-upgrade="ammo">Munizioni speciali <span>2</span></button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="src/main.js"></script>
+  </body>
+</html>
