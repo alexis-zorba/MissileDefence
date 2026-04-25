@@ -118,10 +118,20 @@ canvas {
 
 .game-title {
   padding: 0;
-  min-width: 150px;
+  width: clamp(190px, 22vw, 300px);
+  height: 64px;
+  display: flex;
+  align-items: center;
 }
 
-.game-title span,
+.game-title img {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 2px 0 #020406) drop-shadow(0 0 8px rgba(85, 214, 190, 0.45));
+}
+
 .stat-row span,
 .city-meta,
 .footer-city-name,
@@ -132,12 +142,6 @@ label,
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0;
-}
-
-.game-title strong {
-  display: block;
-  font-size: 20px;
-  line-height: 1;
 }
 
 .stat-row {
