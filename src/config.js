@@ -42,8 +42,7 @@ export const UPGRADE_COSTS = {
   mg: 3,
   laser: 5,
   shield: 4,
-  ammo: 3,
-  turretAmmo: 6,
+  ammo: 1,
   blastRadius: 8,
   blastLife: 8,
 };

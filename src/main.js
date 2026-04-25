@@ -123,12 +123,10 @@ function resetGame() {
       mg: i === 2 ? 230 : 0,
       laser: 0,
     },
-    missileAmmoLevel: 1,
-    turretAmmoLevel: 1,
     blastRadiusLevel: 1,
     blastLifeLevel: 1,
-    shield: 0,
-    turretAngle: state.globalTurretAngle,
+  shield: 0,
+  turretAngle: state.globalTurretAngle,
     ruinSeed: Math.random(),
     cooldown: 0,
     heat: 0,
@@ -299,23 +297,19 @@ function firstWeapon(city) {
 
 function maxAmmo(city, weapon) {
   const level = city.weapons[weapon]?.level || 1;
-  const missileAmmoLevel = city.missileAmmoLevel || 1;
-  const turretAmmoLevel = city.turretAmmoLevel || 1;
-  if (weapon === "launcher") return 30 + level * 8 + missileAmmoLevel * 6;
-  if (weapon === "cannon") return 54 + level * 14 + turretAmmoLevel * 12;
-  if (weapon === "mg") return 180 + level * 36 + turretAmmoLevel * 26;
-  if (weapon === "laser") return 96 + level * 24 + turretAmmoLevel * 14;
+  if (weapon === "launcher") return 42 + level * 10;
+  if (weapon === "cannon") return 72 + level * 18;
+  if (weapon === "mg") return 240 + level * 42;
+  if (weapon === "laser") return 130 + level * 30;
   return 0;
 }
 
 function replenishAmmo(city, weapon) {
   const factory = city.factory || 0;
-  const missileAmmoLevel = city.missileAmmoLevel || 1;
-  const turretAmmoLevel = city.turretAmmoLevel || 1;
-  if (weapon === "launcher") return 10 + factory * 3 + missileAmmoLevel * 2;
-  if (weapon === "cannon") return 18 + factory * 6 + turretAmmoLevel * 3;
-  if (weapon === "mg") return 58 + factory * 16 + turretAmmoLevel * 8;
-  if (weapon === "laser") return 28 + factory * 8 + turretAmmoLevel * 4;
+  if (weapon === "launcher") return 14 + factory * 4;
+  if (weapon === "cannon") return 24 + factory * 7;
+  if (weapon === "mg") return 76 + factory * 18;
+  if (weapon === "laser") return 36 + factory * 10;
   return 0;
 }
 
@@ -351,8 +345,6 @@ function spendUpgrade(kind) {
       city.factory = Math.max(1, city.factory);
       city.weapons ||= {};
       city.ammoByWeapon ||= {};
-      city.missileAmmoLevel ||= 1;
-      city.turretAmmoLevel ||= 1;
       city.blastRadiusLevel ||= 1;
       city.blastLifeLevel ||= 1;
       city.ruinSeed = Math.random();
@@ -366,14 +358,10 @@ function spendUpgrade(kind) {
     if (city.hp <= 0) return;
     city.shield = 1;
   } else if (kind === "ammo") {
-    if (!city.weapons.launcher) return;
-    city.missileAmmoLevel = Math.min(5, city.missileAmmoLevel + 1);
-    city.ammoByWeapon.launcher = Math.min(maxAmmo(city, "launcher"), currentAmmo(city, "launcher") + replenishAmmo(city, "launcher"));
-  } else if (kind === "turretAmmo") {
-    if (!["cannon", "mg", "laser"].some((weapon) => city.weapons[weapon])) return;
-    city.turretAmmoLevel = Math.min(5, city.turretAmmoLevel + 1);
-    ["cannon", "mg", "laser"].forEach((weapon) => {
-      if (city.weapons[weapon]) city.ammoByWeapon[weapon] = Math.min(maxAmmo(city, weapon), currentAmmo(city, weapon) + replenishAmmo(city, weapon));
+    const weapons = Object.keys(city.weapons);
+    if (!weapons.length) return;
+    weapons.forEach((weapon) => {
+      city.ammoByWeapon[weapon] = Math.min(maxAmmo(city, weapon), currentAmmo(city, weapon) + Math.ceil(replenishAmmo(city, weapon) * 0.8));
     });
   } else if (kind === "blastRadius") {
     if (!city.weapons.launcher) return;
