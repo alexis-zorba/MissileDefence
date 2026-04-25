@@ -683,14 +683,15 @@ function updateAi(dt) {
 
 function autoTurrets(dt) {
   const skill = aiSkills[state.aiSkill];
-  state.cities.forEach((city) => {
-    if (city.hp <= 0) return;
+  const armedBases = state.cities.filter((city) => city.hp > 0 && firstTurret(city));
+  const target = priorityEnemy();
+  if (!target || !armedBases.length) return;
+  const referenceBase = nearest(armedBases, target) || armedBases[0];
+  const aim = noisyAim(target.x, target.y, skill.aimNoise);
+  state.globalTurretAngle = clampAngle(Math.atan2(aim.y - referenceBase.y, aim.x - referenceBase.x), -Math.PI + 0.14, -0.14);
+  armedBases.forEach((city) => {
+    city.turretAngle = state.globalTurretAngle;
     const active = city.weapon !== "launcher" && city.weapons[city.weapon] ? city.weapon : firstTurret(city);
-    if (!active) return;
-    const target = nearest(state.enemies, city);
-    if (!target) return;
-    const aim = noisyAim(target.x, target.y, skill.aimNoise);
-    city.turretAngle = clampAngle(Math.atan2(aim.y - city.y, aim.x - city.x), -Math.PI + 0.14, -0.14);
     fireTurret(city, active, dt, true);
   });
 }
