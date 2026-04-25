@@ -758,12 +758,46 @@ function drawBullets(ctx) {
 
 function drawBlasts(ctx) {
   state.blasts.forEach((blast) => {
-    ctx.strokeStyle = blast.type === "emp" ? "rgba(177, 140, 255, 0.86)" : "rgba(255, 213, 107, 0.78)";
-    ctx.lineWidth = 3;
+    const radius = blast.currentRadius * state.visualScale;
+    if (radius <= 0.5) return;
+    const alpha = Math.max(0, Math.min(1, 1 - blast.age / blast.life));
+    const gradient = ctx.createRadialGradient(blast.x, blast.y, radius * 0.12, blast.x, blast.y, radius);
+    if (blast.type === "emp") {
+      gradient.addColorStop(0, `rgba(238, 232, 255, ${0.82 * alpha})`);
+      gradient.addColorStop(0.58, `rgba(177, 140, 255, ${0.62 * alpha})`);
+      gradient.addColorStop(1, `rgba(91, 68, 145, ${0.24 * alpha})`);
+    } else {
+      gradient.addColorStop(0, `rgba(255, 244, 178, ${0.9 * alpha})`);
+      gradient.addColorStop(0.56, `rgba(255, 189, 82, ${0.7 * alpha})`);
+      gradient.addColorStop(1, `rgba(255, 95, 95, ${0.28 * alpha})`);
+    }
+    ctx.fillStyle = gradient;
     ctx.beginPath();
-    ctx.arc(blast.x, blast.y, blast.currentRadius * state.visualScale, 0, Math.PI * 2);
-    ctx.stroke();
+    ctx.arc(blast.x, blast.y, radius, 0, Math.PI * 2);
+    ctx.fill();
   });
+
+  ctx.fillStyle = "rgba(1, 3, 5, 0.92)";
+  for (let i = 0; i < state.blasts.length; i += 1) {
+    const a = state.blasts[i];
+    const ar = a.currentRadius * state.visualScale;
+    if (ar <= 0.5) continue;
+    for (let j = i + 1; j < state.blasts.length; j += 1) {
+      const b = state.blasts[j];
+      const br = b.currentRadius * state.visualScale;
+      if (br <= 0.5) continue;
+      const distance = Math.hypot(b.x - a.x, b.y - a.y);
+      if (distance >= ar + br || distance <= Math.abs(ar - br) * 0.25) continue;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(a.x, a.y, ar, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, br, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
 }
 
 // --- Particles ---

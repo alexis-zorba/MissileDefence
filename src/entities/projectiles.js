@@ -32,6 +32,21 @@ export function updateMissiles() {
       const radiusBoost = missile.type === "ballistic" ? 1 + (missile.blastRadiusLevel - 1) * 0.16 : 1;
       const radius = stats.radius * radiusBoost;
       createBlast(missile.targetX, missile.targetY, radius, stats.damage, missile.type, missile.blastLifeLevel);
+      if (missile.type === "ballistic" && missile.blastRadiusLevel > 1) {
+        const clusterCount = Math.min(7, missile.blastRadiusLevel + 1);
+        for (let i = 0; i < clusterCount; i += 1) {
+          const angle = (Math.PI * 2 * i) / clusterCount + Math.random() * 0.22;
+          const spread = radius * (0.42 + Math.random() * 0.18);
+          createBlast(
+            missile.targetX + Math.cos(angle) * spread,
+            missile.targetY + Math.sin(angle) * spread * 0.72,
+            radius * 0.42,
+            stats.damage * 0.38,
+            "ballistic",
+            missile.blastLifeLevel
+          );
+        }
+      }
       missile.done = true;
       if (missile.type === "ballistic" && missile.level >= 3) {
         for (let i = 0; i < 4; i += 1) {
