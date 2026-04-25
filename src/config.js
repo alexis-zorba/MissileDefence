@@ -2,6 +2,11 @@ export const CANVAS_WIDTH = 1280;
 export const CANVAS_HEIGHT = 720;
 export const GROUND_Y = CANVAS_HEIGHT - 72;
 
+export const SLOT_OFFSETS = {
+  missile: [-24, 24],
+  turret: [-18, 18],
+};
+
 export const DIFFICULTY = {
   cadet: { label: "Cadetto", speed: 0.78, count: 0.78, build: 1.25, ai: 0.9, cityHp: 120 },
   normal: { label: "Normale", speed: 1, count: 1, build: 1, ai: 1.25, cityHp: 100 },
