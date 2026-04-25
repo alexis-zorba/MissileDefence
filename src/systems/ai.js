@@ -2,9 +2,9 @@
 // AI — Allied AI behavior for missiles and turrets
 // =============================================================================
 
-import { state, AI_SKILLS, missileSlots, turretSlots, firstTurret } from "../state.js";
+import { state, AI_SKILLS, firstTurret } from "../state.js";
 import { nearest, clampAngle } from "../utils.js";
-import { launchMissile, fireTurret } from "../entities/weapons.js";
+import { launchMissile, fireTurretSalvo } from "../entities/weapons.js";
 import { priorityEnemy, pickAiMissile } from "./combat.js";
 import * as logger from "../debug/logger.js";
 
@@ -43,7 +43,7 @@ export function autoTurrets(dt, skill, difficultyCfg) {
   state.globalTurretAngle = clampAngle(Math.atan2(aim.y - referenceBase.y, aim.x - referenceBase.x), -Math.PI + 0.14, -0.14);
   armedBases.forEach((city) => {
     city.turretAngle = state.globalTurretAngle;
-    turretSlots(city).forEach((slot) => fireTurret(city, slot, dt, true, difficultyCfg.ai));
+    fireTurretSalvo(city, dt, true, difficultyCfg.ai);
   });
 }
 
