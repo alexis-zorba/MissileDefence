@@ -16,8 +16,11 @@ export function updateMissiles() {
     if (missile.type === "seeker") {
       const target = nearest(state.enemies, missile);
       if (target) {
-        missile.targetX += (target.x - missile.targetX) * stats.turn;
-        missile.targetY += (target.y - missile.targetY) * stats.turn;
+        const lead = stats.lead || 0;
+        const predictedX = target.x + (target.vx || 0) * lead;
+        const predictedY = target.y + (target.vy || 0) * lead;
+        missile.targetX += (predictedX - missile.targetX) * stats.turn;
+        missile.targetY += (predictedY - missile.targetY) * stats.turn;
       }
     }
     const dx = missile.targetX - missile.x;
