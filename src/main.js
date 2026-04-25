@@ -118,9 +118,9 @@ function resetGame() {
       [i === 0 ? "launcher" : i === 1 ? "cannon" : "mg"]: { level: 1 },
     },
     ammoByWeapon: {
-      launcher: i === 0 ? 14 : 0,
-      cannon: i === 1 ? 42 : 0,
-      mg: i === 2 ? 150 : 0,
+      launcher: i === 0 ? 26 : 0,
+      cannon: i === 1 ? 72 : 0,
+      mg: i === 2 ? 230 : 0,
       laser: 0,
     },
     missileAmmoLevel: 1,
@@ -301,10 +301,10 @@ function maxAmmo(city, weapon) {
   const level = city.weapons[weapon]?.level || 1;
   const missileAmmoLevel = city.missileAmmoLevel || 1;
   const turretAmmoLevel = city.turretAmmoLevel || 1;
-  if (weapon === "launcher") return 18 + level * 6 + missileAmmoLevel * 4;
-  if (weapon === "cannon") return 36 + level * 10 + turretAmmoLevel * 8;
-  if (weapon === "mg") return 120 + level * 28 + turretAmmoLevel * 18;
-  if (weapon === "laser") return 70 + level * 18 + turretAmmoLevel * 10;
+  if (weapon === "launcher") return 30 + level * 8 + missileAmmoLevel * 6;
+  if (weapon === "cannon") return 54 + level * 14 + turretAmmoLevel * 12;
+  if (weapon === "mg") return 180 + level * 36 + turretAmmoLevel * 26;
+  if (weapon === "laser") return 96 + level * 24 + turretAmmoLevel * 14;
   return 0;
 }
 
@@ -312,10 +312,10 @@ function replenishAmmo(city, weapon) {
   const factory = city.factory || 0;
   const missileAmmoLevel = city.missileAmmoLevel || 1;
   const turretAmmoLevel = city.turretAmmoLevel || 1;
-  if (weapon === "launcher") return 5 + factory * 2 + missileAmmoLevel;
-  if (weapon === "cannon") return 10 + factory * 4 + turretAmmoLevel * 2;
-  if (weapon === "mg") return 36 + factory * 12 + turretAmmoLevel * 5;
-  if (weapon === "laser") return 18 + factory * 6 + turretAmmoLevel * 3;
+  if (weapon === "launcher") return 10 + factory * 3 + missileAmmoLevel * 2;
+  if (weapon === "cannon") return 18 + factory * 6 + turretAmmoLevel * 3;
+  if (weapon === "mg") return 58 + factory * 16 + turretAmmoLevel * 8;
+  if (weapon === "laser") return 28 + factory * 8 + turretAmmoLevel * 4;
   return 0;
 }
 
@@ -1296,8 +1296,26 @@ function drawIncomingMissile(enemy, def) {
   ctx.bezierCurveTo(-9, 12, -10, -8, 0, -15);
   ctx.fill();
   ctx.stroke();
-  ctx.fillStyle = "rgba(80, 20, 20, 0.75)";
-  ctx.fillRect(-8, 8, 16, 6);
+  if (enemy.type === "mirv") {
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(0, -15);
+    ctx.bezierCurveTo(10, -8, 9, 12, 0, 17);
+    ctx.bezierCurveTo(-9, 12, -10, -8, 0, -15);
+    ctx.clip();
+    for (let y = -10; y < 15; y += 8) {
+      ctx.fillStyle = "#f7f4e8";
+      ctx.fillRect(-11, y, 22, 4);
+      ctx.fillStyle = "#b4262e";
+      ctx.fillRect(-11, y + 4, 22, 4);
+    }
+    ctx.restore();
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.78)";
+    ctx.stroke();
+  } else {
+    ctx.fillStyle = "rgba(80, 20, 20, 0.75)";
+    ctx.fillRect(-8, 8, 16, 6);
+  }
   ctx.restore();
 }
 
