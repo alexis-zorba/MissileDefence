@@ -1035,58 +1035,189 @@ function drawCityReadout(city) {
 
 function drawWeapon(city, controlled) {
   const color = city.disabled > 0 ? "#7a4c7e" : controlled ? "#55d6be" : weaponColor(city.weapon);
-  ctx.fillStyle = color;
-  ctx.strokeStyle = "rgba(5, 12, 16, 0.82)";
-  ctx.lineWidth = 2;
   if (city.weapon === "launcher") {
-    ctx.fillStyle = "#293848";
-    ctx.fillRect(-37, -22, 74, 15);
-    ctx.strokeRect(-37, -22, 74, 15);
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.ellipse(0, -27, 18, 16, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-    ctx.save();
-    ctx.rotate(-0.18);
-    ctx.fillRect(-36, -42, 28, 8);
-    ctx.strokeRect(-36, -42, 28, 8);
-    ctx.restore();
-    ctx.save();
-    ctx.rotate(0.18);
-    ctx.fillRect(8, -42, 28, 8);
-    ctx.strokeRect(8, -42, 28, 8);
-    ctx.restore();
+    drawLauncher(color);
     return;
   }
+
+  drawTurretBase(color);
   ctx.save();
   ctx.rotate(city.turretAngle + Math.PI / 2);
   if (city.weapon === "mg") {
-    ctx.fillStyle = "#d8f2ff";
-    ctx.fillRect(-10, -55, 4, 43);
-    ctx.fillRect(-2, -58, 4, 46);
-    ctx.fillRect(6, -55, 4, 43);
-    ctx.fillStyle = "#7d98a8";
-    ctx.fillRect(-13, -22, 26, 10);
+    drawMachineGunBarrel();
   } else if (city.weapon === "laser") {
-    ctx.fillStyle = "#67e6ff";
-    ctx.fillRect(-5, -64, 10, 50);
-    ctx.fillStyle = "#1b5260";
-    ctx.fillRect(-12, -34, 24, 16);
-    ctx.strokeStyle = "#67e6ff";
-    ctx.strokeRect(-14, -36, 28, 20);
+    drawLaserEmitter();
   } else {
-    ctx.fillStyle = "#f8d16b";
-    ctx.fillRect(-7, -61, 14, 47);
-    ctx.fillStyle = "#655235";
-    ctx.fillRect(-11, -23, 22, 9);
+    drawCannonBarrel();
   }
   ctx.restore();
-  ctx.fillStyle = color;
+  drawTurretCap(color);
+}
+
+function roundedRect(x, y, width, height, radius) {
+  const r = Math.min(radius, width / 2, height / 2);
   ctx.beginPath();
-  ctx.ellipse(0, -14, 17, 14, 0, 0, Math.PI * 2);
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + width - r, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+  ctx.lineTo(x + width, y + height - r);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+  ctx.lineTo(x + r, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+}
+
+function drawLauncher(color) {
+  ctx.save();
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = "rgba(4, 9, 12, 0.9)";
+
+  const baseGradient = ctx.createLinearGradient(0, -34, 0, -4);
+  baseGradient.addColorStop(0, "#3e5262");
+  baseGradient.addColorStop(1, "#17232d");
+  ctx.fillStyle = baseGradient;
+  roundedRect(-43, -22, 86, 16, 4);
   ctx.fill();
   ctx.stroke();
+
+  ctx.fillStyle = "#0d151b";
+  ctx.fillRect(-36, -5, 72, 5);
+  ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
+  ctx.fillRect(-35, -20, 70, 2);
+
+  const podGradient = ctx.createLinearGradient(0, -50, 0, -28);
+  podGradient.addColorStop(0, color);
+  podGradient.addColorStop(1, "#23384c");
+  [-24, 24].forEach((x, index) => {
+    ctx.save();
+    ctx.translate(x, -35);
+    ctx.rotate(index === 0 ? -0.22 : 0.22);
+    ctx.fillStyle = podGradient;
+    roundedRect(-18, -8, 36, 14, 4);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#05090c";
+    roundedRect(11, -5, 8, 8, 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,0.24)";
+    ctx.fillRect(-13, -6, 20, 2);
+    ctx.restore();
+  });
+
+  ctx.fillStyle = "#263746";
+  ctx.beginPath();
+  ctx.moveTo(-18, -23);
+  ctx.lineTo(0, -39);
+  ctx.lineTo(18, -23);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawTurretBase(color) {
+  ctx.save();
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = "rgba(4, 9, 12, 0.92)";
+  const baseGradient = ctx.createLinearGradient(0, -30, 0, 0);
+  baseGradient.addColorStop(0, "#425769");
+  baseGradient.addColorStop(1, "#17232c");
+  ctx.fillStyle = baseGradient;
+  roundedRect(-28, -22, 56, 16, 5);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#0b1218";
+  ctx.fillRect(-21, -7, 42, 6);
+  ctx.fillStyle = color;
+  ctx.globalAlpha = 0.38;
+  ctx.fillRect(-18, -20, 36, 2);
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function drawTurretCap(color) {
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.strokeStyle = "rgba(4, 9, 12, 0.92)";
+  ctx.lineWidth = 1.7;
+  ctx.beginPath();
+  ctx.ellipse(0, -18, 18, 12, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "rgba(255,255,255,0.18)";
+  ctx.beginPath();
+  ctx.ellipse(-5, -22, 7, 3, -0.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawCannonBarrel() {
+  ctx.save();
+  ctx.strokeStyle = "rgba(4, 9, 12, 0.9)";
+  ctx.lineWidth = 1.4;
+  const barrelGradient = ctx.createLinearGradient(-8, -64, 8, -20);
+  barrelGradient.addColorStop(0, "#ffe090");
+  barrelGradient.addColorStop(1, "#7f6435");
+  ctx.fillStyle = barrelGradient;
+  roundedRect(-7, -66, 14, 48, 3);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#17130c";
+  roundedRect(-9, -70, 18, 7, 2);
+  ctx.fill();
+  ctx.fillStyle = "#6c5732";
+  roundedRect(-14, -29, 28, 12, 3);
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawMachineGunBarrel() {
+  ctx.save();
+  ctx.strokeStyle = "rgba(4, 9, 12, 0.9)";
+  ctx.lineWidth = 1.1;
+  ctx.fillStyle = "#d8f2ff";
+  [-9, -3, 3, 9].forEach((x, index) => {
+    roundedRect(x - 2, -60 - (index % 2) * 3, 4, 45 + (index % 2) * 3, 1.5);
+    ctx.fill();
+    ctx.stroke();
+  });
+  ctx.fillStyle = "#7893a3";
+  roundedRect(-15, -31, 30, 14, 4);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#182630";
+  ctx.fillRect(-12, -26, 24, 4);
+  ctx.restore();
+}
+
+function drawLaserEmitter() {
+  ctx.save();
+  ctx.strokeStyle = "rgba(4, 9, 12, 0.9)";
+  ctx.lineWidth = 1.2;
+  const coreGradient = ctx.createLinearGradient(0, -72, 0, -18);
+  coreGradient.addColorStop(0, "#b9fbff");
+  coreGradient.addColorStop(0.35, "#67e6ff");
+  coreGradient.addColorStop(1, "#1b5260");
+  ctx.fillStyle = coreGradient;
+  roundedRect(-6, -72, 12, 54, 4);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#12323b";
+  roundedRect(-18, -40, 36, 18, 5);
+  ctx.fill();
+  ctx.stroke();
+  ctx.strokeStyle = "#67e6ff";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-13, -31);
+  ctx.lineTo(13, -31);
+  ctx.stroke();
+  ctx.fillStyle = "#d8ffff";
+  roundedRect(-4, -77, 8, 6, 3);
+  ctx.fill();
+  ctx.restore();
 }
 
 function weaponColor(weapon) {
