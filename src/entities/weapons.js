@@ -67,9 +67,10 @@ export function fireTurret(city, slot, dt, byAi = false, aiMultiplier = 1) {
   const stats = turretStats(slot);
   if (!def || !stats || slot.cooldown > 0 || slot.heat >= 100) return false;
   if (slot.ammo < stats.ammoCost) return false;
+  const angle = typeof slot.angle === "number" ? slot.angle : city.turretAngle;
   slot.ammo -= stats.ammoCost;
   if (slot.type === "laser") {
-    const target = findTargetAlongRay(city, city.turretAngle, stats.width, state.enemies);
+    const target = findTargetAlongRay(city, angle, stats.width, state.enemies);
     if (target) {
       target.hp -= stats.damage * dt;
       state.particles.push({ x: target.x, y: target.y, life: 90, color: def.color, size: 4 });
@@ -77,8 +78,8 @@ export function fireTurret(city, slot, dt, byAi = false, aiMultiplier = 1) {
     state.friendlyBullets.push({
       x: city.x + SLOT_OFFSETS.turret[slot.index],
       y: city.y - 24,
-      vx: Math.cos(city.turretAngle) * 900,
-      vy: Math.sin(city.turretAngle) * 900,
+      vx: Math.cos(angle) * 900,
+      vy: Math.sin(angle) * 900,
       life: 45,
       laser: true,
       color: def.color,
@@ -87,8 +88,8 @@ export function fireTurret(city, slot, dt, byAi = false, aiMultiplier = 1) {
     state.friendlyBullets.push({
       x: city.x + SLOT_OFFSETS.turret[slot.index],
       y: city.y - 24,
-      vx: Math.cos(city.turretAngle) * stats.speed,
-      vy: Math.sin(city.turretAngle) * stats.speed,
+      vx: Math.cos(angle) * stats.speed,
+      vy: Math.sin(angle) * stats.speed,
       damage: stats.damage,
       life: 120,
       radius: stats.radius || 3,
@@ -126,7 +127,12 @@ export function updatePlayerTurret(dt, mode, turretCurve, turretSensitivity, key
   state.globalTurretAngle += state.turretTurnVelocity * (dt / 1000);
   state.globalTurretAngle = clampAngle(state.globalTurretAngle, -Math.PI + 0.1, -0.1);
   state.cities.forEach((city) => {
-    if (firstTurret(city)) city.turretAngle = state.globalTurretAngle;
+    if (firstTurret(city)) {
+      city.turretAngle = state.globalTurretAngle;
+      turretSlots(city).forEach((slot) => {
+        slot.angle = state.globalTurretAngle;
+      });
+    }
   });
   if (keys.has("Space")) firePlayerTurrets(dt);
 }

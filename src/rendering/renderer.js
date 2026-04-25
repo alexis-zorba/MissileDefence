@@ -288,7 +288,7 @@ function drawWeapons(ctx, city, controlled) {
     const color = city.disabled > 0 ? "#7a4c7e" : controlled ? "#55d6be" : weaponColor(slot.type);
     drawTurretBase(ctx, slot, color);
     ctx.save();
-    ctx.rotate(city.turretAngle + Math.PI / 2);
+    ctx.rotate((typeof slot.angle === "number" ? slot.angle : city.turretAngle) + Math.PI / 2);
     if (slot.type === "mg") {
       drawMachineGunBarrel(ctx, slot);
     } else if (slot.type === "laser") {

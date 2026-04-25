@@ -65,6 +65,7 @@ const state = {
   turretSensitivity: 1.7,
   turretCurve: 1,
   aiSkill: "normal",
+  aiTurretAimMode: "parallel",
   trailDuration: 2.2,
   debugMode: false,
   gameSpeed: DEFAULT_GAME_SPEED,

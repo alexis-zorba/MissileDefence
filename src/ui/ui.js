@@ -33,6 +33,7 @@ export const ui = {
   mode: document.getElementById("modeSelect"),
   difficultySelect: document.getElementById("difficultySelect"),
   aiSkill: document.getElementById("aiSkillSelect"),
+  aiTurretAim: document.getElementById("aiTurretAimSelect"),
   turretSensitivity: document.getElementById("turretSensitivityInput"),
   turretCurve: document.getElementById("turretCurveInput"),
   trailDuration: document.getElementById("trailDurationInput"),
@@ -238,6 +239,9 @@ export function bindDialogs(onStart) {
   });
   ui.aiSkill.addEventListener("change", () => {
     state.aiSkill = ui.aiSkill.value;
+  });
+  ui.aiTurretAim.addEventListener("change", () => {
+    state.aiTurretAimMode = ui.aiTurretAim.value;
   });
   ui.difficultySelect.addEventListener("change", updateUi);
 }
