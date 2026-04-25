@@ -145,11 +145,15 @@ function boot() {
   // Bind input
   bindInput(canvas, getMode);
 
-  // Bind dialogs — Avvia button resets game and opens build dialog (user clicks "Avvia ondata" to start)
+  // Bind dialogs — Avvia starts the pending wave; after game over it resets the match.
   bindDialogs(() => {
-    resetGame();
-    // NON chiamare startWave qui: resetGame apre il popup costruzione,
-    // l'utente clicca "Avvia ondata" per far partire l'ondata
+    if (!state.running) {
+      resetGame();
+      return;
+    }
+    if (state.betweenWaves) {
+      startWave(getDifficultyCfg(), uiCallbacks());
+    }
   });
 
   // Initial reset (shows build dialog, user must click "Avvia ondata")
