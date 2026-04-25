@@ -84,6 +84,20 @@
             Persistenza scie
             <input id="trailDurationInput" type="range" min="2.2" max="6" step="0.2" value="2.2">
           </label>
+          <label class="check-label">
+            <input id="debugModeInput" type="checkbox">
+            Debug calibrazione
+          </label>
+          <div id="debugControls" class="debug-controls" hidden>
+            <label>
+              Game speed
+              <input id="gameSpeedInput" type="range" min="0.35" max="1.25" step="0.05" value="0.8">
+            </label>
+            <label>
+              Visual scale
+              <input id="visualScaleInput" type="range" min="0.45" max="1" step="0.05" value="0.7">
+            </label>
+          </div>
         </form>
       </dialog>
 
@@ -113,8 +127,8 @@
           <div class="build-layout">
             <div class="build-cities" id="buildCities"></div>
             <div class="upgrade-grid">
-              <button data-upgrade="repair">Ripara citta <span>2</span></button>
-              <button data-upgrade="factory">Fabbrica +1 <span>4</span></button>
+              <button data-upgrade="repair">Ripara zona <span>2</span></button>
+              <button data-upgrade="factory">Fabbrica <span>4</span></button>
               <button data-upgrade="launcher">Lanciamissili <span>3</span></button>
               <button data-upgrade="cannon">Cannoncino <span>3</span></button>
               <button data-upgrade="mg">Mitragliatrice <span>3</span></button>

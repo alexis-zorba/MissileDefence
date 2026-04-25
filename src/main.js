@@ -40,6 +40,10 @@ const ui = {
   turretSensitivity: document.getElementById("turretSensitivityInput"),
   turretCurve: document.getElementById("turretCurveInput"),
   trailDuration: document.getElementById("trailDurationInput"),
+  debugMode: document.getElementById("debugModeInput"),
+  debugControls: document.getElementById("debugControls"),
+  gameSpeed: document.getElementById("gameSpeedInput"),
+  visualScale: document.getElementById("visualScaleInput"),
 };
 
 canvas.width = CANVAS_WIDTH;
@@ -53,8 +57,16 @@ const missileDefs = MISSILE_DEFS;
 const turretDefs = TURRET_DEFS;
 const enemyDefs = ENEMY_DEFS;
 const upgradeCosts = UPGRADE_COSTS;
-const GAME_SPEED = 0.8;
-const VISUAL_SCALE = 0.7;
+const DEFAULT_GAME_SPEED = 0.8;
+const DEFAULT_VISUAL_SCALE = 0.7;
+const WAVE_CLEAR_BONUS = 6;
+const INITIAL_BUILD_CREDIT = 6;
+const MAX_FACTORIES_PER_BASE = 3;
+const FACTORY_LAYOUT = [
+  { dx: -58, y: groundY - 2 },
+  { dx: 58, y: groundY - 2 },
+  { dx: 0, y: groundY - 46 },
+];
 const aiSkills = {
   normal: { delay: 1.25, aimNoise: 70, lead: 18 },
   expert: { delay: 0.86, aimNoise: 34, lead: 24 },
@@ -81,8 +93,12 @@ const state = {
   turretCurve: 1,
   aiSkill: "normal",
   trailDuration: 2.2,
+  debugMode: false,
+  gameSpeed: DEFAULT_GAME_SPEED,
+  visualScale: DEFAULT_VISUAL_SCALE,
   playerTurretIndex: 1,
   cities: [],
+  factories: [],
   friendlyMissiles: [],
   friendlyBullets: [],
   enemies: [],
@@ -92,12 +108,13 @@ const state = {
 
 function resetGame() {
   const hp = difficulty[ui.difficultySelect.value].cityHp;
+  const factoryHp = Math.round(hp * 0.58);
   state.running = true;
   state.paused = false;
   state.betweenWaves = true;
   state.wave = 1;
   state.score = 0;
-  state.build = 8;
+  state.build = INITIAL_BUILD_CREDIT;
   state.selectedCity = 0;
   state.playerTurretIndex = 1;
   state.turretTurnVelocity = 0;
@@ -113,7 +130,6 @@ function resetGame() {
     y: groundY,
     hp,
     maxHp: hp,
-    factory: 1,
     weapon: i === 0 ? "launcher" : i === 1 ? "cannon" : "mg",
     weaponLevel: 1,
     weapons: {
@@ -135,10 +151,28 @@ function resetGame() {
     heat: 0,
     disabled: 0,
   }));
+  state.factories = state.cities.map((city, index) => createFactory(index, 0, factoryHp));
   ui.next.disabled = false;
   setOverlay("Difese pronte", "Spendi il credito costruzione, poi avvia la prossima ondata.");
   openBuildDialog(true);
   updateUi();
+}
+
+function createFactory(baseIndex, slot, hp) {
+  const base = state.cities[baseIndex];
+  const layout = FACTORY_LAYOUT[slot] || FACTORY_LAYOUT[0];
+  return {
+    id: makeId(),
+    name: `F${baseIndex + 1}.${slot + 1}`,
+    baseIndex,
+    slot,
+    x: base.x + layout.dx,
+    y: layout.y,
+    hp,
+    maxHp: hp,
+    level: 1,
+    ruinSeed: Math.random(),
+  };
 }
 
 function startWave() {
@@ -159,11 +193,12 @@ function startWave() {
 function finishWave() {
   state.betweenWaves = true;
   const cfg = difficulty[ui.difficultySelect.value];
-  const produced = state.cities.reduce((sum, city) => {
-    if (city.hp <= 0) return sum;
-    const damagePenalty = city.hp / city.maxHp < 0.5 ? 0.5 : 1;
-    return sum + Math.ceil(city.factory * cfg.build * damagePenalty);
+  const factoryProduction = state.factories.reduce((sum, factory) => {
+    if (factory.hp <= 0) return sum;
+    const damagePenalty = factory.hp / factory.maxHp < 0.5 ? 0.5 : 1;
+    return sum + Math.ceil(factory.level * cfg.build * damagePenalty);
   }, 0);
+  const produced = WAVE_CLEAR_BONUS + factoryProduction;
   state.build += produced;
   state.cities.forEach((city) => {
     if (city.hp > 0) {
@@ -175,7 +210,7 @@ function finishWave() {
       city.shield = Math.min(city.shield, 1);
     }
   });
-  setOverlay(`Ondata ${state.wave} respinta`, `Le fabbriche hanno prodotto ${produced} punti costruzione.`);
+  setOverlay(`Ondata ${state.wave} respinta`, `Bonus ${WAVE_CLEAR_BONUS} + produzione fabbriche ${factoryProduction}: +${produced} credito.`);
   showCreditBump();
   state.wave += 1;
   ui.next.disabled = false;
@@ -215,7 +250,7 @@ function renderCities() {
             <div class="bar"><span style="width:${heatPct}%"></span></div>
           </div>
           <div class="city-meta">
-            <span>Fabbrica ${city.factory}</span>
+            <span>${factorySummary(index)}</span>
             <span>${activeAmmoText(city)}</span>
             <span>Scudo ${city.shield ? "si" : "no"}</span>
             <span>Blast ${city.blastRadiusLevel}/${city.blastLifeLevel}</span>
@@ -238,7 +273,7 @@ function renderBuildCities() {
       return `
         <article class="build-city${selected}" data-build-city="${index}">
           <strong>${city.name}</strong>
-          <div class="city-meta"><span>Vita ${hpPct}%</span><span>Fabbrica ${city.factory}</span></div>
+          <div class="city-meta"><span>Base ${hpPct}%</span><span>${factorySummary(index)}</span></div>
           <div class="city-meta"><span>${weapons || "Nessuna arma"}</span><span>${activeAmmoText(city)}</span></div>
           <div class="city-meta"><span>Caricatori ${city.magazineLevel || 1}</span><span>Blast ${city.blastRadiusLevel}/${city.blastLifeLevel}</span></div>
           <div class="city-meta"><span>Scudo ${city.shield ? "si" : "no"}</span><span></span></div>
@@ -249,7 +284,7 @@ function renderBuildCities() {
 }
 
 function renderFooterCities() {
-  ui.footerCities.innerHTML = state.cities.map((city) => {
+  ui.footerCities.innerHTML = state.cities.map((city, index) => {
     const hpPct = city.maxHp > 0 ? Math.max(0, (city.hp / city.maxHp) * 100) : 0;
     const weaponBars = Object.keys(city.weapons).map((weapon) => {
       const ammoPct = maxAmmo(city, weapon) > 0 ? Math.min(100, (currentAmmo(city, weapon) / maxAmmo(city, weapon)) * 100) : 0;
@@ -263,7 +298,7 @@ function renderFooterCities() {
       <article class="footer-city">
         <div class="footer-city-head">
           <strong>${city.name}</strong>
-          <span class="footer-city-name">F${city.factory}</span>
+          <span class="footer-city-name">${factorySummary(index)}</span>
         </div>
         <div class="footer-bars">
           <div class="footer-bar health"><span style="width:${hpPct}%; background:${hpPct > 35 ? "#55d6be" : "#ff5f5f"}"></span></div>
@@ -272,6 +307,17 @@ function renderFooterCities() {
       </article>
     `;
   }).join("");
+}
+
+function factoriesForBase(baseIndex) {
+  return state.factories.filter((factory) => factory.baseIndex === baseIndex);
+}
+
+function factorySummary(baseIndex) {
+  const factories = factoriesForBase(baseIndex);
+  const living = factories.filter((factory) => factory.hp > 0);
+  const production = living.reduce((sum, factory) => sum + factory.level, 0);
+  return `Fab ${living.length}/${factories.length} P${production}`;
 }
 
 function weaponLabel(id) {
@@ -310,11 +356,10 @@ function maxAmmo(city, weapon) {
 }
 
 function replenishAmmo(city, weapon) {
-  const factory = city.factory || 0;
-  if (weapon === "launcher") return 14 + factory * 4;
-  if (weapon === "cannon") return 24 + factory * 7;
-  if (weapon === "mg") return 76 + factory * 18;
-  if (weapon === "laser") return 36 + factory * 10;
+  if (weapon === "launcher") return 14;
+  if (weapon === "cannon") return 24;
+  if (weapon === "mg") return 76;
+  if (weapon === "laser") return 36;
   return 0;
 }
 
@@ -347,7 +392,6 @@ function spendUpgrade(kind) {
   if (kind === "repair") {
     if (city.hp <= 0) {
       city.hp = Math.min(city.maxHp * 0.45, city.maxHp);
-      city.factory = Math.max(1, city.factory);
       city.weapons ||= {};
       city.ammoByWeapon ||= {};
       city.magazineLevel ||= 1;
@@ -357,9 +401,24 @@ function spendUpgrade(kind) {
     } else {
       city.hp = Math.min(city.maxHp, city.hp + 32);
     }
+    const damagedFactory = factoriesForBase(state.selectedCity)
+      .filter((factory) => factory.hp < factory.maxHp)
+      .sort((a, b) => a.hp - b.hp)[0];
+    if (damagedFactory) damagedFactory.hp = Math.min(damagedFactory.maxHp, damagedFactory.hp + 24);
   } else if (kind === "factory") {
-    if (city.hp <= 0 || city.factory >= 5) return;
-    city.factory += 1;
+    if (city.hp <= 0) return;
+    const factories = factoriesForBase(state.selectedCity);
+    if (factories.length < MAX_FACTORIES_PER_BASE) {
+      state.factories.push(createFactory(state.selectedCity, factories.length, Math.round(city.maxHp * 0.58)));
+    } else {
+      const target = factories
+        .filter((factory) => factory.hp > 0)
+        .sort((a, b) => a.level - b.level || a.hp - b.hp)[0];
+      if (!target || target.level >= 5) return;
+      target.level += 1;
+      target.maxHp += 10;
+      target.hp = target.maxHp;
+    }
   } else if (kind === "shield") {
     if (city.hp <= 0) return;
     city.shield = 1;
@@ -532,12 +591,12 @@ function spawnEnemy() {
     return;
   }
 
-  const target = pickLivingCity();
+  const target = pickLivingTarget();
   if (!target) return;
   const x = Math.random() * W;
   const y = -12;
   const tx = target.x + (Math.random() - 0.5) * 86;
-  const ty = groundY;
+  const ty = target.y;
   const dx = tx - x;
   const dy = ty - y;
   const length = Math.hypot(dx, dy);
@@ -561,7 +620,7 @@ function spawnEnemy() {
 
 function update(dt) {
   if (!state.running || state.paused) return;
-  dt *= GAME_SPEED;
+  dt *= state.gameSpeed;
   const seconds = dt / 1000;
   state.cities.forEach((city) => {
     city.cooldown = Math.max(0, city.cooldown - dt);
@@ -591,7 +650,7 @@ function update(dt) {
     finishWave();
   }
 
-  if (state.running && state.cities.every((city) => city.hp <= 0)) {
+  if (state.running && state.cities.every((city) => city.hp <= 0) && state.factories.every((factory) => factory.hp <= 0)) {
     state.running = false;
     state.betweenWaves = true;
     setOverlay("Citta distrutte", `Punteggio finale: ${state.score}. Premi Avvia per ricominciare.`);
@@ -771,10 +830,11 @@ function updateEnemies(dt) {
       burst(enemy.x, enemy.y, def.color, 10);
     }
 
-    if (enemy.y >= groundY - 8 && enemy.type !== "bomber") {
+    const reachedTarget = Number.isFinite(enemy.targetX) && Math.hypot(enemy.x - enemy.targetX, enemy.y - enemy.targetY) < enemy.radius + 8;
+    if ((reachedTarget || enemy.y >= groundY - 8) && enemy.type !== "bomber") {
       damageCity(enemy);
       enemy.dead = true;
-      createBlast(enemy.x, groundY - 8, 24, 0, "impact");
+      createBlast(enemy.x, Math.min(enemy.y, groundY - 8), 24, 0, "impact");
     }
   });
 }
@@ -846,10 +906,10 @@ function burst(x, y, color, count) {
 
 function splitMirv(enemy) {
   for (let i = 0; i < 3; i += 1) {
-    const target = pickLivingCity();
+    const target = pickLivingTarget();
     if (!target) continue;
     const tx = target.x + (i - 1) * 52 + (Math.random() - 0.5) * 30;
-    const ty = groundY;
+    const ty = target.y;
     const dx = tx - enemy.x;
     const dy = ty - enemy.y;
     const length = Math.hypot(dx, dy);
@@ -869,7 +929,7 @@ function splitMirv(enemy) {
 }
 
 function dropBomb(enemy) {
-  const target = pickLivingCity();
+  const target = pickLivingTarget();
   const targetX = target?.x || W / 2;
   const travel = Math.max(80, Math.abs(targetX - enemy.x));
   const direction = Math.sign(targetX - enemy.x) || Math.sign(enemy.vx) || 1;
@@ -887,20 +947,31 @@ function dropBomb(enemy) {
 }
 
 function damageCity(enemy) {
-  const city = nearest(state.cities.filter((candidate) => candidate.hp > 0), enemy);
-  if (!city) return;
+  const targets = [
+    ...state.factories.filter((factory) => factory.hp > 0).map((factory) => ({ ...factory, targetKind: "factory" })),
+    ...state.cities.filter((city) => city.hp > 0).map((city) => ({ ...city, targetKind: "base" })),
+  ];
+  const target = nearest(targets, enemy);
+  if (!target) return;
   const damage = enemyDefs[enemy.type].damage;
-  if (city.shield > 0) {
-    city.shield = 0;
-    return;
-  }
-  city.hp = Math.max(0, city.hp - damage);
-  if (city.hp <= 0) {
-    city.factory = 0;
-    city.weapon = "none";
-    city.weaponLevel = 0;
-    city.weapons = {};
-    city.ammoByWeapon = {};
+  if (target.targetKind === "factory") {
+    const factory = state.factories.find((candidate) => candidate.id === target.id);
+    if (!factory) return;
+    factory.hp = Math.max(0, factory.hp - damage);
+  } else {
+    const city = state.cities.find((candidate) => candidate.name === target.name);
+    if (!city) return;
+    if (city.shield > 0) {
+      city.shield = 0;
+      return;
+    }
+    city.hp = Math.max(0, city.hp - damage);
+    if (city.hp <= 0) {
+      city.weapon = "none";
+      city.weaponLevel = 0;
+      city.weapons = {};
+      city.ammoByWeapon = {};
+    }
   }
   updateUi();
 }
@@ -936,7 +1007,9 @@ function findTargetAlongRay(city, angle, width) {
   return best;
 }
 
-function pickLivingCity() {
+function pickLivingTarget() {
+  const livingFactories = state.factories.filter((factory) => factory.hp > 0);
+  if (livingFactories.length) return livingFactories[Math.floor(Math.random() * livingFactories.length)];
   const living = state.cities.filter((city) => city.hp > 0);
   return living[Math.floor(Math.random() * living.length)];
 }
@@ -944,6 +1017,7 @@ function pickLivingCity() {
 function draw() {
   ctx.clearRect(0, 0, W, H);
   drawSky();
+  drawFactories();
   drawCities();
   drawFriendlyMissiles();
   drawEnemies();
@@ -985,23 +1059,10 @@ function drawSky() {
 function drawCities() {
   state.cities.forEach((city, index) => {
     const alive = city.hp > 0;
-    const hpRatio = city.maxHp > 0 ? city.hp / city.maxHp : 0;
-    const width = 78 + city.factory * 20;
-    const buildingCount = 4 + city.factory;
-    const spacing = width / buildingCount;
     ctx.save();
     ctx.translate(city.x, city.y);
-    ctx.scale(VISUAL_SCALE, VISUAL_SCALE);
-    ctx.fillStyle = alive ? "#4d6570" : "#2c2322";
-    for (let i = 0; i < buildingCount; i += 1) {
-      const localX = -width / 2 + i * spacing + spacing * 0.18;
-      const intact = alive && i / buildingCount < Math.max(0.18, hpRatio + 0.18);
-      const h = intact ? 24 + ((i + city.factory) % 4) * 9 : 7 + ((i * 5 + Math.floor(city.ruinSeed * 10)) % 9);
-      ctx.fillStyle = intact ? "#4d6570" : "#3a2826";
-      ctx.fillRect(localX, -h, spacing * 0.64, h);
-    }
-    ctx.fillStyle = alive ? "#b6d2d6" : "#5f3b36";
-    ctx.fillRect(-width / 2 - 8, -10, width + 16, 16);
+    ctx.scale(state.visualScale, state.visualScale);
+    drawDefenceBase(alive);
     if (city.shield && alive) {
       ctx.strokeStyle = "rgba(102, 168, 255, 0.7)";
       ctx.lineWidth = 3;
@@ -1013,6 +1074,50 @@ function drawCities() {
     drawCityReadout(city);
     ctx.restore();
   });
+}
+
+function drawFactories() {
+  state.factories.forEach((factory) => {
+    const alive = factory.hp > 0;
+    const hpRatio = factory.maxHp > 0 ? factory.hp / factory.maxHp : 0;
+    const width = 38 + factory.level * 8;
+    const buildingCount = 2 + factory.level;
+    const spacing = width / buildingCount;
+    ctx.save();
+    ctx.translate(factory.x, factory.y);
+    ctx.scale(state.visualScale, state.visualScale);
+    ctx.fillStyle = alive ? "#506574" : "#332725";
+    for (let i = 0; i < buildingCount; i += 1) {
+      const localX = -width / 2 + i * spacing + spacing * 0.16;
+      const intact = alive && i / buildingCount < Math.max(0.16, hpRatio + 0.1);
+      const h = intact ? 18 + ((i + factory.level) % 3) * 8 : 5 + ((i * 7 + Math.floor(factory.ruinSeed * 10)) % 8);
+      ctx.fillStyle = intact ? "#506574" : "#3a2826";
+      ctx.fillRect(localX, -h, spacing * 0.68, h);
+      if (intact) {
+        ctx.fillStyle = "#e0bd64";
+        ctx.fillRect(localX + 3, -h + 5, 4, 4);
+      }
+    }
+    ctx.fillStyle = alive ? "#b8c9cf" : "#62433c";
+    ctx.fillRect(-width / 2 - 5, -8, width + 10, 11);
+    ctx.fillStyle = "#23313a";
+    ctx.fillRect(-width / 2, 6, width, 4);
+    ctx.fillStyle = hpRatio > 0.35 ? "#55d6be" : "#ff5f5f";
+    ctx.fillRect(-width / 2, 6, width * Math.max(0, hpRatio), 4);
+    ctx.restore();
+  });
+}
+
+function drawDefenceBase(alive) {
+  const width = 88;
+  ctx.fillStyle = alive ? "#b6d2d6" : "#5f3b36";
+  roundedRect(-width / 2, -12, width, 18, 4);
+  ctx.fill();
+  ctx.fillStyle = alive ? "#394c58" : "#302827";
+  roundedRect(-34, -28, 68, 17, 4);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,0.12)";
+  ctx.fillRect(-29, -25, 58, 2);
 }
 
 function drawCityReadout(city) {
@@ -1232,7 +1337,7 @@ function drawFriendlyMissiles() {
   state.friendlyMissiles.forEach((missile) => {
     ctx.save();
     ctx.translate(missile.x, missile.y);
-    ctx.scale(VISUAL_SCALE, VISUAL_SCALE);
+    ctx.scale(state.visualScale, state.visualScale);
     ctx.translate(-missile.x, -missile.y);
     ctx.strokeStyle = missileDefs[missile.type].color;
     ctx.lineWidth = 2;
@@ -1281,7 +1386,7 @@ function drawEnemySmokeTrail(trail) {
     ctx.globalAlpha = puff.a * Math.pow(fade, 1.25);
     ctx.fillStyle = puff.warm ? "#b7a58e" : "#aab0ad";
     ctx.beginPath();
-    ctx.arc(puff.x, puff.y, puff.r * (1.45 - fade * 0.35) * VISUAL_SCALE, 0, Math.PI * 2);
+    ctx.arc(puff.x, puff.y, puff.r * (1.45 - fade * 0.35) * state.visualScale, 0, Math.PI * 2);
     ctx.fill();
   });
   ctx.globalAlpha = 1;
@@ -1294,7 +1399,7 @@ function enemyAngle(enemy) {
 function drawIncomingMissile(enemy, def) {
   ctx.save();
   ctx.translate(enemy.x, enemy.y);
-  ctx.scale(VISUAL_SCALE, VISUAL_SCALE);
+  ctx.scale(state.visualScale, state.visualScale);
   ctx.rotate(enemyAngle(enemy));
   ctx.fillStyle = def.color;
   ctx.strokeStyle = "rgba(255, 220, 210, 0.65)";
@@ -1331,7 +1436,7 @@ function drawIncomingMissile(enemy, def) {
 function drawIncomingRocket(enemy, def) {
   ctx.save();
   ctx.translate(enemy.x, enemy.y);
-  ctx.scale(VISUAL_SCALE, VISUAL_SCALE);
+  ctx.scale(state.visualScale, state.visualScale);
   ctx.rotate(enemyAngle(enemy));
   ctx.fillStyle = def.color;
   ctx.strokeStyle = "rgba(210, 230, 255, 0.85)";
@@ -1350,7 +1455,7 @@ function drawIncomingRocket(enemy, def) {
 function drawBomb(enemy, def) {
   ctx.save();
   ctx.translate(enemy.x, enemy.y);
-  ctx.scale(VISUAL_SCALE, VISUAL_SCALE);
+  ctx.scale(state.visualScale, state.visualScale);
   ctx.rotate(enemyAngle(enemy) + 0.12);
   ctx.fillStyle = "#6d6658";
   ctx.strokeStyle = "#d8c783";
@@ -1369,7 +1474,7 @@ function drawBomb(enemy, def) {
 function drawDrone(enemy, def) {
   ctx.save();
   ctx.translate(enemy.x, enemy.y);
-  ctx.scale(VISUAL_SCALE, VISUAL_SCALE);
+  ctx.scale(state.visualScale, state.visualScale);
   ctx.rotate(Math.sin(enemy.wobble) * 0.7);
   ctx.strokeStyle = "rgba(124, 255, 191, 0.72)";
   ctx.fillStyle = def.color;
@@ -1401,7 +1506,7 @@ function drawBullets() {
       ctx.globalAlpha = 1;
     } else {
       ctx.beginPath();
-      ctx.arc(bullet.x, bullet.y, (bullet.radius || 3) * VISUAL_SCALE, 0, Math.PI * 2);
+      ctx.arc(bullet.x, bullet.y, (bullet.radius || 3) * state.visualScale, 0, Math.PI * 2);
       ctx.fill();
     }
   });
@@ -1412,7 +1517,7 @@ function drawBlasts() {
     ctx.strokeStyle = blast.type === "emp" ? "rgba(177, 140, 255, 0.86)" : "rgba(255, 213, 107, 0.78)";
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.arc(blast.x, blast.y, blast.currentRadius * VISUAL_SCALE, 0, Math.PI * 2);
+    ctx.arc(blast.x, blast.y, blast.currentRadius * state.visualScale, 0, Math.PI * 2);
     ctx.stroke();
   });
 }
@@ -1422,7 +1527,7 @@ function drawParticles() {
     ctx.globalAlpha = Math.max(0, Math.min(1, particle.life / 280));
     ctx.fillStyle = particle.color;
     ctx.beginPath();
-    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+    ctx.arc(particle.x, particle.y, particle.size * state.visualScale, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
   });
@@ -1474,6 +1579,27 @@ ui.pause.addEventListener("click", () => {
 
 ui.trailDuration.addEventListener("input", () => {
   state.trailDuration = Number(ui.trailDuration.value);
+});
+
+ui.debugMode.addEventListener("change", () => {
+  state.debugMode = ui.debugMode.checked;
+  ui.debugControls.hidden = !state.debugMode;
+  if (!state.debugMode) {
+    state.gameSpeed = DEFAULT_GAME_SPEED;
+    state.visualScale = DEFAULT_VISUAL_SCALE;
+    ui.gameSpeed.value = String(DEFAULT_GAME_SPEED);
+    ui.visualScale.value = String(DEFAULT_VISUAL_SCALE);
+  }
+});
+
+ui.gameSpeed.addEventListener("input", () => {
+  if (!state.debugMode) return;
+  state.gameSpeed = Number(ui.gameSpeed.value);
+});
+
+ui.visualScale.addEventListener("input", () => {
+  if (!state.debugMode) return;
+  state.visualScale = Number(ui.visualScale.value);
 });
 
 ui.turretSensitivity.addEventListener("input", () => {
