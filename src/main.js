@@ -78,7 +78,7 @@ const state = {
   turretSensitivity: 1.7,
   turretCurve: 1,
   aiSkill: "normal",
-  trailDuration: 1.2,
+  trailDuration: 2.2,
   playerTurretIndex: 1,
   cities: [],
   friendlyMissiles: [],
@@ -733,7 +733,7 @@ function updateEnemies(dt) {
         a: (isBomb ? 0.34 : 0.28) + Math.random() * 0.18,
         warm: isBomb,
       });
-      const maxTrail = Math.round((isBomb ? 58 : 26) * state.trailDuration);
+      const maxTrail = Math.round((isBomb ? 72 : 32) * state.trailDuration);
       if (enemy.trail.length > maxTrail) enemy.trail.shift();
     }
     if (enemy.type === "bomb") {
@@ -1139,7 +1139,7 @@ function drawEnemies() {
 function drawEnemySmokeTrail(trail) {
   trail.forEach((puff, index) => {
     const fade = index / trail.length;
-    ctx.globalAlpha = puff.a * fade * fade;
+    ctx.globalAlpha = puff.a * Math.pow(fade, 1.25);
     ctx.fillStyle = puff.warm ? "#b7a58e" : "#aab0ad";
     ctx.beginPath();
     ctx.arc(puff.x, puff.y, puff.r * (1.45 - fade * 0.35), 0, Math.PI * 2);
