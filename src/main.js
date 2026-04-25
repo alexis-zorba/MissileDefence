@@ -67,6 +67,11 @@ const FACTORY_LAYOUT = [
   { dx: 58, y: groundY - 2 },
   { dx: 0, y: groundY - 46 },
 ];
+const MAX_WEAPON_LEVEL = 3;
+const SLOT_OFFSETS = {
+  missile: [-24, 24],
+  turret: [-18, 18],
+};
 const aiSkills = {
   normal: { delay: 1.25, aimNoise: 70, lead: 18 },
   expert: { delay: 0.86, aimNoise: 34, lead: 24 },
@@ -130,26 +135,17 @@ function resetGame() {
     y: groundY,
     hp,
     maxHp: hp,
-    weapon: i === 0 ? "launcher" : i === 1 ? "cannon" : "mg",
-    weaponLevel: 1,
-    weapons: {
-      [i === 0 ? "launcher" : i === 1 ? "cannon" : "mg"]: { level: 1 },
-    },
-    ammoByWeapon: {
-      launcher: i === 0 ? 26 : 0,
-      cannon: i === 1 ? 72 : 0,
-      mg: i === 2 ? 230 : 0,
-      laser: 0,
-    },
+    slots: initialWeaponSlots(i),
     magazineLevel: 1,
     blastRadiusLevel: 1,
     blastLifeLevel: 1,
     shield: 0,
     turretAngle: state.globalTurretAngle,
     ruinSeed: Math.random(),
-    cooldown: 0,
-    heat: 0,
     disabled: 0,
+  }));
+  state.cities.forEach((city) => installedSlots(city).forEach((slot) => {
+    slot.ammo = Math.ceil(maxAmmo(city, slot) * 0.65);
   }));
   state.factories = state.cities.map((city, index) => createFactory(index, 0, factoryHp));
   ui.next.disabled = false;
@@ -173,6 +169,41 @@ function createFactory(baseIndex, slot, hp) {
     level: 1,
     ruinSeed: Math.random(),
   };
+}
+
+function initialWeaponSlots(baseIndex) {
+  const slots = [
+    createWeaponSlot("missile", 0),
+    createWeaponSlot("missile", 1),
+    createWeaponSlot("turret", 0),
+    createWeaponSlot("turret", 1),
+  ];
+  if (baseIndex === 0) installSlot(slots[0], "ballistic");
+  if (baseIndex === 1) installSlot(slots[2], "cannon");
+  if (baseIndex === 2) installSlot(slots[2], "mg");
+  return slots;
+}
+
+function createWeaponSlot(role, index) {
+  return {
+    id: `${role}-${index}`,
+    role,
+    index,
+    type: null,
+    level: 0,
+    ammo: 0,
+    cooldown: 0,
+    heat: 0,
+  };
+}
+
+function installSlot(slot, type) {
+  slot.type = type;
+  slot.level = 1;
+  slot.ammo = 0;
+  slot.cooldown = 0;
+  slot.heat = 0;
+  return slot;
 }
 
 function startWave() {
@@ -202,11 +233,14 @@ function finishWave() {
   state.build += produced;
   state.cities.forEach((city) => {
     if (city.hp > 0) {
-      Object.keys(city.weapons).forEach((weapon) => {
-        city.ammoByWeapon[weapon] = Math.min(maxAmmo(city, weapon), currentAmmo(city, weapon) + replenishAmmo(city, weapon));
+      installedSlots(city).forEach((slot) => {
+        slot.ammo = Math.min(maxAmmo(city, slot), slot.ammo + replenishAmmo(slot));
+        slot.cooldown = 0;
       });
       city.disabled = 0;
-      city.heat = Math.max(0, city.heat - 40);
+      turretSlots(city).forEach((slot) => {
+        slot.heat = Math.max(0, slot.heat - 40);
+      });
       city.shield = Math.min(city.shield, 1);
     }
   });
@@ -239,12 +273,11 @@ function renderCities() {
     .map((city, index) => {
       const selected = index === state.selectedCity ? " selected" : "";
       const hpPct = Math.max(0, (city.hp / city.maxHp) * 100);
-      const heatPct = Math.min(100, city.heat);
-      const weapon = weaponLabel(city.weapon);
-      const installed = Object.keys(city.weapons);
+      const heatPct = Math.min(100, Math.max(0, ...turretSlots(city).map((slot) => slot.heat)));
+      const installed = installedSlots(city);
       return `
         <article class="city-card${selected}" data-city="${index}">
-          <header><strong>${city.name}</strong><span>${weapon} L${city.weaponLevel}</span></header>
+          <header><strong>${city.name}</strong><span>${installed.length}/4 slot</span></header>
           <div class="bars">
             <div class="bar health"><span style="width:${hpPct}%"></span></div>
             <div class="bar"><span style="width:${heatPct}%"></span></div>
@@ -255,9 +288,7 @@ function renderCities() {
             <span>Scudo ${city.shield ? "si" : "no"}</span>
             <span>Blast ${city.blastRadiusLevel}/${city.blastLifeLevel}</span>
           </div>
-          <select class="weapon-select" data-city-weapon="${index}">
-            ${installed.map((id) => `<option value="${id}"${id === city.weapon ? " selected" : ""}>${weaponLabel(id)} L${city.weapons[id].level}</option>`).join("")}
-          </select>
+          <div class="city-meta">${city.slots.map((slot) => `<span>${slotLabel(slot)}</span>`).join("")}</div>
         </article>
       `;
     })
@@ -269,7 +300,7 @@ function renderBuildCities() {
     .map((city, index) => {
       const selected = index === state.selectedCity ? " selected" : "";
       const hpPct = Math.round(Math.max(0, (city.hp / city.maxHp) * 100));
-      const weapons = Object.keys(city.weapons).map((id) => `${weaponLabel(id)} L${city.weapons[id].level}`).join(", ");
+      const weapons = installedSlots(city).map(slotLabel).join(", ");
       return `
         <article class="build-city${selected}" data-build-city="${index}">
           <strong>${city.name}</strong>
@@ -286,11 +317,11 @@ function renderBuildCities() {
 function renderFooterCities() {
   ui.footerCities.innerHTML = state.cities.map((city, index) => {
     const hpPct = city.maxHp > 0 ? Math.max(0, (city.hp / city.maxHp) * 100) : 0;
-    const weaponBars = Object.keys(city.weapons).map((weapon) => {
-      const ammoPct = maxAmmo(city, weapon) > 0 ? Math.min(100, (currentAmmo(city, weapon) / maxAmmo(city, weapon)) * 100) : 0;
+    const weaponBars = installedSlots(city).map((slot) => {
+      const ammoPct = maxAmmo(city, slot) > 0 ? Math.min(100, (slot.ammo / maxAmmo(city, slot)) * 100) : 0;
       return `
-        <div class="footer-bar" title="${weaponLabel(weapon)}">
-          <span style="width:${ammoPct}%; background:${weaponColor(weapon)}"></span>
+        <div class="footer-bar" title="${slotLabel(slot)}">
+          <span style="width:${ammoPct}%; background:${weaponColor(slot.type)}"></span>
         </div>
       `;
     }).join("");
@@ -320,51 +351,77 @@ function factorySummary(baseIndex) {
   return `Fab ${living.length}/${factories.length} P${production}`;
 }
 
+function installedSlots(city, role = null) {
+  return (city?.slots || []).filter((slot) => slot.type && (!role || slot.role === role));
+}
+
+function missileSlots(city) {
+  return installedSlots(city, "missile");
+}
+
+function turretSlots(city) {
+  return installedSlots(city, "turret");
+}
+
 function weaponLabel(id) {
-  if (id === "launcher") return "Lanciamissili";
-  return turretDefs[id]?.label || "Nessuna";
+  return missileDefs[id]?.label || turretDefs[id]?.label || "Nessuna";
 }
 
-function setActiveWeapon(city, weapon) {
-  if (!city?.weapons?.[weapon]) return;
-  city.weapon = weapon;
-  city.weaponLevel = city.weapons[weapon].level;
-}
-
-function currentAmmo(city, weapon) {
-  return city?.ammoByWeapon?.[weapon] || 0;
+function slotLabel(slot) {
+  return slot?.type ? `${weaponLabel(slot.type)} L${slot.level}` : "Slot vuoto";
 }
 
 function activeAmmoText(city) {
   if (!city || city.hp <= 0) return "Distrutta";
-  const weapon = city.weapon === "none" ? firstWeapon(city) : city.weapon;
-  return weapon ? `Mun. ${currentAmmo(city, weapon)}/${maxAmmo(city, weapon)}` : "Senza armi";
+  const slots = installedSlots(city);
+  if (!slots.length) return "Senza armi";
+  const ammo = slots.reduce((sum, slot) => sum + slot.ammo, 0);
+  const max = slots.reduce((sum, slot) => sum + maxAmmo(city, slot), 0);
+  return `Mun. ${ammo}/${max}`;
 }
 
-function firstWeapon(city) {
-  return Object.keys(city.weapons)[0];
+function missileStats(slot) {
+  const def = missileDefs[slot.type];
+  return def?.levels[Math.max(0, slot.level - 1)] || null;
 }
 
-function maxAmmo(city, weapon) {
-  const level = city.weapons[weapon]?.level || 1;
+function turretStats(slot) {
+  const def = turretDefs[slot.type];
+  return def?.levels[Math.max(0, slot.level - 1)] || null;
+}
+
+function maxAmmo(city, slot) {
+  if (!slot?.type) return 0;
   const magazineLevel = city.magazineLevel || 1;
-  if (weapon === "launcher") return 34 + level * 8 + magazineLevel * 10;
-  if (weapon === "cannon") return 58 + level * 14 + magazineLevel * 18;
-  if (weapon === "mg") return 190 + level * 36 + magazineLevel * 52;
-  if (weapon === "laser") return 98 + level * 24 + magazineLevel * 32;
+  if (slot.type === "ballistic") return 24 + slot.level * 8 + magazineLevel * 8;
+  if (slot.type === "seeker") return 9 + slot.level * 4 + magazineLevel * 4;
+  if (slot.type === "cannon") return 46 + slot.level * 12 + magazineLevel * 14;
+  if (slot.type === "mg") return 170 + slot.level * 34 + magazineLevel * 46;
+  if (slot.type === "laser") return 76 + slot.level * 20 + magazineLevel * 26;
   return 0;
 }
 
-function replenishAmmo(city, weapon) {
-  if (weapon === "launcher") return 14;
-  if (weapon === "cannon") return 24;
-  if (weapon === "mg") return 76;
-  if (weapon === "laser") return 36;
+function replenishAmmo(slot) {
+  if (slot.type === "ballistic") return 12;
+  if (slot.type === "seeker") return 5;
+  if (slot.type === "cannon") return 20;
+  if (slot.type === "mg") return 68;
+  if (slot.type === "laser") return 30;
   return 0;
 }
 
-function seedAmmo(city, weapon) {
-  city.ammoByWeapon[weapon] = Math.max(currentAmmo(city, weapon), Math.ceil(maxAmmo(city, weapon) * 0.45));
+function seedAmmo(city, slot) {
+  slot.ammo = Math.max(slot.ammo, Math.ceil(maxAmmo(city, slot) * 0.45));
+}
+
+function weaponColor(weapon) {
+  if (weapon === "ballistic") return missileDefs.ballistic.color;
+  if (weapon === "seeker") return missileDefs.seeker.color;
+  return turretDefs[weapon]?.color || "#d6dfe3";
+}
+
+function primaryWeaponType(city) {
+  return installedSlots(city)[0]?.type || null;
 }
 
 function openBuildDialog(initial = false) {
@@ -392,8 +449,7 @@ function spendUpgrade(kind) {
   if (kind === "repair") {
     if (city.hp <= 0) {
       city.hp = Math.min(city.maxHp * 0.45, city.maxHp);
-      city.weapons ||= {};
-      city.ammoByWeapon ||= {};
+      city.slots ||= initialWeaponSlots(state.selectedCity);
       city.magazineLevel ||= 1;
       city.blastRadiusLevel ||= 1;
       city.blastLifeLevel ||= 1;
@@ -423,35 +479,38 @@ function spendUpgrade(kind) {
     if (city.hp <= 0) return;
     city.shield = 1;
   } else if (kind === "ammo") {
-    const weapons = Object.keys(city.weapons);
-    if (!weapons.length) return;
-    weapons.forEach((weapon) => {
-      city.ammoByWeapon[weapon] = maxAmmo(city, weapon);
+    const slots = installedSlots(city);
+    if (!slots.length) return;
+    slots.forEach((slot) => {
+      slot.ammo = maxAmmo(city, slot);
     });
   } else if (kind === "magazine") {
-    const weapons = Object.keys(city.weapons);
-    if (!weapons.length) return;
+    const slots = installedSlots(city);
+    if (!slots.length) return;
     city.magazineLevel = Math.min(5, (city.magazineLevel || 1) + 1);
-    weapons.forEach((weapon) => {
-      city.ammoByWeapon[weapon] = maxAmmo(city, weapon);
+    slots.forEach((slot) => {
+      slot.ammo = maxAmmo(city, slot);
     });
   } else if (kind === "blastRadius") {
-    if (!city.weapons.launcher) return;
+    if (!missileSlots(city).some((slot) => slot.type === "ballistic")) return;
     city.blastRadiusLevel = Math.min(5, city.blastRadiusLevel + 1);
   } else if (kind === "blastLife") {
-    if (!city.weapons.launcher) return;
+    if (!missileSlots(city).some((slot) => slot.type === "ballistic")) return;
     city.blastLifeLevel = Math.min(5, city.blastLifeLevel + 1);
   } else {
-    const newWeapon = kind === "launcher" ? "launcher" : kind;
-    if (city.weapons[newWeapon]) {
-      city.weapons[newWeapon].level = Math.min(5, city.weapons[newWeapon].level + 1);
+    const weaponType = kind === "launcher" ? "ballistic" : kind;
+    const role = missileDefs[weaponType] ? "missile" : "turret";
+    const slots = city.slots.filter((slot) => slot.role === role);
+    const existing = slots.find((slot) => slot.type === weaponType && slot.level < MAX_WEAPON_LEVEL);
+    const empty = slots.find((slot) => !slot.type);
+    const slot = existing || empty;
+    if (!slot) return;
+    if (slot.type) {
+      slot.level = Math.min(MAX_WEAPON_LEVEL, slot.level + 1);
     } else {
-      city.weapons[newWeapon] = { level: 1 };
-      seedAmmo(city, newWeapon);
+      installSlot(slot, weaponType);
     }
-    setActiveWeapon(city, newWeapon);
-    city.cooldown = 0;
-    city.heat = 0;
+    seedAmmo(city, slot);
   }
 
   state.build -= cost;
@@ -466,32 +525,21 @@ function canvasPoint(event) {
   };
 }
 
-function missileTypeForLauncher(city) {
-  const level = city.weapons.launcher?.level || 1;
-  if (level >= 5) return "emp";
-  if (level >= 4) return "guided";
-  if (level >= 3) return "frag";
-  if (level >= 2) return "he";
-  return "standard";
-}
-
-function launchMissileFromCity(city, target, type = null, byAi = false) {
+function launchMissileFromSlot(city, slot, target, byAi = false) {
   if (state.betweenWaves || state.paused) return false;
-  if (!city) return false;
-  const requestedType = type || missileTypeForLauncher(city);
-  const def = missileDefs[requestedType];
-  const launcherLevel = city.weapons.launcher?.level || 1;
-  const unlocked = launcherLevel >= def.unlock || requestedType === "standard";
-  const useType = unlocked ? requestedType : missileTypeForLauncher(city);
-  const useDef = missileDefs[useType];
-  if (currentAmmo(city, "launcher") < useDef.cost) return false;
-  city.ammoByWeapon.launcher -= useDef.cost;
+  if (!city || city.hp <= 0 || city.disabled > 0 || !slot?.type) return false;
+  const stats = missileStats(slot);
+  if (!stats || slot.cooldown > 0 || slot.ammo < stats.cost) return false;
+  slot.ammo -= stats.cost;
+  slot.cooldown = stats.cooldown * (byAi ? difficulty[ui.difficultySelect.value].ai : 1);
   state.friendlyMissiles.push({
-    x: city.x,
+    x: city.x + SLOT_OFFSETS.missile[slot.index],
     y: city.y - 18,
     targetX: target.x,
     targetY: Math.min(target.y, groundY - 18),
-    type: useType,
+    type: slot.type,
+    level: slot.level,
+    stats,
     byAi,
     blastRadiusLevel: city.blastRadiusLevel,
     blastLifeLevel: city.blastLifeLevel,
@@ -501,34 +549,37 @@ function launchMissileFromCity(city, target, type = null, byAi = false) {
   return true;
 }
 
-function launchMissile(target, type, byAi = false) {
+function launchMissile(target, preferredType = null, byAi = false) {
   if (state.betweenWaves || state.paused) return false;
-  const launchers = state.cities.filter((city) => city.hp > 0 && city.weapons.launcher && city.disabled <= 0);
-  if (byAi) {
-    const city = nearest(launchers.filter((candidate) => currentAmmo(candidate, "launcher") >= missileDefs[type].cost), target) || launchers[0];
-    return launchMissileFromCity(city, target, type, true);
-  }
-  return launchers
-    .filter((city) => currentAmmo(city, "launcher") >= missileDefs[missileTypeForLauncher(city)].cost)
-    .map((city) => launchMissileFromCity(city, target, null, false))
-    .some(Boolean);
+  const attempts = [];
+  const collect = (type) => {
+    state.cities.forEach((city) => {
+      if (city.hp <= 0 || city.disabled > 0) return;
+      missileSlots(city)
+        .filter((slot) => !type || slot.type === type)
+        .forEach((slot) => attempts.push(launchMissileFromSlot(city, slot, target, byAi)));
+    });
+  };
+  collect(preferredType);
+  if (byAi && preferredType && !attempts.some(Boolean)) collect(null);
+  return attempts.some(Boolean);
 }
 
-function fireTurret(city, type, dt, byAi = false) {
-  if (!city || city.hp <= 0 || city.disabled > 0 || !city.weapons[type]) return;
-  const def = turretDefs[type] || turretDefs[city.weapon];
-  const level = city.weapons[type]?.level || 1;
-  if (city.cooldown > 0 || city.heat >= 100) return;
-  if (currentAmmo(city, type) < def.ammoCost) return;
-  city.ammoByWeapon[type] -= def.ammoCost;
-  if (type === "laser") {
-    const target = findTargetAlongRay(city, city.turretAngle, 18);
+function fireTurret(city, slot, dt, byAi = false) {
+  if (!city || city.hp <= 0 || city.disabled > 0 || !slot?.type) return;
+  const def = turretDefs[slot.type];
+  const stats = turretStats(slot);
+  if (!def || !stats || slot.cooldown > 0 || slot.heat >= 100) return;
+  if (slot.ammo < stats.ammoCost) return;
+  slot.ammo -= stats.ammoCost;
+  if (slot.type === "laser") {
+    const target = findTargetAlongRay(city, city.turretAngle, stats.width);
     if (target) {
-      target.hp -= def.damage * dt * (1 + level * 0.22);
+      target.hp -= stats.damage * dt;
       state.particles.push({ x: target.x, y: target.y, life: 90, color: def.color, size: 4 });
     }
     state.friendlyBullets.push({
-      x: city.x,
+      x: city.x + SLOT_OFFSETS.turret[slot.index],
       y: city.y - 24,
       vx: Math.cos(city.turretAngle) * 900,
       vy: Math.sin(city.turretAngle) * 900,
@@ -538,28 +589,25 @@ function fireTurret(city, type, dt, byAi = false) {
     });
   } else {
     state.friendlyBullets.push({
-      x: city.x,
+      x: city.x + SLOT_OFFSETS.turret[slot.index],
       y: city.y - 24,
-      vx: Math.cos(city.turretAngle) * def.speed,
-      vy: Math.sin(city.turretAngle) * def.speed,
-      damage: def.damage * (1 + level * 0.18),
+      vx: Math.cos(city.turretAngle) * stats.speed,
+      vy: Math.sin(city.turretAngle) * stats.speed,
+      damage: stats.damage,
       life: 120,
-      radius: type === "cannon" ? 4 : 2.5,
+      radius: stats.radius || 3,
       color: def.color,
     });
   }
-  city.heat += def.heat;
-  city.cooldown = Math.max(40, def.cooldown - level * 28);
-  if (byAi) city.cooldown *= difficulty[ui.difficultySelect.value].ai;
+  slot.heat += stats.heat;
+  slot.cooldown = stats.cooldown * (byAi ? difficulty[ui.difficultySelect.value].ai : 1);
   updateUi();
 }
 
 function firePlayerTurrets(dt) {
   state.cities.forEach((city) => {
     if (city.hp <= 0) return;
-    const type = city.weapon !== "launcher" && city.weapons[city.weapon] ? city.weapon : firstTurret(city);
-    if (!type) return;
-    fireTurret(city, type, dt);
+    turretSlots(city).forEach((slot) => fireTurret(city, slot, dt));
   });
 }
 
@@ -623,9 +671,11 @@ function update(dt) {
   dt *= state.gameSpeed;
   const seconds = dt / 1000;
   state.cities.forEach((city) => {
-    city.cooldown = Math.max(0, city.cooldown - dt);
     city.disabled = Math.max(0, city.disabled - dt);
-    city.heat = Math.max(0, city.heat - seconds * 16);
+    installedSlots(city).forEach((slot) => {
+      slot.cooldown = Math.max(0, slot.cooldown - dt);
+      if (slot.role === "turret") slot.heat = Math.max(0, slot.heat - seconds * 16);
+    });
   });
 
   if (!state.betweenWaves) {
@@ -691,8 +741,7 @@ function autoTurrets(dt) {
   state.globalTurretAngle = clampAngle(Math.atan2(aim.y - referenceBase.y, aim.x - referenceBase.x), -Math.PI + 0.14, -0.14);
   armedBases.forEach((city) => {
     city.turretAngle = state.globalTurretAngle;
-    const active = city.weapon !== "launcher" && city.weapons[city.weapon] ? city.weapon : firstTurret(city);
-    fireTurret(city, active, dt, true);
+    turretSlots(city).forEach((slot) => fireTurret(city, slot, dt, true));
   });
 }
 
@@ -722,17 +771,18 @@ function updatePlayerTurret(dt) {
 }
 
 function firstTurret(city) {
-  return ["cannon", "mg", "laser"].find((id) => city.weapons[id]);
+  return turretSlots(city)[0];
 }
 
 function updateMissiles() {
   state.friendlyMissiles.forEach((missile) => {
     const def = missileDefs[missile.type];
-    if (missile.type === "guided") {
+    const stats = missile.stats || def?.levels[Math.max(0, (missile.level || 1) - 1)];
+    if (missile.type === "seeker") {
       const target = nearest(state.enemies, missile);
       if (target) {
-        missile.targetX += (target.x - missile.targetX) * 0.035;
-        missile.targetY += (target.y - missile.targetY) * 0.035;
+        missile.targetX += (target.x - missile.targetX) * stats.turn;
+        missile.targetY += (target.y - missile.targetY) * stats.turn;
       }
     }
     const dx = missile.targetX - missile.x;
@@ -740,19 +790,20 @@ function updateMissiles() {
     const distance = Math.hypot(dx, dy);
     missile.trail.push({ x: missile.x, y: missile.y });
     if (missile.trail.length > 18) missile.trail.shift();
-    if (distance <= def.speed) {
-      const radius = def.radius * (1 + (missile.blastRadiusLevel - 1) * 0.16);
-      createBlast(missile.targetX, missile.targetY, radius, def.damage, missile.type, missile.blastLifeLevel);
+    if (distance <= stats.speed) {
+      const radiusBoost = missile.type === "ballistic" ? 1 + (missile.blastRadiusLevel - 1) * 0.16 : 1;
+      const radius = stats.radius * radiusBoost;
+      createBlast(missile.targetX, missile.targetY, radius, stats.damage, missile.type, missile.blastLifeLevel);
       missile.done = true;
-      if (missile.type === "frag") {
+      if (missile.type === "ballistic" && missile.level >= 3) {
         for (let i = 0; i < 4; i += 1) {
           const angle = (Math.PI * 2 * i) / 4 + Math.random() * 0.4;
-          createBlast(missile.targetX + Math.cos(angle) * 36, missile.targetY + Math.sin(angle) * 24, 24 * (1 + (missile.blastRadiusLevel - 1) * 0.12), 0.85, "frag", missile.blastLifeLevel);
+          createBlast(missile.targetX + Math.cos(angle) * 34, missile.targetY + Math.sin(angle) * 22, 22 * radiusBoost, 0.72, "ballistic", missile.blastLifeLevel);
         }
       }
     } else {
-      missile.x += (dx / distance) * def.speed;
-      missile.y += (dy / distance) * def.speed;
+      missile.x += (dx / distance) * stats.speed;
+      missile.y += (dy / distance) * stats.speed;
     }
   });
 }
@@ -968,10 +1019,7 @@ function damageCity(enemy) {
     }
     city.hp = Math.max(0, city.hp - damage);
     if (city.hp <= 0) {
-      city.weapon = "none";
-      city.weaponLevel = 0;
-      city.weapons = {};
-      city.ammoByWeapon = {};
+      city.slots = city.slots.map((slot) => ({ ...slot, type: null, level: 0, ammo: 0, cooldown: 0, heat: 0 }));
     }
   }
   updateUi();
@@ -985,10 +1033,8 @@ function priorityEnemy() {
 }
 
 function pickAiMissile(enemy) {
-  if (enemy.type === "drone" || enemy.type === "jammer") return "emp";
-  if (enemy.type === "mirv") return "guided";
-  if (enemy.type === "armored") return "he";
-  return "standard";
+  if (enemy.type === "drone" || enemy.type === "hypersonic" || enemy.type === "mirv") return "seeker";
+  return "ballistic";
 }
 
 function findTargetAlongRay(city, angle, width) {
@@ -1072,7 +1118,7 @@ function drawCities() {
       ctx.arc(0, -18, 62, Math.PI, Math.PI * 2);
       ctx.stroke();
     }
-    if (alive && city.weapon !== "none") drawWeapon(city, isTurretControlled(city));
+    if (alive && installedSlots(city).length) drawWeapons(city, isTurretControlled(city));
     drawCityReadout(city);
     ctx.restore();
   });
@@ -1155,7 +1201,7 @@ function drawGroundShadow(x, y, width, height, alpha = 0.3) {
 
 function drawDefenceBase(city, alive, selected) {
   const width = 88;
-  const color = weaponColor(city.weapon);
+  const color = weaponColor(primaryWeaponType(city));
   ctx.strokeStyle = "rgba(4, 9, 12, 0.9)";
   ctx.lineWidth = 1.4;
 
@@ -1207,44 +1253,52 @@ function drawDefenceBase(city, alive, selected) {
 
 function drawCityReadout(city) {
   const hpPct = city.maxHp > 0 ? Math.max(0, city.hp / city.maxHp) : 0;
-  const weapons = Object.keys(city.weapons);
-  const panelHeight = 14 + weapons.length * 5;
+  const slots = installedSlots(city);
+  const panelHeight = 14 + slots.length * 5;
   ctx.fillStyle = "rgba(2, 5, 8, 0.72)";
   ctx.fillRect(-54, 18, 108, panelHeight);
   ctx.fillStyle = "#23313a";
   ctx.fillRect(-48, 22, 96, 8);
   ctx.fillStyle = hpPct > 0.35 ? "#55d6be" : "#ff5f5f";
   ctx.fillRect(-48, 22, 96 * hpPct, 8);
-  weapons.forEach((weapon, index) => {
-    const max = maxAmmo(city, weapon);
-    const ammoPct = max > 0 ? Math.min(1, currentAmmo(city, weapon) / max) : 0;
+  slots.forEach((slot, index) => {
+    const max = maxAmmo(city, slot);
+    const ammoPct = max > 0 ? Math.min(1, slot.ammo / max) : 0;
     const y = 33 + index * 5;
     ctx.fillStyle = "#243037";
     ctx.fillRect(-48, y, 96, 4);
-    ctx.fillStyle = weaponColor(weapon);
+    ctx.fillStyle = weaponColor(slot.type);
     ctx.fillRect(-48, y, 96 * ammoPct, 4);
   });
 }
 
-function drawWeapon(city, controlled) {
-  const color = city.disabled > 0 ? "#7a4c7e" : controlled ? "#55d6be" : weaponColor(city.weapon);
-  if (city.weapon === "launcher") {
-    drawLauncher(city, color);
-    return;
-  }
+function drawWeapons(city, controlled) {
+  missileSlots(city).forEach((slot) => {
+    ctx.save();
+    ctx.translate(SLOT_OFFSETS.missile[slot.index], 0);
+    const color = city.disabled > 0 ? "#7a4c7e" : weaponColor(slot.type);
+    drawLauncher(city, slot, color);
+    ctx.restore();
+  });
 
-  drawTurretBase(city, color);
-  ctx.save();
-  ctx.rotate(city.turretAngle + Math.PI / 2);
-  if (city.weapon === "mg") {
-    drawMachineGunBarrel(city);
-  } else if (city.weapon === "laser") {
-    drawLaserEmitter(city);
-  } else {
-    drawCannonBarrel(city);
-  }
-  ctx.restore();
-  drawTurretCap(city, color);
+  turretSlots(city).forEach((slot) => {
+    ctx.save();
+    ctx.translate(SLOT_OFFSETS.turret[slot.index], 0);
+    const color = city.disabled > 0 ? "#7a4c7e" : controlled ? "#55d6be" : weaponColor(slot.type);
+    drawTurretBase(slot, color);
+    ctx.save();
+    ctx.rotate(city.turretAngle + Math.PI / 2);
+    if (slot.type === "mg") {
+      drawMachineGunBarrel(slot);
+    } else if (slot.type === "laser") {
+      drawLaserEmitter(slot);
+    } else {
+      drawCannonBarrel(slot);
+    }
+    ctx.restore();
+    drawTurretCap(slot, color);
+    ctx.restore();
+  });
 }
 
 function roundedRect(x, y, width, height, radius) {
@@ -1261,7 +1315,7 @@ function roundedRect(x, y, width, height, radius) {
   ctx.quadraticCurveTo(x, y, x + r, y);
 }
 
-function drawLauncher(city, color) {
+function drawLauncher(city, slot, color) {
   ctx.save();
   drawGroundShadow(0, -6, 92, 15, 0.24);
   ctx.lineWidth = 1.5;
@@ -1300,7 +1354,7 @@ function drawLauncher(city, color) {
       ctx.arc(tubeX, -1, 2.6, 0, Math.PI * 2);
       ctx.fill();
     });
-    ctx.fillStyle = currentAmmo(city, "launcher") > 0 ? "#5cff9d" : "#ff5f5f";
+    ctx.fillStyle = slot.ammo > 0 && slot.cooldown <= 0 ? "#5cff9d" : "#ff5f5f";
     ctx.beginPath();
     ctx.arc(-13, 3, 2.2, 0, Math.PI * 2);
     ctx.fill();
@@ -1320,7 +1374,7 @@ function drawLauncher(city, color) {
   ctx.restore();
 }
 
-function drawTurretBase(city, color) {
+function drawTurretBase(slot, color) {
   ctx.save();
   drawGroundShadow(0, -4, 64, 13, 0.25);
   ctx.lineWidth = 1.5;
@@ -1345,7 +1399,7 @@ function drawTurretBase(city, color) {
     ctx.fill();
   });
   ctx.fillStyle = "#f4bf54";
-  const level = Math.min(5, city.weapons[city.weapon]?.level || 1);
+  const level = Math.min(MAX_WEAPON_LEVEL, slot.level || 1);
   for (let i = 0; i < level; i += 1) {
     ctx.beginPath();
     ctx.moveTo(-22 + i * 8, -3);
@@ -1357,9 +1411,9 @@ function drawTurretBase(city, color) {
   ctx.restore();
 }
 
-function drawTurretCap(city, color) {
+function drawTurretCap(slot, color) {
   ctx.save();
-  ctx.fillStyle = city.disabled > 0 ? "#6b506d" : "#2d3e49";
+  ctx.fillStyle = "#2d3e49";
   ctx.strokeStyle = "rgba(4, 9, 12, 0.92)";
   ctx.lineWidth = 1.7;
   ctx.beginPath();
@@ -1378,7 +1432,7 @@ function drawTurretCap(city, color) {
   ctx.restore();
 }
 
-function drawCannonBarrel(city) {
+function drawCannonBarrel(slot) {
   ctx.save();
   ctx.strokeStyle = "rgba(4, 9, 12, 0.9)";
   ctx.lineWidth = 1.4;
@@ -1399,7 +1453,7 @@ function drawCannonBarrel(city) {
   ctx.lineTo(-8, -63);
   ctx.closePath();
   ctx.fill();
-  if (city.cooldown > 0 && city.heat > 7) {
+  if (slot.cooldown > 0 && slot.heat > 7) {
     ctx.strokeStyle = "rgba(255, 210, 92, 0.9)";
     ctx.lineWidth = 2;
     [[0, -80, 0, -68], [-8, -76, 8, -70], [8, -76, -8, -70]].forEach(([x1, y1, x2, y2]) => {
@@ -1416,11 +1470,11 @@ function drawCannonBarrel(city) {
   ctx.restore();
 }
 
-function drawMachineGunBarrel(city) {
+function drawMachineGunBarrel(slot) {
   ctx.save();
   ctx.strokeStyle = "rgba(4, 9, 12, 0.9)";
   ctx.lineWidth = 1.1;
-  const spin = city.heat > 4 ? performance.now() / 80 : 0;
+  const spin = slot.heat > 4 ? performance.now() / 80 : 0;
   ctx.save();
   ctx.translate(0, -38);
   ctx.rotate(spin);
@@ -1434,7 +1488,7 @@ function drawMachineGunBarrel(city) {
     ctx.stroke();
   }
   ctx.restore();
-  if (city.cooldown > 0 && city.cooldown < 80) {
+  if (slot.cooldown > 0 && slot.cooldown < 80) {
     ctx.globalAlpha = 0.5;
     ctx.fillStyle = "#ff9d42";
     ctx.beginPath();
@@ -1458,7 +1512,7 @@ function drawMachineGunBarrel(city) {
   ctx.restore();
 }
 
-function drawLaserEmitter(city) {
+function drawLaserEmitter(slot) {
   ctx.save();
   ctx.strokeStyle = "rgba(4, 9, 12, 0.9)";
   ctx.lineWidth = 1.2;
@@ -1500,11 +1554,6 @@ function drawLaserEmitter(city) {
   ctx.fill();
   ctx.stroke();
   ctx.restore();
-}
-
-function weaponColor(weapon) {
-  if (weapon === "launcher") return "#8fb7ff";
-  return turretDefs[weapon]?.color || "#d6dfe3";
 }
 
 function drawFriendlyMissiles() {
@@ -1794,16 +1843,6 @@ ui.cities.addEventListener("click", (event) => {
   const card = event.target.closest(".city-card");
   if (!card) return;
   state.selectedCity = Number(card.dataset.city);
-  state.playerTurretIndex = state.selectedCity;
-  updateUi();
-});
-
-ui.cities.addEventListener("change", (event) => {
-  const select = event.target.closest("[data-city-weapon]");
-  if (!select) return;
-  const city = state.cities[Number(select.dataset.cityWeapon)];
-  setActiveWeapon(city, select.value);
-  state.selectedCity = Number(select.dataset.cityWeapon);
   state.playerTurretIndex = state.selectedCity;
   updateUi();
 });

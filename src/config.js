@@ -10,17 +10,54 @@ export const DIFFICULTY = {
 };
 
 export const MISSILE_DEFS = {
-  standard: { label: "Standard", cost: 1, speed: 5.3, radius: 42, damage: 1, color: "#e9f6ff", unlock: 1 },
-  he: { label: "HE", cost: 2, speed: 4.25, radius: 68, damage: 1, color: "#ffcf5a", unlock: 2 },
-  frag: { label: "Frammentazione", cost: 2, speed: 4.7, radius: 30, damage: 1, color: "#99f5cd", unlock: 2 },
-  guided: { label: "Guidato", cost: 2, speed: 5.15, radius: 38, damage: 1, color: "#73a9ff", unlock: 3 },
-  emp: { label: "EMP", cost: 2, speed: 4.75, radius: 55, damage: 0.4, color: "#b18cff", unlock: 4 },
+  ballistic: {
+    label: "Razzo balistico",
+    color: "#e9f6ff",
+    levels: [
+      { cost: 1, speed: 5.2, radius: 40, damage: 1, cooldown: 520 },
+      { cost: 1, speed: 5.05, radius: 54, damage: 1, cooldown: 470 },
+      { cost: 2, speed: 4.85, radius: 70, damage: 1.15, cooldown: 430 },
+    ],
+  },
+  seeker: {
+    label: "Razzo seeker",
+    color: "#73a9ff",
+    levels: [
+      { cost: 1, speed: 4.05, radius: 26, damage: 0.95, cooldown: 1100, turn: 0.045 },
+      { cost: 1, speed: 4.45, radius: 32, damage: 1, cooldown: 960, turn: 0.06 },
+      { cost: 2, speed: 4.9, radius: 40, damage: 1.1, cooldown: 820, turn: 0.078 },
+    ],
+  },
 };
 
 export const TURRET_DEFS = {
-  cannon: { label: "Cannoncino", cooldown: 420, heat: 10, damage: 1.25, speed: 9, color: "#f8d16b", unlock: 1, ammoCost: 1 },
-  mg: { label: "Mitragliatrice", cooldown: 82, heat: 7, damage: 0.42, speed: 11, color: "#d8f2ff", unlock: 1, ammoCost: 1 },
-  laser: { label: "Laser", cooldown: 45, heat: 13, damage: 0.08, speed: 0, color: "#67e6ff", unlock: 2, ammoCost: 1 },
+  cannon: {
+    label: "Cannoncino",
+    color: "#f8d16b",
+    levels: [
+      { cooldown: 500, heat: 14, damage: 1.3, speed: 8.6, ammoCost: 1, radius: 4 },
+      { cooldown: 430, heat: 15, damage: 1.6, speed: 9, ammoCost: 1, radius: 4.5 },
+      { cooldown: 360, heat: 17, damage: 2, speed: 9.3, ammoCost: 1, radius: 5 },
+    ],
+  },
+  mg: {
+    label: "Mitragliatrice",
+    color: "#d8f2ff",
+    levels: [
+      { cooldown: 96, heat: 6, damage: 0.34, speed: 11, ammoCost: 1, radius: 2.4 },
+      { cooldown: 78, heat: 6.5, damage: 0.42, speed: 11.4, ammoCost: 1, radius: 2.6 },
+      { cooldown: 62, heat: 7, damage: 0.5, speed: 11.8, ammoCost: 1, radius: 2.8 },
+    ],
+  },
+  laser: {
+    label: "Laser",
+    color: "#67e6ff",
+    levels: [
+      { cooldown: 58, heat: 16, damage: 0.075, speed: 0, ammoCost: 1, width: 15 },
+      { cooldown: 52, heat: 15, damage: 0.1, speed: 0, ammoCost: 1, width: 18 },
+      { cooldown: 46, heat: 14, damage: 0.13, speed: 0, ammoCost: 1, width: 21 },
+    ],
+  },
 };
 
 export const ENEMY_DEFS = {
@@ -38,6 +75,7 @@ export const UPGRADE_COSTS = {
   repair: 2,
   factory: 4,
   launcher: 3,
+  seeker: 5,
   cannon: 3,
   mg: 3,
   laser: 5,
