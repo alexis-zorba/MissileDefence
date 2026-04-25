@@ -53,6 +53,8 @@ const missileDefs = MISSILE_DEFS;
 const turretDefs = TURRET_DEFS;
 const enemyDefs = ENEMY_DEFS;
 const upgradeCosts = UPGRADE_COSTS;
+const GAME_SPEED = 0.8;
+const VISUAL_SCALE = 0.7;
 const aiSkills = {
   normal: { delay: 1.25, aimNoise: 70, lead: 18 },
   expert: { delay: 0.86, aimNoise: 34, lead: 24 },
@@ -123,10 +125,11 @@ function resetGame() {
       mg: i === 2 ? 230 : 0,
       laser: 0,
     },
+    magazineLevel: 1,
     blastRadiusLevel: 1,
     blastLifeLevel: 1,
-  shield: 0,
-  turretAngle: state.globalTurretAngle,
+    shield: 0,
+    turretAngle: state.globalTurretAngle,
     ruinSeed: Math.random(),
     cooldown: 0,
     heat: 0,
@@ -237,7 +240,8 @@ function renderBuildCities() {
           <strong>${city.name}</strong>
           <div class="city-meta"><span>Vita ${hpPct}%</span><span>Fabbrica ${city.factory}</span></div>
           <div class="city-meta"><span>${weapons || "Nessuna arma"}</span><span>${activeAmmoText(city)}</span></div>
-          <div class="city-meta"><span>Blast ${city.blastRadiusLevel}/${city.blastLifeLevel}</span><span>Scudo ${city.shield ? "si" : "no"}</span></div>
+          <div class="city-meta"><span>Caricatori ${city.magazineLevel || 1}</span><span>Blast ${city.blastRadiusLevel}/${city.blastLifeLevel}</span></div>
+          <div class="city-meta"><span>Scudo ${city.shield ? "si" : "no"}</span><span></span></div>
         </article>
       `;
     })
@@ -297,10 +301,11 @@ function firstWeapon(city) {
 
 function maxAmmo(city, weapon) {
   const level = city.weapons[weapon]?.level || 1;
-  if (weapon === "launcher") return 42 + level * 10;
-  if (weapon === "cannon") return 72 + level * 18;
-  if (weapon === "mg") return 240 + level * 42;
-  if (weapon === "laser") return 130 + level * 30;
+  const magazineLevel = city.magazineLevel || 1;
+  if (weapon === "launcher") return 34 + level * 8 + magazineLevel * 10;
+  if (weapon === "cannon") return 58 + level * 14 + magazineLevel * 18;
+  if (weapon === "mg") return 190 + level * 36 + magazineLevel * 52;
+  if (weapon === "laser") return 98 + level * 24 + magazineLevel * 32;
   return 0;
 }
 
@@ -345,6 +350,7 @@ function spendUpgrade(kind) {
       city.factory = Math.max(1, city.factory);
       city.weapons ||= {};
       city.ammoByWeapon ||= {};
+      city.magazineLevel ||= 1;
       city.blastRadiusLevel ||= 1;
       city.blastLifeLevel ||= 1;
       city.ruinSeed = Math.random();
@@ -361,7 +367,14 @@ function spendUpgrade(kind) {
     const weapons = Object.keys(city.weapons);
     if (!weapons.length) return;
     weapons.forEach((weapon) => {
-      city.ammoByWeapon[weapon] = Math.min(maxAmmo(city, weapon), currentAmmo(city, weapon) + Math.ceil(replenishAmmo(city, weapon) * 0.8));
+      city.ammoByWeapon[weapon] = maxAmmo(city, weapon);
+    });
+  } else if (kind === "magazine") {
+    const weapons = Object.keys(city.weapons);
+    if (!weapons.length) return;
+    city.magazineLevel = Math.min(5, (city.magazineLevel || 1) + 1);
+    weapons.forEach((weapon) => {
+      city.ammoByWeapon[weapon] = maxAmmo(city, weapon);
     });
   } else if (kind === "blastRadius") {
     if (!city.weapons.launcher) return;
@@ -548,6 +561,7 @@ function spawnEnemy() {
 
 function update(dt) {
   if (!state.running || state.paused) return;
+  dt *= GAME_SPEED;
   const seconds = dt / 1000;
   state.cities.forEach((city) => {
     city.cooldown = Math.max(0, city.cooldown - dt);
@@ -977,6 +991,7 @@ function drawCities() {
     const spacing = width / buildingCount;
     ctx.save();
     ctx.translate(city.x, city.y);
+    ctx.scale(VISUAL_SCALE, VISUAL_SCALE);
     ctx.fillStyle = alive ? "#4d6570" : "#2c2322";
     for (let i = 0; i < buildingCount; i += 1) {
       const localX = -width / 2 + i * spacing + spacing * 0.18;
@@ -1215,6 +1230,10 @@ function weaponColor(weapon) {
 
 function drawFriendlyMissiles() {
   state.friendlyMissiles.forEach((missile) => {
+    ctx.save();
+    ctx.translate(missile.x, missile.y);
+    ctx.scale(VISUAL_SCALE, VISUAL_SCALE);
+    ctx.translate(-missile.x, -missile.y);
     ctx.strokeStyle = missileDefs[missile.type].color;
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -1228,6 +1247,7 @@ function drawFriendlyMissiles() {
     ctx.beginPath();
     ctx.arc(missile.x, missile.y, 4, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
   });
 }
 
@@ -1261,7 +1281,7 @@ function drawEnemySmokeTrail(trail) {
     ctx.globalAlpha = puff.a * Math.pow(fade, 1.25);
     ctx.fillStyle = puff.warm ? "#b7a58e" : "#aab0ad";
     ctx.beginPath();
-    ctx.arc(puff.x, puff.y, puff.r * (1.45 - fade * 0.35), 0, Math.PI * 2);
+    ctx.arc(puff.x, puff.y, puff.r * (1.45 - fade * 0.35) * VISUAL_SCALE, 0, Math.PI * 2);
     ctx.fill();
   });
   ctx.globalAlpha = 1;
@@ -1274,6 +1294,7 @@ function enemyAngle(enemy) {
 function drawIncomingMissile(enemy, def) {
   ctx.save();
   ctx.translate(enemy.x, enemy.y);
+  ctx.scale(VISUAL_SCALE, VISUAL_SCALE);
   ctx.rotate(enemyAngle(enemy));
   ctx.fillStyle = def.color;
   ctx.strokeStyle = "rgba(255, 220, 210, 0.65)";
@@ -1310,6 +1331,7 @@ function drawIncomingMissile(enemy, def) {
 function drawIncomingRocket(enemy, def) {
   ctx.save();
   ctx.translate(enemy.x, enemy.y);
+  ctx.scale(VISUAL_SCALE, VISUAL_SCALE);
   ctx.rotate(enemyAngle(enemy));
   ctx.fillStyle = def.color;
   ctx.strokeStyle = "rgba(210, 230, 255, 0.85)";
@@ -1328,6 +1350,7 @@ function drawIncomingRocket(enemy, def) {
 function drawBomb(enemy, def) {
   ctx.save();
   ctx.translate(enemy.x, enemy.y);
+  ctx.scale(VISUAL_SCALE, VISUAL_SCALE);
   ctx.rotate(enemyAngle(enemy) + 0.12);
   ctx.fillStyle = "#6d6658";
   ctx.strokeStyle = "#d8c783";
@@ -1346,6 +1369,7 @@ function drawBomb(enemy, def) {
 function drawDrone(enemy, def) {
   ctx.save();
   ctx.translate(enemy.x, enemy.y);
+  ctx.scale(VISUAL_SCALE, VISUAL_SCALE);
   ctx.rotate(Math.sin(enemy.wobble) * 0.7);
   ctx.strokeStyle = "rgba(124, 255, 191, 0.72)";
   ctx.fillStyle = def.color;
@@ -1377,7 +1401,7 @@ function drawBullets() {
       ctx.globalAlpha = 1;
     } else {
       ctx.beginPath();
-      ctx.arc(bullet.x, bullet.y, bullet.radius || 3, 0, Math.PI * 2);
+      ctx.arc(bullet.x, bullet.y, (bullet.radius || 3) * VISUAL_SCALE, 0, Math.PI * 2);
       ctx.fill();
     }
   });
@@ -1388,7 +1412,7 @@ function drawBlasts() {
     ctx.strokeStyle = blast.type === "emp" ? "rgba(177, 140, 255, 0.86)" : "rgba(255, 213, 107, 0.78)";
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.arc(blast.x, blast.y, blast.currentRadius, 0, Math.PI * 2);
+    ctx.arc(blast.x, blast.y, blast.currentRadius * VISUAL_SCALE, 0, Math.PI * 2);
     ctx.stroke();
   });
 }
