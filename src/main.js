@@ -1063,7 +1063,8 @@ function drawCities() {
     ctx.save();
     ctx.translate(city.x, city.y);
     ctx.scale(state.visualScale, state.visualScale);
-    drawDefenceBase(alive);
+    drawGroundShadow(0, -4, 88, 16, 0.34);
+    drawDefenceBase(city, alive, index === state.selectedCity);
     if (city.shield && alive) {
       ctx.strokeStyle = "rgba(102, 168, 255, 0.7)";
       ctx.lineWidth = 3;
@@ -1087,6 +1088,9 @@ function drawFactories() {
     ctx.save();
     ctx.translate(factory.x, factory.y);
     ctx.scale(state.visualScale, state.visualScale);
+    drawGroundShadow(0, -2, width + 26, 12, 0.28);
+    ctx.strokeStyle = "rgba(4, 9, 12, 0.78)";
+    ctx.lineWidth = 1;
     ctx.fillStyle = alive ? "#506574" : "#332725";
     for (let i = 0; i < buildingCount; i += 1) {
       const localX = -width / 2 + i * spacing + spacing * 0.16;
@@ -1094,13 +1098,43 @@ function drawFactories() {
       const h = intact ? 18 + ((i + factory.level) % 3) * 8 : 5 + ((i * 7 + Math.floor(factory.ruinSeed * 10)) % 8);
       ctx.fillStyle = intact ? "#506574" : "#3a2826";
       ctx.fillRect(localX, -h, spacing * 0.68, h);
+      ctx.strokeRect(localX, -h, spacing * 0.68, h);
       if (intact) {
-        ctx.fillStyle = "#e0bd64";
-        ctx.fillRect(localX + 3, -h + 5, 4, 4);
+        const blink = Math.sin(performance.now() / 360 + factory.slot + i) > 0.2;
+        ctx.fillStyle = blink ? "#f6cf72" : "#8d7442";
+        ctx.fillRect(localX + 3, -h + 5, 3, 3);
+        if (spacing > 12) ctx.fillRect(localX + spacing * 0.38, -h + 12, 3, 3);
       }
+    }
+    if (alive) {
+      const chimneyX = width / 2 - 7;
+      ctx.fillStyle = "#3b4650";
+      ctx.fillRect(chimneyX, -38, 8, 30);
+      ctx.strokeRect(chimneyX, -38, 8, 30);
+      for (let i = 0; i < 3; i += 1) {
+        const t = performance.now() / 520 + factory.id.charCodeAt(0) + i;
+        ctx.globalAlpha = 0.16 + i * 0.08;
+        ctx.fillStyle = "#b8c0bf";
+        ctx.beginPath();
+        ctx.arc(chimneyX + 4 + Math.sin(t) * 6, -46 - i * 9 - (t % 1) * 6, 5 + i * 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
     }
     ctx.fillStyle = alive ? "#b8c9cf" : "#62433c";
     ctx.fillRect(-width / 2 - 5, -8, width + 10, 11);
+    ctx.strokeRect(-width / 2 - 5, -8, width + 10, 11);
+    ctx.strokeStyle = "rgba(180, 199, 200, 0.35)";
+    ctx.beginPath();
+    ctx.moveTo(-width / 2 - 13, 2);
+    ctx.lineTo(width / 2 + 13, 2);
+    ctx.stroke();
+    for (let x = -width / 2 - 10; x <= width / 2 + 10; x += 8) {
+      ctx.beginPath();
+      ctx.moveTo(x, -3);
+      ctx.lineTo(x, 5);
+      ctx.stroke();
+    }
     ctx.fillStyle = "#23313a";
     ctx.fillRect(-width / 2, 6, width, 4);
     ctx.fillStyle = hpRatio > 0.35 ? "#55d6be" : "#ff5f5f";
@@ -1109,16 +1143,66 @@ function drawFactories() {
   });
 }
 
-function drawDefenceBase(alive) {
+function drawGroundShadow(x, y, width, height, alpha = 0.3) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = "#000000";
+  ctx.beginPath();
+  ctx.ellipse(x, y, width / 2, height / 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawDefenceBase(city, alive, selected) {
   const width = 88;
+  const color = weaponColor(city.weapon);
+  ctx.strokeStyle = "rgba(4, 9, 12, 0.9)";
+  ctx.lineWidth = 1.4;
+
+  if (selected && alive) {
+    ctx.fillStyle = "#f4bf54";
+    ctx.beginPath();
+    ctx.moveTo(0, -83);
+    ctx.lineTo(-9, -69);
+    ctx.lineTo(9, -69);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  ctx.fillStyle = alive ? "#283743" : "#302827";
+  roundedRect(-36, -34, 72, 12, 3);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = alive ? "#354955" : "#3b2f2c";
+  roundedRect(-43, -24, 86, 13, 3);
+  ctx.fill();
+  ctx.stroke();
   ctx.fillStyle = alive ? "#b6d2d6" : "#5f3b36";
   roundedRect(-width / 2, -12, width, 18, 4);
   ctx.fill();
-  ctx.fillStyle = alive ? "#394c58" : "#302827";
-  roundedRect(-34, -28, 68, 17, 4);
+  ctx.stroke();
+
+  ctx.fillStyle = alive ? "#253540" : "#2f2524";
+  ctx.beginPath();
+  ctx.arc(0, -34, 17, Math.PI, Math.PI * 2);
+  ctx.lineTo(17, -34);
+  ctx.lineTo(-17, -34);
+  ctx.closePath();
   ctx.fill();
-  ctx.fillStyle = "rgba(255,255,255,0.12)";
-  ctx.fillRect(-29, -25, 58, 2);
+  ctx.stroke();
+
+  if (alive) {
+    const radar = performance.now() / 950;
+    ctx.strokeStyle = "rgba(214, 232, 230, 0.7)";
+    ctx.beginPath();
+    ctx.moveTo(0, -50);
+    ctx.lineTo(Math.cos(radar) * 15, -50 + Math.sin(radar) * 7);
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.72;
+    ctx.fillRect(-31, -9, 62, 3);
+    ctx.globalAlpha = 1;
+  }
 }
 
 function drawCityReadout(city) {
@@ -1145,22 +1229,22 @@ function drawCityReadout(city) {
 function drawWeapon(city, controlled) {
   const color = city.disabled > 0 ? "#7a4c7e" : controlled ? "#55d6be" : weaponColor(city.weapon);
   if (city.weapon === "launcher") {
-    drawLauncher(color);
+    drawLauncher(city, color);
     return;
   }
 
-  drawTurretBase(color);
+  drawTurretBase(city, color);
   ctx.save();
   ctx.rotate(city.turretAngle + Math.PI / 2);
   if (city.weapon === "mg") {
-    drawMachineGunBarrel();
+    drawMachineGunBarrel(city);
   } else if (city.weapon === "laser") {
-    drawLaserEmitter();
+    drawLaserEmitter(city);
   } else {
-    drawCannonBarrel();
+    drawCannonBarrel(city);
   }
   ctx.restore();
-  drawTurretCap(color);
+  drawTurretCap(city, color);
 }
 
 function roundedRect(x, y, width, height, radius) {
@@ -1177,8 +1261,9 @@ function roundedRect(x, y, width, height, radius) {
   ctx.quadraticCurveTo(x, y, x + r, y);
 }
 
-function drawLauncher(color) {
+function drawLauncher(city, color) {
   ctx.save();
+  drawGroundShadow(0, -6, 92, 15, 0.24);
   ctx.lineWidth = 1.5;
   ctx.strokeStyle = "rgba(4, 9, 12, 0.9)";
 
@@ -1209,6 +1294,16 @@ function drawLauncher(color) {
     ctx.fillStyle = "#05090c";
     roundedRect(11, -5, 8, 8, 2);
     ctx.fill();
+    ctx.fillStyle = "#05090c";
+    [-8, 0, 8].forEach((tubeX) => {
+      ctx.beginPath();
+      ctx.arc(tubeX, -1, 2.6, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.fillStyle = currentAmmo(city, "launcher") > 0 ? "#5cff9d" : "#ff5f5f";
+    ctx.beginPath();
+    ctx.arc(-13, 3, 2.2, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = "rgba(255,255,255,0.24)";
     ctx.fillRect(-13, -6, 20, 2);
     ctx.restore();
@@ -1225,8 +1320,9 @@ function drawLauncher(color) {
   ctx.restore();
 }
 
-function drawTurretBase(color) {
+function drawTurretBase(city, color) {
   ctx.save();
+  drawGroundShadow(0, -4, 64, 13, 0.25);
   ctx.lineWidth = 1.5;
   ctx.strokeStyle = "rgba(4, 9, 12, 0.92)";
   const baseGradient = ctx.createLinearGradient(0, -30, 0, 0);
@@ -1242,18 +1338,39 @@ function drawTurretBase(color) {
   ctx.globalAlpha = 0.38;
   ctx.fillRect(-18, -20, 36, 2);
   ctx.globalAlpha = 1;
+  ctx.fillStyle = "rgba(3, 7, 10, 0.82)";
+  [-21, -12, 12, 21].forEach((x) => {
+    ctx.beginPath();
+    ctx.arc(x, -14, 1.6, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.fillStyle = "#f4bf54";
+  const level = Math.min(5, city.weapons[city.weapon]?.level || 1);
+  for (let i = 0; i < level; i += 1) {
+    ctx.beginPath();
+    ctx.moveTo(-22 + i * 8, -3);
+    ctx.lineTo(-18 + i * 8, -9);
+    ctx.lineTo(-14 + i * 8, -3);
+    ctx.closePath();
+    ctx.fill();
+  }
   ctx.restore();
 }
 
-function drawTurretCap(color) {
+function drawTurretCap(city, color) {
   ctx.save();
-  ctx.fillStyle = color;
+  ctx.fillStyle = city.disabled > 0 ? "#6b506d" : "#2d3e49";
   ctx.strokeStyle = "rgba(4, 9, 12, 0.92)";
   ctx.lineWidth = 1.7;
   ctx.beginPath();
   ctx.ellipse(0, -18, 18, 12, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
+  ctx.fillStyle = color;
+  ctx.globalAlpha = 0.78;
+  roundedRect(-13, -20, 26, 5, 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
   ctx.fillStyle = "rgba(255,255,255,0.18)";
   ctx.beginPath();
   ctx.ellipse(-5, -22, 7, 3, -0.2, 0, Math.PI * 2);
@@ -1261,7 +1378,7 @@ function drawTurretCap(color) {
   ctx.restore();
 }
 
-function drawCannonBarrel() {
+function drawCannonBarrel(city) {
   ctx.save();
   ctx.strokeStyle = "rgba(4, 9, 12, 0.9)";
   ctx.lineWidth = 1.4;
@@ -1272,9 +1389,26 @@ function drawCannonBarrel() {
   roundedRect(-7, -66, 14, 48, 3);
   ctx.fill();
   ctx.stroke();
+  ctx.fillStyle = "rgba(37, 30, 18, 0.78)";
+  [-55, -43, -31].forEach((y) => ctx.fillRect(-8, y, 16, 3));
   ctx.fillStyle = "#17130c";
-  roundedRect(-9, -70, 18, 7, 2);
+  ctx.beginPath();
+  ctx.moveTo(-12, -72);
+  ctx.lineTo(12, -72);
+  ctx.lineTo(8, -63);
+  ctx.lineTo(-8, -63);
+  ctx.closePath();
   ctx.fill();
+  if (city.cooldown > 0 && city.heat > 7) {
+    ctx.strokeStyle = "rgba(255, 210, 92, 0.9)";
+    ctx.lineWidth = 2;
+    [[0, -80, 0, -68], [-8, -76, 8, -70], [8, -76, -8, -70]].forEach(([x1, y1, x2, y2]) => {
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    });
+  }
   ctx.fillStyle = "#6c5732";
   roundedRect(-14, -29, 28, 12, 3);
   ctx.fill();
@@ -1282,16 +1416,39 @@ function drawCannonBarrel() {
   ctx.restore();
 }
 
-function drawMachineGunBarrel() {
+function drawMachineGunBarrel(city) {
   ctx.save();
   ctx.strokeStyle = "rgba(4, 9, 12, 0.9)";
   ctx.lineWidth = 1.1;
+  const spin = city.heat > 4 ? performance.now() / 80 : 0;
+  ctx.save();
+  ctx.translate(0, -38);
+  ctx.rotate(spin);
   ctx.fillStyle = "#d8f2ff";
-  [-9, -3, 3, 9].forEach((x, index) => {
-    roundedRect(x - 2, -60 - (index % 2) * 3, 4, 45 + (index % 2) * 3, 1.5);
+  for (let i = 0; i < 6; i += 1) {
+    const angle = (Math.PI * 2 * i) / 6;
+    const x = Math.cos(angle) * 6;
+    const z = Math.sin(angle) * 2;
+    roundedRect(x - 1.7, -23 + z, 3.4, 45, 1.4);
     ctx.fill();
     ctx.stroke();
-  });
+  }
+  ctx.restore();
+  if (city.cooldown > 0 && city.cooldown < 80) {
+    ctx.globalAlpha = 0.5;
+    ctx.fillStyle = "#ff9d42";
+    ctx.beginPath();
+    ctx.arc(0, -64, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+  ctx.strokeStyle = "#c79656";
+  ctx.beginPath();
+  ctx.moveTo(15, -27);
+  ctx.quadraticCurveTo(28, -18, 22, -5);
+  ctx.stroke();
+  ctx.fillStyle = "#c79656";
+  for (let i = 0; i < 5; i += 1) ctx.fillRect(18 + (i % 2) * 3, -23 + i * 4, 5, 2);
   ctx.fillStyle = "#7893a3";
   roundedRect(-15, -31, 30, 14, 4);
   ctx.fill();
@@ -1301,7 +1458,7 @@ function drawMachineGunBarrel() {
   ctx.restore();
 }
 
-function drawLaserEmitter() {
+function drawLaserEmitter(city) {
   ctx.save();
   ctx.strokeStyle = "rgba(4, 9, 12, 0.9)";
   ctx.lineWidth = 1.2;
@@ -1313,19 +1470,35 @@ function drawLaserEmitter() {
   roundedRect(-6, -72, 12, 54, 4);
   ctx.fill();
   ctx.stroke();
+  const pulse = 0.35 + 0.25 * Math.sin(performance.now() / 180);
+  ctx.strokeStyle = `rgba(103, 230, 255, ${pulse})`;
+  ctx.lineWidth = 1.4;
+  [-58, -45].forEach((y) => {
+    ctx.beginPath();
+    ctx.ellipse(0, y, 11, 3, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  });
   ctx.fillStyle = "#12323b";
   roundedRect(-18, -40, 36, 18, 5);
   ctx.fill();
   ctx.stroke();
+  ctx.fillStyle = "#284a55";
+  [-15, -9, 9, 15].forEach((x) => ctx.fillRect(x, -38, 3, 14));
   ctx.strokeStyle = "#67e6ff";
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(-13, -31);
   ctx.lineTo(13, -31);
   ctx.stroke();
-  ctx.fillStyle = "#d8ffff";
-  roundedRect(-4, -77, 8, 6, 3);
+  const lens = ctx.createRadialGradient(0, -76, 1, 0, -76, 7);
+  lens.addColorStop(0, "#ffffff");
+  lens.addColorStop(0.45, "#8ff7ff");
+  lens.addColorStop(1, "#1b6d80");
+  ctx.fillStyle = lens;
+  ctx.beginPath();
+  ctx.arc(0, -76, 7, 0, Math.PI * 2);
   ctx.fill();
+  ctx.stroke();
   ctx.restore();
 }
 
