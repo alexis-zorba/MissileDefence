@@ -9,7 +9,7 @@ import { DIFFICULTY, MISSILE_DEFS, TURRET_DEFS, UPGRADE_COSTS, CANVAS_WIDTH, GRO
 import { makeId } from "./utils.js";
 
 // --- Constants (only used internally by state) ---
-const DEFAULT_GAME_SPEED = 0.35;
+const DEFAULT_GAME_SPEED = 1.25;
 const DEFAULT_VISUAL_SCALE = 0.45;
 const WAVE_CLEAR_BONUS = 6;
 const INITIAL_BUILD_CREDIT = 6;
