@@ -18,7 +18,7 @@ export function updateMissiles() {
       if (target) {
         const lead = stats.lead || 0;
         const predictedX = target.x + (target.vx || 0) * lead;
-        const predictedY = target.y + (target.vy || 0) * lead;
+        const predictedY = Math.min(GROUND_Y - 50, target.y + (target.vy || 0) * lead);
         const desiredAngle = Math.atan2(predictedY - missile.y, predictedX - missile.x);
         let currentAngle = missile.angle ?? desiredAngle;
         let angleDiff = desiredAngle - currentAngle;
