@@ -57,18 +57,18 @@ function drawSky(ctx) {
   }
 }
 
+let skyGradient = null;
 function drawPixelSkyGradient(ctx) {
-  const bands = [
-    { y: 0, h: 104, color: "#020712" },
-    { y: 104, h: 96, color: "#06111e" },
-    { y: 200, h: 112, color: "#0a1c2a" },
-    { y: 312, h: 120, color: "#102a37" },
-    { y: 432, h: groundY - 432, color: "#183745" },
-  ];
-  bands.forEach((band) => {
-    ctx.fillStyle = band.color;
-    ctx.fillRect(0, band.y, W, Math.max(0, band.h));
-  });
+  if (!skyGradient) {
+    skyGradient = ctx.createLinearGradient(0, 0, 0, groundY);
+    skyGradient.addColorStop(0, "#020712");
+    skyGradient.addColorStop(0.22, "#06111e");
+    skyGradient.addColorStop(0.45, "#0a1c2a");
+    skyGradient.addColorStop(0.7, "#102a37");
+    skyGradient.addColorStop(1, "#183745");
+  }
+  ctx.fillStyle = skyGradient;
+  ctx.fillRect(0, 0, W, groundY);
 }
 
 const STAR_SEED = 42;
