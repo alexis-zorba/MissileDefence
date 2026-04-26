@@ -20,20 +20,30 @@ export function canvasPoint(event, canvas) {
   };
 }
 
-// --- Mouse click handler ---
+// --- Mouse handlers ---
 
-export function handleCanvasClick(event, canvas, mode) {
+function playerTurretUsesMouse(mode) {
+  return mode === "turret" && state.turretInputMode === "mouse";
+}
+
+export function handleCanvasMouseDown(event, canvas, mode) {
   if (event.target !== canvas) return;
   const point = canvasPoint(event, canvas);
-  if (mode === "turret" && state.turretInputMode === "mouse") {
+  if (playerTurretUsesMouse(mode)) {
+    event.preventDefault();
     aimPlayerTurretsAt(point, state.turretAimMode);
     firePlayerTurrets(16);
-    logger.log("debug", "Player turret mouse click", { ...point, aim: state.turretAimMode });
+    logger.log("debug", "Player turret mouse fire", { ...point, aim: state.turretAimMode });
     return;
   }
   if (mode === "turret") return;
   launchMissile(point);
   logger.log("debug", "Player clicked", point);
+}
+
+export function handleCanvasMouseMove(event, canvas, mode) {
+  if (event.target !== canvas || !playerTurretUsesMouse(mode)) return;
+  aimPlayerTurretsAt(canvasPoint(event, canvas), state.turretAimMode);
 }
 
 // --- Keyboard handlers ---
@@ -50,7 +60,8 @@ export function handleKeyUp(event) {
 // --- Bind all input events ---
 
 export function bindInput(canvas, getMode) {
-  canvas.addEventListener("click", (event) => handleCanvasClick(event, canvas, getMode()));
+  canvas.addEventListener("mousedown", (event) => handleCanvasMouseDown(event, canvas, getMode()));
+  canvas.addEventListener("mousemove", (event) => handleCanvasMouseMove(event, canvas, getMode()));
   document.addEventListener("keydown", handleKeyDown);
   document.addEventListener("keyup", handleKeyUp);
 }
