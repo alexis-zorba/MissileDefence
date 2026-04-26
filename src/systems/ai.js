@@ -2,7 +2,7 @@
 // AI — Allied AI behavior for missiles and turrets
 // =============================================================================
 
-import { state, AI_SKILLS, firstTurret, missileSlots, missileStats, turretSlots } from "../state.js";
+import { state, AI_SKILLS, firstTurret, missileSlots, missileStats, turretSlots, turretStats } from "../state.js";
 import { nearest, clampAngle } from "../utils.js";
 import { launchMissile, fireTurret, fireTurretSalvo } from "../entities/weapons.js";
 import { priorityEnemy, pickAiMissile } from "./combat.js";
@@ -46,8 +46,10 @@ export function autoTurrets(dt, skill, difficultyCfg, aiCooldownMultiplier = 1) 
     return;
   }
   const referenceBase = nearest(armedBases, target) || armedBases[0];
-  const aim = noisyAim(target.x, target.y, skill.aimNoise);
-  state.globalTurretAngle = clampAngle(Math.atan2(aim.y - referenceBase.y, aim.x - referenceBase.x), -Math.PI + 0.14, -0.14);
+  const referenceSlot = bestReadyTurret(referenceBase) || firstTurret(referenceBase);
+  const referenceMount = turretMount(referenceBase, referenceSlot);
+  const aim = turretAimPoint(referenceMount, target, referenceSlot, skill);
+  state.globalTurretAngle = clampAngle(Math.atan2(aim.y - referenceMount.y, aim.x - referenceMount.x), -Math.PI + 0.14, -0.14);
   armedBases.forEach((city) => {
     city.turretAngle = state.globalTurretAngle;
     turretSlots(city).forEach((slot) => {
@@ -127,16 +129,38 @@ function predictIntercept(origin, target, missileSpeed) {
 function autoTurretsIndependent(armedBases, dt, skill, aiCooldownMultiplier) {
   armedBases.forEach((city) => {
     turretSlots(city).forEach((slot) => {
-      const mount = { x: city.x, y: city.y - 24 };
+      const mount = turretMount(city, slot);
       const target = nearest(state.enemies, mount);
       if (!target) return;
-      const aim = noisyAim(target.x, target.y, skill.aimNoise);
+      const aim = turretAimPoint(mount, target, slot, skill);
       const angle = clampAngle(Math.atan2(aim.y - mount.y, aim.x - mount.x), -Math.PI + 0.14, -0.14);
       slot.angle = angle;
       city.turretAngle = angle;
       fireTurret(city, slot, dt, true, aiCooldownMultiplier);
     });
   });
+}
+
+function bestReadyTurret(city) {
+  return turretSlots(city).find((slot) => {
+    const stats = turretStats(slot);
+    return stats && slot.cooldown <= 0 && slot.ammo >= stats.ammoCost;
+  });
+}
+
+function turretMount(city, slot) {
+  return {
+    x: city.x + SLOT_OFFSETS.turret[slot?.index || 0],
+    y: city.y - 24,
+  };
+}
+
+function turretAimPoint(origin, target, slot, skill) {
+  const stats = turretStats(slot);
+  const predicted = slot?.type === "laser" || !stats?.speed
+    ? { x: target.x, y: target.y }
+    : predictIntercept(origin, target, stats.speed);
+  return noisyAim(predicted.x, predicted.y, skill.aimNoise);
 }
 
 // --- Add noise to aim point ---
