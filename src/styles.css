@@ -532,7 +532,9 @@ label {
 }
 
 .build-dialog section {
-  width: min(860px, calc(100vw - 32px));
+  width: min(1180px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: auto;
 }
 
 .intel-dialog section {
@@ -574,6 +576,10 @@ label {
   background: rgba(24, 54, 56, 0.68);
 }
 
+.build-dialog .credit-banner {
+  padding: 8px 12px;
+}
+
 .credit-banner strong {
   color: var(--accent);
   font-size: 32px;
@@ -588,7 +594,7 @@ label {
 
 .build-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+  grid-template-columns: 1fr;
   gap: 12px;
 }
 
@@ -620,6 +626,10 @@ label {
   gap: 8px;
 }
 
+.build-cities {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .build-city {
   border: 1px solid var(--line);
   background: rgba(11, 18, 24, 0.84);
@@ -635,13 +645,18 @@ label {
 }
 
 .upgrade-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  align-items: stretch;
 }
 
 .upgrade-grid button {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 8px;
+  min-height: 38px;
+  padding: 7px 9px;
+  font-size: 12px;
 }
 
 .upgrade-grid span {
@@ -688,6 +703,11 @@ label {
   }
 
   .build-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .build-cities,
+  .upgrade-grid {
     grid-template-columns: 1fr;
   }
 }
