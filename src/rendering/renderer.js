@@ -791,7 +791,6 @@ function drawBlasts(ctx) {
     drawPixelDisk(ctx, blast.x, blast.y, radius, color, alpha, 5 * state.visualScale);
   });
 
-  ctx.fillStyle = "#fffbe6";
   for (let i = 0; i < state.blasts.length; i += 1) {
     const a = state.blasts[i];
     const ar = a.currentRadius * state.visualScale;
@@ -802,7 +801,7 @@ function drawBlasts(ctx) {
       if (br <= 0.5) continue;
       const distance = Math.hypot(b.x - a.x, b.y - a.y);
       if (distance >= ar + br || distance <= Math.abs(ar - br) * 0.25) continue;
-      drawPixelIntersection(ctx, a, ar, b, br, 5 * state.visualScale);
+      drawFilledIntersection(ctx, a, ar, b, br);
     }
   }
 }
@@ -833,21 +832,18 @@ function drawPixelDisk(ctx, x, y, radius, color, alpha = 1, block = 4) {
   ctx.restore();
 }
 
-function drawPixelIntersection(ctx, a, ar, b, br, block = 4) {
-  const step = Math.max(2, block);
-  const left = Math.max(a.x - ar, b.x - br);
-  const right = Math.min(a.x + ar, b.x + br);
-  const top = Math.max(a.y - ar, b.y - br);
-  const bottom = Math.min(a.y + ar, b.y + br);
-  for (let py = top; py <= bottom; py += step) {
-    for (let px = left; px <= right; px += step) {
-      const cx = px + step / 2;
-      const cy = py + step / 2;
-      if (Math.hypot(cx - a.x, cy - a.y) <= ar && Math.hypot(cx - b.x, cy - b.y) <= br) {
-        drawPixelRect(ctx, px, py, step, step);
-      }
-    }
-  }
+function drawFilledIntersection(ctx, a, ar, b, br) {
+  const alpha = Math.min(0.92, Math.max(0, 1 - Math.max(a.age / a.life, b.age / b.life)));
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = "#fffbe6";
+  ctx.beginPath();
+  ctx.arc(Math.round(a.x), Math.round(a.y), ar, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.beginPath();
+  ctx.arc(Math.round(b.x), Math.round(b.y), br, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 }
 
 function drawPixelRect(ctx, x, y, width, height) {
