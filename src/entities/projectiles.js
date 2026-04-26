@@ -3,7 +3,7 @@
 // =============================================================================
 
 import { state } from "../state.js";
-import { MISSILE_DEFS } from "../config.js";
+import { MISSILE_DEFS, GROUND_Y } from "../config.js";
 import { nearest } from "../utils.js";
 import { createBlast } from "./effects.js";
 
@@ -65,6 +65,10 @@ export function updateMissiles() {
     } else {
       missile.x += (dx / distance) * stats.speed;
       missile.y += (dy / distance) * stats.speed;
+    }
+    if (missile.y >= GROUND_Y - 4) {
+      createBlast(missile.x, GROUND_Y - 4, 20, stats.damage * 0.5, missile.type, missile.blastLifeLevel);
+      missile.done = true;
     }
   });
 }

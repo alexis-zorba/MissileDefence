@@ -28,9 +28,9 @@ export const MISSILE_DEFS = {
     label: "Razzo seeker",
     color: "#73a9ff",
     levels: [
-      { cost: 1, speed: 5.35, radius: 34, damage: 0.95, cooldown: 1120, turnRate: 2.5, lead: 14 },
-      { cost: 1, speed: 5.95, radius: 42, damage: 1, cooldown: 980, turnRate: 3.8, lead: 22 },
-      { cost: 2, speed: 6.55, radius: 52, damage: 1.1, cooldown: 840, turnRate: 5.5, lead: 30 },
+      { cost: 1, speed: 5.35, radius: 34, damage: 0.95, cooldown: 1120, turnRate: 5, lead: 14 },
+      { cost: 1, speed: 5.95, radius: 42, damage: 1, cooldown: 980, turnRate: 7.5, lead: 22 },
+      { cost: 2, speed: 6.55, radius: 52, damage: 1.1, cooldown: 840, turnRate: 10, lead: 30 },
     ],
   },
 };
