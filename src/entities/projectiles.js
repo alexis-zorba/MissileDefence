@@ -66,12 +66,14 @@ export function updateMissiles() {
       missile.x += (dx / distance) * stats.speed;
       missile.y += (dy / distance) * stats.speed;
     }
-    const nearbyEnemy = state.enemies.find((e) => !e.dead && Math.hypot(e.x - missile.x, e.y - missile.y) < stats.radius + e.radius + 6);
-    if (nearbyEnemy) {
-      createBlast(missile.x, missile.y, stats.radius, stats.damage, missile.type, missile.blastLifeLevel);
-      missile.done = true;
+    if (!missile.done && missile.type === "seeker") {
+      const nearbyEnemy = state.enemies.find((e) => !e.dead && Math.hypot(e.x - missile.x, e.y - missile.y) < stats.radius + e.radius + 6);
+      if (nearbyEnemy) {
+        createBlast(missile.x, missile.y, stats.radius, stats.damage, missile.type, missile.blastLifeLevel);
+        missile.done = true;
+      }
     }
-    if (missile.y >= GROUND_Y - 4) {
+    if (!missile.done && missile.y >= GROUND_Y - 4) {
       createBlast(missile.x, GROUND_Y - 4, 20, stats.damage * 0.5, missile.type, missile.blastLifeLevel);
       missile.done = true;
     }
