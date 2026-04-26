@@ -4,7 +4,7 @@
 
 import { state } from "../state.js";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "../config.js";
-import { launchMissile } from "../entities/weapons.js";
+import { aimPlayerTurretsAt, firePlayerTurrets, launchMissile } from "../entities/weapons.js";
 import * as logger from "../debug/logger.js";
 
 const W = CANVAS_WIDTH;
@@ -24,8 +24,14 @@ export function canvasPoint(event, canvas) {
 
 export function handleCanvasClick(event, canvas, mode) {
   if (event.target !== canvas) return;
-  if (mode === "turret") return;
   const point = canvasPoint(event, canvas);
+  if (mode === "turret" && state.turretInputMode === "mouse") {
+    aimPlayerTurretsAt(point, state.turretAimMode);
+    firePlayerTurrets(16);
+    logger.log("debug", "Player turret mouse click", { ...point, aim: state.turretAimMode });
+    return;
+  }
+  if (mode === "turret") return;
   launchMissile(point);
   logger.log("debug", "Player clicked", point);
 }

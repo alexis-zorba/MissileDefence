@@ -34,6 +34,8 @@ export const ui = {
   difficultySelect: document.getElementById("difficultySelect"),
   aiSkill: document.getElementById("aiSkillSelect"),
   aiTurretAim: document.getElementById("aiTurretAimSelect"),
+  turretInput: document.getElementById("turretInputSelect"),
+  turretAim: document.getElementById("turretAimSelect"),
   turretSensitivity: document.getElementById("turretSensitivityInput"),
   turretCurve: document.getElementById("turretCurveInput"),
   trailDuration: document.getElementById("trailDurationInput"),
@@ -243,7 +245,28 @@ export function bindDialogs(onStart) {
   ui.aiTurretAim.addEventListener("change", () => {
     state.aiTurretAimMode = ui.aiTurretAim.value;
   });
+  ui.turretInput.addEventListener("change", () => {
+    state.turretInputMode = ui.turretInput.value;
+    syncControlAvailability();
+  });
+  ui.turretAim.addEventListener("change", () => {
+    state.turretAimMode = ui.turretAim.value;
+  });
+  ui.mode.addEventListener("change", () => {
+    syncControlAvailability();
+  });
   ui.difficultySelect.addEventListener("change", updateUi);
+  syncControlAvailability();
+}
+
+function syncControlAvailability() {
+  const mouseReservedForMissiles = ui.mode.value === "missiles" || ui.mode.value === "coop";
+  if (mouseReservedForMissiles && ui.turretInput.value === "mouse") {
+    ui.turretInput.value = "keyboard";
+    state.turretInputMode = "keyboard";
+  }
+  ui.turretInput.querySelector('option[value="mouse"]').disabled = mouseReservedForMissiles;
+  ui.turretAim.disabled = state.turretInputMode !== "mouse";
 }
 
 // --- Subscribe to state events for UI auto-update ---

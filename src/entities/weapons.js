@@ -115,10 +115,37 @@ export function firePlayerTurrets(dt) {
   return state.cities.reduce((sum, city) => sum + fireTurretSalvo(city, dt), 0);
 }
 
+export function aimPlayerTurretsAt(point, aimMode = "parallel") {
+  const armedCities = state.cities.filter((city) => city.hp > 0 && firstTurret(city));
+  if (!armedCities.length) return;
+  if (aimMode === "point") {
+    armedCities.forEach((city) => {
+      city.turretAngle = clampAngle(Math.atan2(point.y - (city.y - 24), point.x - city.x), -Math.PI + 0.1, -0.1);
+      turretSlots(city).forEach((slot) => {
+        slot.angle = clampAngle(Math.atan2(point.y - (city.y - 24), point.x - (city.x + SLOT_OFFSETS.turret[slot.index])), -Math.PI + 0.1, -0.1);
+      });
+    });
+    return;
+  }
+  const reference = armedCities.reduce((best, city) => {
+    const bestDistance = Math.hypot(point.x - best.x, point.y - best.y);
+    const distance = Math.hypot(point.x - city.x, point.y - city.y);
+    return distance < bestDistance ? city : best;
+  }, armedCities[0]);
+  state.globalTurretAngle = clampAngle(Math.atan2(point.y - (reference.y - 24), point.x - reference.x), -Math.PI + 0.1, -0.1);
+  armedCities.forEach((city) => {
+    city.turretAngle = state.globalTurretAngle;
+    turretSlots(city).forEach((slot) => {
+      slot.angle = state.globalTurretAngle;
+    });
+  });
+}
+
 // --- Player turret rotation ---
 
 export function updatePlayerTurret(dt, mode, turretCurve, turretSensitivity, keys) {
   if (mode !== "turret" && mode !== "coop") return;
+  if (state.turretInputMode === "mouse" && mode === "turret") return;
   const input = (keys.has("ArrowRight") ? 1 : 0) - (keys.has("ArrowLeft") ? 1 : 0);
   const shapedInput = input === 0 ? 0 : Math.sign(input) * Math.pow(Math.abs(input), turretCurve);
   const targetVelocity = shapedInput * turretSensitivity;
