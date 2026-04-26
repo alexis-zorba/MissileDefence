@@ -163,4 +163,4 @@ This structure is intended to make balancing, debugging and future expansion pra
 
 ## License
 
-No license has been selected yet. Add a license before accepting external contributions or distributing modified versions.
+This project is distributed under the MIT License. See `LICENSE` for details.
