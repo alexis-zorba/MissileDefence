@@ -260,6 +260,10 @@ export function bindDialogs(onStart) {
 }
 
 function syncControlAvailability() {
+  state.turretInputMode = ui.turretInput.value;
+  state.turretAimMode = ui.turretAim.value;
+  state.aiTurretAimMode = ui.aiTurretAim.value;
+  state.aiSkill = ui.aiSkill.value;
   const mouseReservedForMissiles = ui.mode.value === "missiles" || ui.mode.value === "coop";
   if (mouseReservedForMissiles && ui.turretInput.value === "mouse") {
     ui.turretInput.value = "keyboard";

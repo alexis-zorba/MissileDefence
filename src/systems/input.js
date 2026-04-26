@@ -23,7 +23,10 @@ export function canvasPoint(event, canvas) {
 // --- Mouse handlers ---
 
 function playerTurretUsesMouse(mode) {
-  return mode === "turret" && state.turretInputMode === "mouse";
+  const selectedInput = document.getElementById("turretInputSelect")?.value || state.turretInputMode;
+  state.turretInputMode = selectedInput;
+  state.turretAimMode = document.getElementById("turretAimSelect")?.value || state.turretAimMode;
+  return mode === "turret" && selectedInput === "mouse";
 }
 
 export function handleCanvasMouseDown(event, canvas, mode) {

@@ -145,7 +145,10 @@ export function aimPlayerTurretsAt(point, aimMode = "parallel") {
 
 export function updatePlayerTurret(dt, mode, turretCurve, turretSensitivity, keys) {
   if (mode !== "turret" && mode !== "coop") return;
-  if (state.turretInputMode === "mouse" && mode === "turret") return;
+  const selectedInput = document.getElementById("turretInputSelect")?.value || state.turretInputMode;
+  state.turretInputMode = selectedInput;
+  state.turretAimMode = document.getElementById("turretAimSelect")?.value || state.turretAimMode;
+  if (selectedInput === "mouse" && mode === "turret") return;
   const input = (keys.has("ArrowRight") ? 1 : 0) - (keys.has("ArrowLeft") ? 1 : 0);
   const shapedInput = input === 0 ? 0 : Math.sign(input) * Math.pow(Math.abs(input), turretCurve);
   const targetVelocity = shapedInput * turretSensitivity;
