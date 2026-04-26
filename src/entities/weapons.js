@@ -20,7 +20,7 @@ import * as logger from "../debug/logger.js";
 
 export function launchMissileFromSlot(city, slot, target, byAi, aiMultiplier) {
   if (state.betweenWaves || state.paused) return false;
-  if (!city || city.hp <= 0 || city.disabled > 0 || !slot?.type) return false;
+  if (!city || city.hp <= 0 || !slot?.type) return false;
   const stats = missileStats(slot);
   if (!stats || slot.cooldown > 0 || slot.ammo < stats.cost) return false;
   const launchedType = slot.type;
@@ -54,7 +54,7 @@ export function launchMissile(target, preferredType = null, byAi = false, aiMult
   const attempts = [];
   const collect = (type) => {
     state.cities.forEach((city) => {
-      if (city.hp <= 0 || city.disabled > 0) return;
+      if (city.hp <= 0) return;
       missileSlots(city)
         .filter((slot) => !type || slot.type === type)
         .forEach((slot) => attempts.push(launchMissileFromSlot(city, slot, target, byAi, aiMultiplier)));
@@ -70,7 +70,7 @@ export function launchMissile(target, preferredType = null, byAi = false, aiMult
 // --- Turret fire ---
 
 export function fireTurret(city, slot, dt, byAi = false, aiMultiplier = 1) {
-  if (!city || city.hp <= 0 || city.disabled > 0 || !slot?.type) return false;
+  if (!city || city.hp <= 0 || !slot?.type) return false;
   const def = TURRET_DEFS[slot.type];
   const stats = turretStats(slot);
   if (!def || !stats || slot.cooldown > 0) return false;

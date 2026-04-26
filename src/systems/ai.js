@@ -79,7 +79,7 @@ function aiMissileAim(target, preferredType, skill) {
 function bestReadyLauncher(target, preferredType) {
   let best = null;
   state.cities.forEach((city) => {
-    if (city.hp <= 0 || city.disabled > 0) return;
+    if (city.hp <= 0) return;
     missileSlots(city).forEach((slot) => {
       if (!slot.type || (preferredType && slot.type !== preferredType)) return;
       const stats = missileStats(slot);

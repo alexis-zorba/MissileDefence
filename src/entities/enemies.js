@@ -158,12 +158,6 @@ export function updateEnemies(dt, difficultyCfg, trailDuration) {
       enemy.dead = true;
     }
 
-    if (enemy.type === "jammer") {
-      state.cities.forEach((city) => {
-        if (city.hp > 0 && Math.hypot(city.x - enemy.x, city.y - enemy.y) < 175) city.disabled = 260;
-      });
-    }
-
     if (enemy.hp <= 0) {
       enemy.dead = true;
       state.score += def.score;
