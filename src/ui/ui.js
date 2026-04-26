@@ -119,13 +119,15 @@ export function renderFooterCities() {
       }
       const ammoPct = maxAmmo(city, slot) > 0 ? Math.min(100, (slot.ammo / maxAmmo(city, slot)) * 100) : 0;
       const durabilityMax = maxDurability(slot);
-      const durabilityPct = durabilityMax > 0 ? Math.min(100, ((slot.durability || 0) / durabilityMax) * 100) : 0;
+      const durability = slot.durability || 0;
+      const durabilityPct = durabilityMax > 0 ? Math.min(100, (durability / durabilityMax) * 100) : 0;
       return `
         <div class="footer-slot" title="${slotLabel(slot)}">
           <span class="slot-icon" style="color:${weaponColor(slot.type)}">${weaponIcon(slot.type)}</span>
           <div class="footer-bar"><span style="width:${ammoPct}%; background:${weaponColor(slot.type)}"></span></div>
           <small>${slot.ammo}/${maxAmmo(city, slot)}</small>
           <div class="footer-bar durability"><span style="width:${durabilityPct}%; background:${durabilityPct > 25 ? "#55d6be" : "#ff5f5f"}"></span></div>
+          <small>${durability}/${durabilityMax}</small>
         </div>
       `;
     }).join("");
@@ -187,7 +189,8 @@ function slotCard(city, slot) {
   const color = slot.type ? weaponColor(slot.type) : "rgba(149, 170, 179, 0.45)";
   const ammoPct = slot.type && maxAmmo(city, slot) > 0 ? Math.min(100, (slot.ammo / maxAmmo(city, slot)) * 100) : 0;
   const durabilityMax = slot.type ? maxDurability(slot) : 0;
-  const durabilityPct = durabilityMax > 0 ? Math.min(100, ((slot.durability || 0) / durabilityMax) * 100) : 0;
+  const durability = slot.durability || 0;
+  const durabilityPct = durabilityMax > 0 ? Math.min(100, (durability / durabilityMax) * 100) : 0;
   return `
     <div class="slot-card${slot.type ? "" : " empty"}">
       <div class="slot-card-head">
@@ -197,7 +200,7 @@ function slotCard(city, slot) {
       </div>
       <div class="slot-bars">
         <div><small>${t("intel.ammo")}</small><div class="bar"><span style="width:${ammoPct}%; background:${color}"></span></div></div>
-        <div><small>${t("intel.durability")}</small><div class="bar"><span style="width:${durabilityPct}%; background:${durabilityPct > 25 ? "#55d6be" : "#ff5f5f"}"></span></div></div>
+        <div><small>${t("intel.durability")} ${slot.type ? `${durability}/${durabilityMax}` : ""}</small><div class="bar"><span style="width:${durabilityPct}%; background:${durabilityPct > 25 ? "#55d6be" : "#ff5f5f"}"></span></div></div>
       </div>
     </div>
   `;
