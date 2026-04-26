@@ -21,7 +21,7 @@ export const MISSILE_DEFS = {
     levels: [
       { cost: 1, speed: 5.2, radius: 40, damage: 1, cooldown: 520 },
       { cost: 1, speed: 5.05, radius: 54, damage: 1, cooldown: 470 },
-      { cost: 2, speed: 4.85, radius: 70, damage: 1.15, cooldown: 430 },
+      { cost: 1, speed: 4.85, radius: 70, damage: 1.15, cooldown: 430 },
     ],
   },
   seeker: {
@@ -30,7 +30,7 @@ export const MISSILE_DEFS = {
     levels: [
       { cost: 1, speed: 5.35, radius: 34, damage: 0.95, cooldown: 1120, turnRate: 5, lead: 14 },
       { cost: 1, speed: 5.95, radius: 42, damage: 1, cooldown: 980, turnRate: 7.5, lead: 22 },
-      { cost: 2, speed: 6.55, radius: 52, damage: 1.1, cooldown: 840, turnRate: 10, lead: 30 },
+      { cost: 1, speed: 6.55, radius: 52, damage: 1.1, cooldown: 840, turnRate: 10, lead: 30 },
     ],
   },
 };
