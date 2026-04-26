@@ -545,25 +545,53 @@ label {
 }
 
 .help-dialog section {
-  width: min(760px, calc(100vw - 32px));
+  width: min(980px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: auto;
 }
 
 .guide-grid {
   display: grid;
-  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .guide-grid article {
   border: 1px solid rgba(150, 184, 198, 0.14);
   background: rgba(8, 16, 22, 0.72);
-  padding: 10px;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.guide-grid article:first-child,
+.guide-grid article:nth-child(5),
+.guide-grid article:nth-child(7) {
+  grid-column: 1 / -1;
+}
+
+.guide-grid strong {
+  color: var(--text);
+  font-size: 14px;
 }
 
 .guide-grid p {
-  margin: 5px 0 0;
+  margin: 7px 0 0;
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 13.5px;
+  line-height: 1.58;
+  white-space: pre-line;
+}
+
+@media (max-width: 720px) {
+  .guide-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .guide-grid article:first-child,
+  .guide-grid article:nth-child(5),
+  .guide-grid article:nth-child(7) {
+    grid-column: auto;
+  }
 }
 
 .credit-banner {

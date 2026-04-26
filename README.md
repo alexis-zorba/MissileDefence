@@ -51,9 +51,13 @@ Turrets can be configured depending on the selected game mode:
   - Mouse click fires turrets immediately.
   - Aim can be parallel or independently directed toward the clicked point.
 
-## Interface And Localization
+## Interface And Online Manual
 
-The interface includes a quick in-game guide, a schematic city/arsenal status panel and compact footer telemetry for base health, factory production, weapon slots, ammunition and turret heat.
+The interface includes a readable in-game manual, a schematic city/arsenal status panel and compact footer telemetry for base health, factory production, weapon slots, ammunition and weapon durability.
+
+The online manual is available from the `?` button in the top-right toolbar. It covers the objective, game modes, controls, weapon roles, enemies, economy, difficulty and practical survival tips.
+
+## Localization
 
 The UI currently ships with Italian and English dictionaries through `src/i18n.js`. Additional languages can be added by extending the dictionary object without changing game logic.
 
@@ -65,7 +69,9 @@ Each weapon can be upgraded up to level 3.
 - **Seeker missile**: tracks priority targets, has stronger guidance, but reloads more slowly.
 - **Cannon**: slower firing rate, high damage per shot.
 - **Machine gun**: high rate of fire, useful against drones and agile low-health targets.
-- **Laser**: precise and immediate, constrained by heat and ammunition/energy limits.
+- **Laser**: precise and immediate, constrained by energy ammunition and weapon durability.
+
+Each installed weapon has mechanical durability. Firing consumes durability; when it reaches zero, the weapon breaks and the slot becomes available again. Ammunition resupply does not repair durability, while upgrading a weapon restores it to the maximum value for the new level.
 
 ## Economy And Upgrades
 

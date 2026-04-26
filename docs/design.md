@@ -78,7 +78,19 @@ Ogni base ha quattro slot arma:
 - 2 slot lanciarazzi
 - 2 slot torretta
 
-Ogni slot ha tipo arma, livello, munizioni, cooldown e, per le torrette, calore separato. Le armi arrivano al livello 3.
+Ogni slot ha tipo arma, livello, munizioni, cooldown e usura meccanica. Le armi arrivano al livello 3.
+
+L'usura e calcolata in numero di colpi sparati. Ogni sparo consuma 1 punto vita arma; quando la vita arriva a zero, l'arma si rompe e lo slot torna libero. La ricarica munizioni non ripara l'usura. L'upgrade invece installa componenti nuovi e ripristina la vita massima del livello raggiunto.
+
+Valori attuali di vita arma:
+
+| Arma | L1 | L2 | L3 |
+| --- | ---: | ---: | ---: |
+| Razzo balistico | 18 | 26 | 34 |
+| Razzo seeker | 10 | 15 | 20 |
+| Cannoncino | 90 | 125 | 165 |
+| Mitragliatrice | 260 | 360 | 480 |
+| Laser | 55 | 75 | 100 |
 
 ## Armi
 
@@ -91,7 +103,7 @@ Torrette:
 
 - Cannoncino AA: colpi lenti ad alto danno, efficace contro bersagli resistenti e bombe.
 - Mitragliatrice: raffica rapida, ottima contro droni e missili leggeri, consuma molte munizioni.
-- Laser: istantaneo e preciso, forte sui bersagli veloci, limitato da calore e consumo.
+- Laser: istantaneo e preciso, forte sui bersagli veloci, limitato da energia e vita meccanica.
 
 ## Nemici
 
