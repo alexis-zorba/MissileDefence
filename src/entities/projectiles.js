@@ -36,7 +36,8 @@ export function updateMissiles() {
     const distance = Math.hypot(dx, dy);
     missile.trail.push({ x: missile.x, y: missile.y });
     if (missile.trail.length > 18) missile.trail.shift();
-    if (distance <= stats.speed) {
+    const shouldDetonateAtTarget = missile.type !== "seeker" && distance <= stats.speed;
+    if (shouldDetonateAtTarget) {
       const radiusBoost = missile.type === "ballistic" ? 1 + (missile.blastRadiusLevel - 1) * 0.16 : 1;
       const radius = stats.radius * radiusBoost;
       createBlast(missile.targetX, missile.targetY, radius, stats.damage, missile.type, missile.blastLifeLevel);
@@ -62,7 +63,10 @@ export function updateMissiles() {
           createBlast(missile.targetX + Math.cos(angle) * 34, missile.targetY + Math.sin(angle) * 22, 22 * radiusBoost, 0.72, "ballistic", missile.blastLifeLevel);
         }
       }
-    } else {
+    } else if (missile.type === "seeker") {
+      missile.x += Math.cos(missile.angle ?? -Math.PI / 2) * stats.speed;
+      missile.y += Math.sin(missile.angle ?? -Math.PI / 2) * stats.speed;
+    } else if (distance > 0) {
       missile.x += (dx / distance) * stats.speed;
       missile.y += (dy / distance) * stats.speed;
     }
