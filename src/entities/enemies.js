@@ -126,13 +126,13 @@ export function updateEnemies(dt, difficultyCfg, trailDuration) {
       enemy.trail ||= [];
       const isBomb = enemy.type === "bomb";
       enemy.trail.push({
-        x: enemy.x - enemy.vx * (isBomb ? 10 : 7) + Math.sin((enemy.wobble || 0) + enemy.trail.length * 0.7) * (isBomb ? 7 : 2),
-        y: enemy.y - enemy.vy * (isBomb ? 7 : 7) + (Math.random() - 0.5) * (isBomb ? 2 : 4),
-        r: (isBomb ? 5 : 3) + Math.random() * (isBomb ? 7 : 5),
-        a: (isBomb ? 0.34 : 0.28) + Math.random() * 0.18,
+        x: enemy.x - enemy.vx * (isBomb ? 16 : 7) + Math.sin((enemy.wobble || 0) + enemy.trail.length * 0.42) * (isBomb ? 11 : 2),
+        y: enemy.y - enemy.vy * (isBomb ? 13 : 7) + (Math.random() - 0.5) * (isBomb ? 3 : 4),
+        r: (isBomb ? 8 : 3) + Math.random() * (isBomb ? 10 : 5),
+        a: (isBomb ? 0.42 : 0.28) + Math.random() * (isBomb ? 0.16 : 0.18),
         warm: isBomb,
       });
-      const maxTrail = Math.round((isBomb ? 72 : 32) * trailDuration);
+      const maxTrail = Math.round((isBomb ? 104 : 32) * trailDuration);
       if (enemy.trail.length > maxTrail) enemy.trail.shift();
     }
     if (enemy.type === "bomb") {

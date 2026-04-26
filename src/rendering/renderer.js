@@ -694,9 +694,18 @@ function drawEnemySmokeTrail(ctx, trail) {
   trail.forEach((puff, index) => {
     const fade = index / trail.length;
     ctx.globalAlpha = puff.a * Math.pow(fade, 1.25);
-    ctx.fillStyle = puff.warm ? "#b7a58e" : "#aab0ad";
     const size = puff.r * (1.45 - fade * 0.35) * state.visualScale;
-    drawPixelRect(ctx, puff.x - size / 2, puff.y - size / 2, size, size);
+    if (puff.warm) {
+      ctx.fillStyle = "#7d7466";
+      drawPixelRect(ctx, puff.x - size * 0.65, puff.y - size * 0.35, size * 1.3, size * 0.7);
+      ctx.fillStyle = "#b7a58e";
+      drawPixelRect(ctx, puff.x - size * 0.44, puff.y - size * 0.24, size * 0.88, size * 0.48);
+      ctx.fillStyle = "#e1c084";
+      drawPixelRect(ctx, puff.x - size * 0.18, puff.y - size * 0.12, size * 0.36, size * 0.24);
+    } else {
+      ctx.fillStyle = "#aab0ad";
+      drawPixelRect(ctx, puff.x - size / 2, puff.y - size / 2, size, size);
+    }
   });
   ctx.globalAlpha = 1;
 }
@@ -745,23 +754,35 @@ function drawIncomingRocket(ctx, enemy, def) {
 }
 
 function drawBomber(ctx, enemy, def) {
-  const scale = state.visualScale;
+  const scale = state.visualScale * 2;
   ctx.save();
   ctx.translate(enemy.x, enemy.y);
-  ctx.scale(scale, scale);
-  ctx.fillStyle = "#1d2b35";
-  drawPixelRect(ctx, -28, -5, 56, 10);
+  ctx.scale((enemy.vx || 1) < 0 ? -scale : scale, scale);
+  ctx.fillStyle = "#111a22";
+  drawPixelRect(ctx, -42, -4, 84, 9);
+  drawPixelRect(ctx, -26, -18, 34, 10);
+  drawPixelRect(ctx, -30, 8, 38, 10);
+  drawPixelRect(ctx, -45, -16, 15, 8);
+  drawPixelRect(ctx, -45, 8, 15, 8);
   ctx.fillStyle = def.color;
-  drawPixelRect(ctx, -22, -8, 38, 16);
-  drawPixelRect(ctx, 16, -4, 12, 8);
-  drawPixelRect(ctx, -4, -19, 24, 7);
-  drawPixelRect(ctx, -8, 12, 24, 7);
-  ctx.fillStyle = "#e9f6ff";
-  drawPixelRect(ctx, -17, -3, 5, 4);
-  drawPixelRect(ctx, -7, -3, 5, 4);
-  drawPixelRect(ctx, 3, -3, 5, 4);
-  ctx.fillStyle = "#ff5f5f";
-  drawPixelRect(ctx, 20, -8, 6, 4);
+  drawPixelRect(ctx, -34, -7, 62, 15);
+  drawPixelRect(ctx, 25, -4, 18, 9);
+  drawPixelRect(ctx, -18, -22, 42, 9);
+  drawPixelRect(ctx, -20, 13, 44, 9);
+  ctx.fillStyle = "#577284";
+  drawPixelRect(ctx, -8, -12, 23, 5);
+  drawPixelRect(ctx, -9, 8, 25, 5);
+  drawPixelRect(ctx, -35, -10, 13, 6);
+  drawPixelRect(ctx, -35, 5, 13, 6);
+  ctx.fillStyle = "#dbeef4";
+  drawPixelRect(ctx, 11, -5, 6, 4);
+  drawPixelRect(ctx, 20, -4, 5, 3);
+  ctx.fillStyle = "#283844";
+  drawPixelRect(ctx, -14, -2, 8, 8);
+  drawPixelRect(ctx, 1, -2, 8, 8);
+  ctx.fillStyle = "#f06b4f";
+  drawPixelRect(ctx, -48, -11, 5, 5);
+  drawPixelRect(ctx, -48, 7, 5, 5);
   ctx.restore();
 }
 
