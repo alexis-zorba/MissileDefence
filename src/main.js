@@ -75,9 +75,15 @@ function update(dt) {
   if (!state.betweenWaves) {
     state.spawnTimer -= dt;
     if (state.enemiesToSpawn > 0 && state.spawnTimer <= 0) {
-      spawnEnemy(state.wave, diffCfg);
-      state.enemiesToSpawn -= 1;
-      state.spawnTimer = Math.max(160, 980 - state.wave * 34 + Math.random() * 420);
+      const spawnCount = Math.min(
+        state.enemiesToSpawn,
+        1 + Math.floor((state.wave - 1) * diffCfg.count / 6)
+      );
+      for (let s = 0; s < spawnCount; s += 1) {
+        spawnEnemy(state.wave, diffCfg);
+        state.enemiesToSpawn -= 1;
+      }
+      state.spawnTimer = Math.max(120, 860 - state.wave * 26 + Math.random() * 380);
     }
     updateAi(dt, getMode(), diffCfg);
   }
