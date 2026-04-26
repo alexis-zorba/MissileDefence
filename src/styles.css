@@ -681,8 +681,10 @@ label {
 
 .upgrade-group {
   display: grid;
+  grid-template-rows: auto 1fr;
+  align-content: start;
+  align-items: start;
   gap: 8px;
-  min-height: 100%;
   border: 1px solid rgba(150, 184, 198, 0.16);
   border-radius: 8px;
   padding: 9px;
@@ -691,7 +693,7 @@ label {
 
 .upgrade-group h3 {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 7px;
   margin: 0;
   color: var(--text);
@@ -715,12 +717,14 @@ label {
 .upgrade-grid {
   grid-template-columns: 1fr;
   align-content: start;
+  align-items: start;
+  align-self: start;
 }
 
 .upgrade-grid button {
   display: grid;
   grid-template-columns: 26px minmax(0, 1fr) auto;
-  align-items: center;
+  align-items: start;
   gap: 7px;
   min-height: 40px;
   padding: 7px;
@@ -736,6 +740,7 @@ label {
 }
 
 .upgrade-grid button span:not(.upgrade-icon) {
+  align-self: start;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -744,6 +749,7 @@ label {
 .upgrade-icon {
   display: grid;
   place-items: center;
+  align-self: start;
   width: 24px;
   height: 24px;
   border: 1px solid rgba(150, 184, 198, 0.18);
@@ -753,6 +759,7 @@ label {
 }
 
 .upgrade-grid strong {
+  align-self: start;
   min-width: 26px;
   height: 24px;
   display: grid;
