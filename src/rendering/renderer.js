@@ -8,6 +8,11 @@ import { MISSILE_DEFS, ENEMY_DEFS, CANVAS_WIDTH, CANVAS_HEIGHT, GROUND_Y, SLOT_O
 const W = CANVAS_WIDTH;
 const H = CANVAS_HEIGHT;
 const groundY = GROUND_Y;
+const CLOUD_LAYERS = [
+  { y: 116, speed: 6, scale: 1.2, alpha: 0.14, seed: 0 },
+  { y: 196, speed: 10, scale: 1.55, alpha: 0.18, seed: 420 },
+  { y: 288, speed: 14, scale: 1.9, alpha: 0.22, seed: 860 },
+];
 
 // --- Main draw orchestrator ---
 
@@ -29,10 +34,7 @@ export function draw(ctx, mode = "missiles") {
 // --- Sky / background ---
 
 function drawSky(ctx) {
-  ctx.fillStyle = "#080e16";
-  ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = "#020406";
-  ctx.fillRect(0, Math.floor(H * 0.36), W, Math.floor(H * 0.64));
+  drawPixelSkyGradient(ctx);
   ctx.strokeStyle = "rgba(85, 214, 190, 0.13)";
   ctx.lineWidth = 1;
   for (let x = 0; x < W; x += 64) {
@@ -47,6 +49,7 @@ function drawSky(ctx) {
     ctx.lineTo(W, y);
     ctx.stroke();
   }
+  drawCloudLayers(ctx);
   ctx.fillStyle = "#1a241c";
   ctx.fillRect(0, groundY, W, 18);
   ctx.fillStyle = "#111a14";
@@ -65,6 +68,54 @@ function drawSky(ctx) {
     ctx.lineTo(W, y + Math.sin(y * 0.03) * 2);
     ctx.stroke();
   }
+}
+
+function drawPixelSkyGradient(ctx) {
+  const bands = [
+    { y: 0, h: 104, color: "#020712" },
+    { y: 104, h: 96, color: "#06111e" },
+    { y: 200, h: 112, color: "#0a1c2a" },
+    { y: 312, h: 120, color: "#102a37" },
+    { y: 432, h: groundY - 432, color: "#183745" },
+  ];
+  bands.forEach((band) => {
+    ctx.fillStyle = band.color;
+    ctx.fillRect(0, band.y, W, Math.max(0, band.h));
+  });
+  ctx.fillStyle = "rgba(105, 169, 255, 0.05)";
+  for (let y = 96; y < groundY; y += 32) {
+    ctx.fillRect(0, y, W, 4);
+  }
+}
+
+function drawCloudLayers(ctx) {
+  const time = performance.now() / 1000;
+  CLOUD_LAYERS.forEach((layer) => {
+    for (let i = 0; i < 5; i += 1) {
+      const width = (150 + ((i * 47 + layer.seed) % 120)) * layer.scale;
+      const x = (((i * 310 + layer.seed + time * layer.speed) % (W + width + 160)) - width - 80);
+      const y = layer.y + Math.sin(time * 0.22 + i + layer.seed) * 8;
+      drawPixelCloud(ctx, x, y, width, layer.scale, layer.alpha);
+    }
+  });
+}
+
+function drawPixelCloud(ctx, x, y, width, scale, alpha) {
+  const block = Math.max(5, Math.round(6 * scale));
+  const height = Math.round(28 * scale);
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = "#b8c6c9";
+  drawPixelRect(ctx, x + block * 1, y + block * 2, width * 0.72, height * 0.56);
+  drawPixelRect(ctx, x + block * 5, y + block, width * 0.26, height * 0.72);
+  drawPixelRect(ctx, x + width * 0.32, y, width * 0.24, height * 0.92);
+  drawPixelRect(ctx, x + width * 0.54, y + block, width * 0.3, height * 0.68);
+  ctx.fillStyle = "#d8e0df";
+  drawPixelRect(ctx, x + width * 0.18, y + block, width * 0.18, block * 2);
+  drawPixelRect(ctx, x + width * 0.48, y + block, width * 0.24, block * 2);
+  ctx.fillStyle = "#607984";
+  drawPixelRect(ctx, x + block * 2, y + height, width * 0.68, block);
+  ctx.restore();
 }
 
 // --- Cities ---
