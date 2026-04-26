@@ -791,7 +791,7 @@ function drawBlasts(ctx) {
     drawPixelDisk(ctx, blast.x, blast.y, radius, color, alpha, 5 * state.visualScale);
   });
 
-  ctx.fillStyle = "rgba(1, 3, 5, 0.92)";
+  ctx.fillStyle = "#fffbe6";
   for (let i = 0; i < state.blasts.length; i += 1) {
     const a = state.blasts[i];
     const ar = a.currentRadius * state.visualScale;
