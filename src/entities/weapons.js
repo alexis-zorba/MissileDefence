@@ -33,6 +33,7 @@ export function launchMissileFromSlot(city, slot, target, byAi, aiMultiplier) {
     level: slot.level,
     stats,
     byAi,
+    angle: Math.atan2(target.y - city.y, target.x - city.x),
     blastRadiusLevel: city.blastRadiusLevel,
     blastLifeLevel: city.blastLifeLevel,
     trail: [],
