@@ -308,26 +308,21 @@ label,
 }
 
 .footer-slot.recharging {
-  border-color: rgba(244, 191, 84, 0.5);
-  background: rgba(60, 45, 16, 0.5);
+  border-color: rgba(244, 191, 84, 0.55);
+  background: rgba(60, 45, 16, 0.55);
+}
+
+.footer-slot.recharging .slot-icon,
+.footer-slot.recharging small {
+  color: #f4bf54 !important;
+}
+
+.footer-slot.recharging .footer-bar > span {
+  background: #f4bf54 !important;
 }
 
 .footer-slot.recharging .slot-icon {
-  color: #f4bf54 !important;
   animation: cd-pulse 700ms ease-in-out infinite;
-}
-
-.footer-bar.cooldown {
-  grid-column: 2 / 4;
-  height: 2px;
-  background: rgba(244, 191, 84, 0.18);
-}
-
-.footer-bar.cooldown > span {
-  background: #f4bf54;
-  border-radius: 999px;
-  display: block;
-  height: 100%;
 }
 
 @keyframes cd-pulse {

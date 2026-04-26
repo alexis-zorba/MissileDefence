@@ -107,7 +107,17 @@ export function fireTurret(city, slot, dt, byAi = false, aiMultiplier = 1) {
       color: def.color,
     });
   }
-  slot.cooldown = stats.cooldown * (byAi ? aiMultiplier : 1);
+  if (stats.burst) {
+    slot.burstShot = (slot.burstShot || 0) + 1;
+    if (slot.burstShot >= stats.burst) {
+      slot.burstShot = 0;
+      slot.cooldown = (stats.burstReload ?? stats.cooldown) * (byAi ? aiMultiplier : 1);
+    } else {
+      slot.cooldown = stats.cooldown * (byAi ? aiMultiplier : 1);
+    }
+  } else {
+    slot.cooldown = stats.cooldown * (byAi ? aiMultiplier : 1);
+  }
   consumeDurability(slot);
   return true;
 }

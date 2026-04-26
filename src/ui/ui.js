@@ -2,7 +2,7 @@
 // UI — DOM element references, HUD updates, dialog management
 // =============================================================================
 
-import { state, on, installedSlots, maxAmmo, maxDurability, weaponColor, factoriesForBase, missileStats, turretStats, DEFAULT_GAME_SPEED, DEFAULT_VISUAL_SCALE } from "../state.js";
+import { state, on, installedSlots, maxAmmo, maxDurability, weaponColor, factoriesForBase, DEFAULT_GAME_SPEED, DEFAULT_VISUAL_SCALE } from "../state.js";
 import { DIFFICULTY } from "../config.js";
 import { spendUpgrade } from "../core/economy.js";
 import { startWave } from "../core/wave.js";
@@ -121,18 +121,14 @@ export function renderFooterCities() {
       const durabilityMax = maxDurability(slot);
       const durability = slot.durability || 0;
       const durabilityPct = durabilityMax > 0 ? Math.min(100, (durability / durabilityMax) * 100) : 0;
-      const sStats = slot.role === "missile" ? missileStats(slot) : turretStats(slot);
-      const cdMax = sStats?.cooldown || 0;
-      const cdPct = cdMax > 0 ? Math.min(100, Math.max(0, (slot.cooldown / cdMax) * 100)) : 0;
-      const recharging = slot.cooldown > 80 && cdMax >= 600;
+      const recharging = slot.cooldown > 250;
       return `
         <div class="footer-slot${recharging ? " recharging" : ""}" title="${slotLabel(slot)}${recharging ? ` — RICARICA ${(slot.cooldown / 1000).toFixed(1)}s` : ""}">
           <span class="slot-icon" style="color:${weaponColor(slot.type)}">${weaponIcon(slot.type)}</span>
           <div class="footer-bar"><span style="width:${ammoPct}%; background:${weaponColor(slot.type)}"></span></div>
           <small>${slot.ammo}/${maxAmmo(city, slot)}</small>
           <div class="footer-bar durability"><span style="width:${durabilityPct}%; background:${durabilityPct > 25 ? "#55d6be" : "#ff5f5f"}"></span></div>
-          <small>${recharging ? `⟳ ${(slot.cooldown / 1000).toFixed(1)}s` : `${durability}/${durabilityMax}`}</small>
-          ${cdPct > 0 ? `<div class="footer-bar cooldown"><span style="width:${cdPct}%"></span></div>` : ""}
+          <small>${durability}/${durabilityMax}</small>
         </div>
       `;
     }).join("");
