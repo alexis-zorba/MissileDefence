@@ -53,28 +53,27 @@ export function updateMissiles(dt = 16) {
       const radiusBoost = missile.type === "ballistic" ? 1 + (missile.blastRadiusLevel - 1) * 0.16 : 1;
       const radius = stats.radius * radiusBoost;
       createBlast(missile.targetX, missile.targetY, radius, stats.damage, missile.type, missile.blastLifeLevel);
-      if (missile.type === "ballistic" && missile.blastRadiusLevel > 1) {
-        const clusterCount = Math.min(7, missile.blastRadiusLevel + 1);
+      if (missile.type === "ballistic" && (missile.blastRadiusLevel > 1 || missile.level >= 3)) {
+        // Fully random secondary cluster: count, position, radius and damage
+        // all jittered so no two ballistic detonations look the same.
+        const base = 1 + Math.max(0, missile.blastRadiusLevel - 1) + (missile.level >= 3 ? 2 : 0);
+        const clusterCount = Math.max(2, Math.min(8, base + ((Math.random() * 3) | 0)));
         for (let i = 0; i < clusterCount; i += 1) {
-          const angle = (Math.PI * 2 * i) / clusterCount + Math.random() * 0.22;
-          const spread = radius * (0.42 + Math.random() * 0.18);
+          const angle = Math.random() * Math.PI * 2;
+          const dist = radius * (0.2 + Math.random() * 0.65);
+          const yScale = 0.55 + Math.random() * 0.4;
+          const childRadius = radius * (0.28 + Math.random() * 0.34);
           createBlast(
-            missile.targetX + Math.cos(angle) * spread,
-            missile.targetY + Math.sin(angle) * spread * 0.72,
-            radius * 0.42,
-            stats.damage * 0.38,
+            missile.targetX + Math.cos(angle) * dist,
+            missile.targetY + Math.sin(angle) * dist * yScale,
+            childRadius,
+            stats.damage * (0.3 + Math.random() * 0.22),
             "ballistic",
             missile.blastLifeLevel
           );
         }
       }
       missile.done = true;
-      if (missile.type === "ballistic" && missile.level >= 3) {
-        for (let i = 0; i < 4; i += 1) {
-          const angle = (Math.PI * 2 * i) / 4 + Math.random() * 0.4;
-          createBlast(missile.targetX + Math.cos(angle) * 34, missile.targetY + Math.sin(angle) * 22, 22 * radiusBoost, 0.72, "ballistic", missile.blastLifeLevel);
-        }
-      }
     } else if (missile.type === "seeker") {
       missile.x += Math.cos(missile.angle ?? -Math.PI / 2) * travel;
       missile.y += Math.sin(missile.angle ?? -Math.PI / 2) * travel;
