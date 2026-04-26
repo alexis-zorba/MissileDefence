@@ -307,6 +307,34 @@ label,
   opacity: 0.42;
 }
 
+.footer-slot.recharging {
+  border-color: rgba(244, 191, 84, 0.5);
+  background: rgba(60, 45, 16, 0.5);
+}
+
+.footer-slot.recharging .slot-icon {
+  color: #f4bf54 !important;
+  animation: cd-pulse 700ms ease-in-out infinite;
+}
+
+.footer-bar.cooldown {
+  grid-column: 2 / 4;
+  height: 2px;
+  background: rgba(244, 191, 84, 0.18);
+}
+
+.footer-bar.cooldown > span {
+  background: #f4bf54;
+  border-radius: 999px;
+  display: block;
+  height: 100%;
+}
+
+@keyframes cd-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 .footer-slot .slot-icon {
   grid-row: span 2;
   font-weight: 800;

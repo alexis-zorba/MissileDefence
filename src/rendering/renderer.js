@@ -655,14 +655,7 @@ function drawLaserEmitter(ctx, slot) {
 
 function drawFriendlyMissiles(ctx) {
   state.friendlyMissiles.forEach((missile) => {
-    missile.trail.forEach((point, index) => {
-      const fade = index / Math.max(1, missile.trail.length - 1);
-      const size = (2 + fade * 5) * state.visualScale;
-      ctx.globalAlpha = 0.16 + fade * 0.62;
-      ctx.fillStyle = missile.type === "seeker" ? "#73a9ff" : "#e9f6ff";
-      drawPixelRect(ctx, point.x - size / 2, point.y - size / 2, size, size);
-    });
-    ctx.globalAlpha = 1;
+    drawFriendlySmokeTrail(ctx, missile);
     ctx.fillStyle = MISSILE_DEFS[missile.type].color;
     drawPixelRect(ctx, missile.x - 3 * state.visualScale, missile.y - 6 * state.visualScale, 6 * state.visualScale, 12 * state.visualScale);
     ctx.fillStyle = "#ffffff";
@@ -688,6 +681,32 @@ function drawEnemies(ctx) {
       drawIncomingMissile(ctx, enemy, def);
     }
   });
+}
+
+function drawFriendlySmokeTrail(ctx, missile) {
+  if (!missile.trail?.length) return;
+  const seeker = missile.type === "seeker";
+  missile.trail.forEach((puff, index) => {
+    const fade = index / missile.trail.length;
+    ctx.globalAlpha = puff.a * Math.pow(fade, 1.25);
+    const size = puff.r * (1.45 - fade * 0.35) * state.visualScale;
+    if (seeker) {
+      ctx.fillStyle = "#3a5780";
+      drawPixelRect(ctx, puff.x - size * 0.42, puff.y - size * 0.22, size * 0.84, size * 0.44);
+      ctx.fillStyle = "#73a9ff";
+      drawPixelRect(ctx, puff.x - size * 0.3, puff.y - size * 0.16, size * 0.6, size * 0.32);
+      ctx.fillStyle = "#c8defb";
+      drawPixelRect(ctx, puff.x - size * 0.12, puff.y - size * 0.08, size * 0.24, size * 0.16);
+    } else {
+      ctx.fillStyle = "#7d6655";
+      drawPixelRect(ctx, puff.x - size * 0.42, puff.y - size * 0.22, size * 0.84, size * 0.44);
+      ctx.fillStyle = "#d6c0a3";
+      drawPixelRect(ctx, puff.x - size * 0.3, puff.y - size * 0.16, size * 0.6, size * 0.32);
+      ctx.fillStyle = "#fff0c7";
+      drawPixelRect(ctx, puff.x - size * 0.12, puff.y - size * 0.08, size * 0.24, size * 0.16);
+    }
+  });
+  ctx.globalAlpha = 1;
 }
 
 function drawEnemySmokeTrail(ctx, trail) {

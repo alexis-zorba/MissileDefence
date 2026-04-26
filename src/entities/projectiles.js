@@ -36,8 +36,17 @@ export function updateMissiles(dt = 16) {
     const dx = missile.targetX - missile.x;
     const dy = missile.targetY - missile.y;
     const distance = Math.hypot(dx, dy);
-    missile.trail.push({ x: missile.x, y: missile.y });
-    if (missile.trail.length > 18) missile.trail.shift();
+    if (missile.wobble == null) missile.wobble = Math.random() * Math.PI * 2;
+    const dirX = missile.angle != null ? Math.cos(missile.angle) : (distance > 0 ? dx / distance : 0);
+    const dirY = missile.angle != null ? Math.sin(missile.angle) : (distance > 0 ? dy / distance : 1);
+    missile.trail.push({
+      x: missile.x - dirX * 6 + Math.sin(missile.wobble + missile.trail.length * 0.42) * 2,
+      y: missile.y - dirY * 6 + (Math.random() - 0.5) * 4,
+      r: 3 + Math.random() * 5,
+      a: 0.28 + Math.random() * 0.18,
+    });
+    const maxTrail = Math.round(32 * state.trailDuration);
+    if (missile.trail.length > maxTrail) missile.trail.shift();
     const travel = stats.speed * step;
     const shouldDetonateAtTarget = missile.type !== "seeker" && distance <= travel;
     if (shouldDetonateAtTarget) {
