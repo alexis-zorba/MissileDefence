@@ -157,6 +157,9 @@ export function closeBuildDialog() {
 }
 
 export function openGameModeDialog() {
+  closeBuildDialog();
+  if (ui.settingsDialog.open) ui.settingsDialog.close();
+  if (ui.intelDialog.open) ui.intelDialog.close();
   if (!ui.gameModeDialog.open) ui.gameModeDialog.showModal();
 }
 

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Missile Defence Multiplayer</title>
-    <link rel="stylesheet" href="src/styles.css">
+    <link rel="stylesheet" href="src/styles.css?v=20260426-1">
   </head>
   <body>
     <main class="game-shell">
@@ -47,13 +47,13 @@
             <strong>New game</strong>
           </header>
           <div class="mode-grid">
+            <button data-mode-preset="turret" autofocus>
+              <strong>Umano torrette</strong>
+              <span>Mouse alle torrette, click per sparare, AI ai lanciarazzi.</span>
+            </button>
             <button data-mode-preset="missiles">
               <strong>Umano lanciarazzi</strong>
               <span>Mouse ai razzi, AI alle torrette con mira indipendente.</span>
-            </button>
-            <button data-mode-preset="turret">
-              <strong>Umano torrette</strong>
-              <span>Mouse alle torrette, click per sparare, AI ai lanciarazzi.</span>
             </button>
             <button data-mode-preset="coop">
               <strong>Co-op umano</strong>
@@ -73,7 +73,7 @@
             Modalita
             <select id="modeSelect">
               <option value="missiles">Giocatore missili, computer torrette</option>
-              <option value="turret">Giocatore torretta, computer missili</option>
+              <option value="turret" selected>Giocatore torretta, computer missili</option>
               <option value="coop">Co-op locale</option>
             </select>
           </label>
@@ -104,15 +104,15 @@
           <label>
             Controllo torrette
             <select id="turretInputSelect">
-              <option value="keyboard" selected>Freccette e spazio</option>
-              <option value="mouse">Mouse</option>
+              <option value="keyboard">Freccette e spazio</option>
+              <option value="mouse" selected>Mouse</option>
             </select>
           </label>
           <label>
             Mira torrette manuali
             <select id="turretAimSelect">
-              <option value="parallel" selected>Parallela</option>
-              <option value="point">Verso punto click</option>
+              <option value="parallel">Parallela</option>
+              <option value="point" selected>Indipendente verso punto click</option>
             </select>
           </label>
           <label>
@@ -191,6 +191,6 @@
       </dialog>
     </main>
 
-    <script type="module" src="src/main.js"></script>
+    <script type="module" src="src/main.js?v=20260426-1"></script>
   </body>
 </html>
