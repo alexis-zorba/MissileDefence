@@ -32,7 +32,7 @@ export function spawnEnemy(wave, difficultyCfg) {
       vx: (fromLeft ? 1 : -1) * (1.15 + wave * 0.025) * difficultyCfg.speed,
       vy: 0,
       hp: ENEMY_DEFS[type].hp,
-      bombTimer: 550 + Math.random() * 900,
+      bombTimer: 1200 + Math.random() * 800,
       bombsDropped: 0,
       radius: ENEMY_DEFS[type].radius,
       trail: [],
@@ -148,7 +148,7 @@ export function updateEnemies(dt, difficultyCfg, trailDuration) {
       if (enemy.bombTimer <= 0 && (enemy.bombsDropped || 0) < 3) {
         dropBomb(enemy, difficultyCfg);
         enemy.bombsDropped = (enemy.bombsDropped || 0) + 1;
-        enemy.bombTimer = 700 + Math.random() * 750;
+        enemy.bombTimer = 1800 + Math.random() * 1200;
       }
       if (enemy.x < -80 || enemy.x > W + 80) enemy.dead = true;
     }

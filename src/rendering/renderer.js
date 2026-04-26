@@ -773,35 +773,63 @@ function drawIncomingRocket(ctx, enemy, def) {
 }
 
 function drawBomber(ctx, enemy, def) {
-  const scale = state.visualScale * 2;
+  const scale = state.visualScale * 2.2;
   ctx.save();
   ctx.translate(enemy.x, enemy.y);
   ctx.scale((enemy.vx || 1) < 0 ? -scale : scale, scale);
-  ctx.fillStyle = "#111a22";
-  drawPixelRect(ctx, -42, -4, 84, 9);
-  drawPixelRect(ctx, -26, -18, 34, 10);
-  drawPixelRect(ctx, -30, 8, 38, 10);
-  drawPixelRect(ctx, -45, -16, 15, 8);
-  drawPixelRect(ctx, -45, 8, 15, 8);
+
+  // Tail fin (vertical stabilizer)
+  ctx.fillStyle = "#3a4a58";
+  drawPixelRect(ctx, -34, -11, 8, 8);
   ctx.fillStyle = def.color;
-  drawPixelRect(ctx, -34, -7, 62, 15);
-  drawPixelRect(ctx, 25, -4, 18, 9);
-  drawPixelRect(ctx, -18, -22, 42, 9);
-  drawPixelRect(ctx, -20, 13, 44, 9);
+  drawPixelRect(ctx, -33, -10, 6, 7);
+
+  // Horizontal tail stabilizer
+  ctx.fillStyle = "#3a4a58";
+  drawPixelRect(ctx, -40, -2, 9, 3);
+  ctx.fillStyle = def.color;
+  drawPixelRect(ctx, -39, -2, 7, 2);
+
+  // Main fuselage — long body
+  ctx.fillStyle = "#3a4a58";
+  drawPixelRect(ctx, -32, -4, 62, 9);
+  ctx.fillStyle = def.color;
+  drawPixelRect(ctx, -31, -3, 60, 7);
+  // Nose cone tapering to a point
+  drawPixelRect(ctx, 28, -2, 4, 5);
+  drawPixelRect(ctx, 31, -1, 2, 3);
+
+  // Belly stripe / panel line
   ctx.fillStyle = "#577284";
-  drawPixelRect(ctx, -8, -12, 23, 5);
-  drawPixelRect(ctx, -9, 8, 25, 5);
-  drawPixelRect(ctx, -35, -10, 13, 6);
-  drawPixelRect(ctx, -35, 5, 13, 6);
-  ctx.fillStyle = "#dbeef4";
-  drawPixelRect(ctx, 11, -5, 6, 4);
-  drawPixelRect(ctx, 20, -4, 5, 3);
-  ctx.fillStyle = "#283844";
-  drawPixelRect(ctx, -14, -2, 8, 8);
-  drawPixelRect(ctx, 1, -2, 8, 8);
+  drawPixelRect(ctx, -30, 1, 56, 1);
+
+  // Cockpit canopy
+  ctx.fillStyle = "#1a2530";
+  drawPixelRect(ctx, 17, -6, 12, 3);
+  ctx.fillStyle = "#9ad0e6";
+  drawPixelRect(ctx, 18, -5, 10, 2);
+
+  // Wing root (visible from side, behind/under fuselage)
+  ctx.fillStyle = "#2a3744";
+  drawPixelRect(ctx, -8, 4, 24, 5);
+  ctx.fillStyle = def.color;
+  drawPixelRect(ctx, -7, 4, 22, 4);
+
+  // Engine pod under wing
+  ctx.fillStyle = "#1f2a35";
+  drawPixelRect(ctx, -2, 8, 16, 4);
+  ctx.fillStyle = "#3a4a58";
+  drawPixelRect(ctx, -1, 8, 14, 3);
+  // Engine intake (front), exhaust (rear)
+  ctx.fillStyle = "#0a1015";
+  drawPixelRect(ctx, 12, 9, 2, 2);
   ctx.fillStyle = "#f06b4f";
-  drawPixelRect(ctx, -48, -11, 5, 5);
-  drawPixelRect(ctx, -48, 7, 5, 5);
+  drawPixelRect(ctx, -2, 9, 1, 2);
+
+  // Tail navigation light
+  ctx.fillStyle = "#f06b4f";
+  drawPixelRect(ctx, -32, -2, 1, 2);
+
   ctx.restore();
 }
 
