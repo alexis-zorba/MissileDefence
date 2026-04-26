@@ -62,7 +62,12 @@ export function launchMissile(target, preferredType = null, byAi = false, aiMult
     });
   };
   collect(preferredType);
-  if (byAi && preferredType && !attempts.some(Boolean)) collect(null);
+  // For AI-controlled salvos, also fire any remaining ready launchers of
+  // any other type at the same target — otherwise a ballistic-only city
+  // sits idle while the AI prefers seekers for the priority threat.
+  // Slots that already fired in the first pass are now on cooldown and
+  // return false on the second pass, so this doesn't double-fire.
+  if (byAi && preferredType) collect(null);
   const fired = attempts.some(Boolean);
   if (fired) logger.log("debug", "Missile salvo launched", { preferredType, byAi, count: attempts.filter(Boolean).length });
   return fired;
