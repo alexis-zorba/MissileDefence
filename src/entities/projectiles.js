@@ -27,8 +27,8 @@ export function updateMissiles() {
         const maxTurn = (stats.turnRate || 2.5) * (Math.PI / 180);
         const turnAmount = Math.max(-maxTurn, Math.min(maxTurn, angleDiff));
         missile.angle = currentAngle + turnAmount;
-        missile.targetX = missile.x + Math.cos(missile.angle) * 1500;
-        missile.targetY = missile.y + Math.sin(missile.angle) * 1500;
+        missile.targetX += (predictedX - missile.targetX) * 0.06;
+        missile.targetY += (predictedY - missile.targetY) * 0.06;
       }
     }
     const dx = missile.targetX - missile.x;
