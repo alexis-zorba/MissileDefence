@@ -325,23 +325,27 @@ label,
   gap: 10px;
 }
 
-.city-card {
+.city-card,
+.build-city {
   border-radius: 8px;
   padding: 8px;
 }
 
-.city-card.selected {
+.city-card.selected,
+.build-city.selected {
   border-color: var(--accent);
 }
 
 .city-card header,
+.build-city header,
 .city-meta {
   display: flex;
   justify-content: space-between;
   gap: 8px;
 }
 
-.city-card header {
+.city-card header,
+.build-city header {
   align-items: baseline;
   margin-bottom: 6px;
 }
@@ -584,7 +588,7 @@ label {
 
 .build-layout {
   display: grid;
-  grid-template-columns: 0.9fr 1.1fr;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
   gap: 12px;
 }
 
@@ -618,14 +622,16 @@ label {
 
 .build-city {
   border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 10px;
   background: rgba(11, 18, 24, 0.84);
   cursor: pointer;
 }
 
-.build-city.selected {
-  border-color: var(--accent);
+.build-city .city-gauges {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.build-city .slot-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .upgrade-grid {

@@ -77,27 +77,10 @@ export function updateUi() {
 export function renderCities() {
   ui.cities.innerHTML = state.cities
     .map((city, index) => {
-      const selected = index === state.selectedCity ? " selected" : "";
-      const hpPct = Math.max(0, (city.hp / city.maxHp) * 100);
-      const installed = installedSlots(city);
-      const factories = factoriesForBase(index);
-      const livingFactories = factories.filter((factory) => factory.hp > 0);
-      const production = livingFactories.reduce((sum, factory) => sum + factory.level, 0);
-      return `
-        <article class="city-card${selected}" data-city="${index}">
-          <header><strong>${city.name}</strong><span>${t("intel.slots", { count: installed.length })}</span></header>
-          <div class="city-gauges">
-            ${metricBadge("▰", t("intel.health"), `${Math.round(hpPct)}%`, hpPct, hpPct > 35 ? "#55d6be" : "#ff5f5f")}
-            ${metricBadge("⌂", t("intel.factories"), `${livingFactories.length}/${factories.length}`, factories.length ? (livingFactories.length / factories.length) * 100 : 0, "#69a9ff")}
-            ${metricBadge("⚙", t("intel.production"), production, Math.min(100, production * 18), "#f4bf54")}
-            ${metricBadge("◈", t("intel.shield"), city.shield ? t("intel.yes") : t("intel.no"), city.shield ? 100 : 0, "#67e6ff")}
-          </div>
-          <div class="slot-grid">
-            ${city.slots.map((slot) => slotCard(city, slot)).join("")}
-          </div>
-          <div class="city-meta"><span>${t("intel.magazine")} ${city.magazineLevel || 1}</span><span>${t("intel.blast")} ${city.blastRadiusLevel}/${city.blastLifeLevel}</span></div>
-        </article>
-      `;
+      return cityStatusCard(city, index, {
+        className: "city-card",
+        dataAttribute: "data-city",
+      });
     })
     .join("");
 }
@@ -107,21 +90,10 @@ export function renderCities() {
 export function renderBuildCities() {
   ui.buildCities.innerHTML = state.cities
     .map((city, index) => {
-      const selected = index === state.selectedCity ? " selected" : "";
-      const hpPct = Math.round(Math.max(0, (city.hp / city.maxHp) * 100));
-      const weapons = installedSlots(city).map(slotLabel).join(", ");
-      const factories = factoriesForBase(index);
-      const livingFactories = factories.filter((factory) => factory.hp > 0);
-      const production = livingFactories.reduce((sum, factory) => sum + factory.level, 0);
-      return `
-        <article class="build-city${selected}" data-build-city="${index}">
-          <strong>${city.name}</strong>
-          <div class="city-meta"><span>${t("intel.base")} ${hpPct}%</span><span>${t("intel.factories")} ${livingFactories.length}/${factories.length} P${production}</span></div>
-          <div class="city-meta"><span>${weapons || t("intel.none")}</span><span>${ammoText(city)}</span></div>
-          <div class="city-meta"><span>${t("intel.magazine")} ${city.magazineLevel || 1}</span><span>${t("intel.blast")} ${city.blastRadiusLevel}/${city.blastLifeLevel}</span></div>
-          <div class="city-meta"><span>${t("intel.shield")} ${city.shield ? t("intel.yes") : t("intel.no")}</span><span></span></div>
-        </article>
-      `;
+      return cityStatusCard(city, index, {
+        className: "build-city",
+        dataAttribute: "data-build-city",
+      });
     })
     .join("");
 }
@@ -185,6 +157,30 @@ function metricBadge(icon, label, value, pct, color) {
   `;
 }
 
+function cityStatusCard(city, index, options) {
+  const selected = index === state.selectedCity ? " selected" : "";
+  const hpPct = Math.max(0, (city.hp / city.maxHp) * 100);
+  const installed = installedSlots(city);
+  const factories = factoriesForBase(index);
+  const livingFactories = factories.filter((factory) => factory.hp > 0);
+  const production = livingFactories.reduce((sum, factory) => sum + factory.level, 0);
+  return `
+    <article class="${options.className}${selected}" ${options.dataAttribute}="${index}">
+      <header><strong>${city.name}</strong><span>${t("intel.slots", { count: installed.length })}</span></header>
+      <div class="city-gauges">
+        ${metricBadge("▰", t("intel.health"), `${Math.round(hpPct)}%`, hpPct, hpPct > 35 ? "#55d6be" : "#ff5f5f")}
+        ${metricBadge("⌂", t("intel.factories"), `${livingFactories.length}/${factories.length}`, factories.length ? (livingFactories.length / factories.length) * 100 : 0, "#69a9ff")}
+        ${metricBadge("⚙", t("intel.production"), production, Math.min(100, production * 18), "#f4bf54")}
+        ${metricBadge("◈", t("intel.shield"), city.shield ? t("intel.yes") : t("intel.no"), city.shield ? 100 : 0, "#67e6ff")}
+      </div>
+      <div class="slot-grid">
+        ${city.slots.map((slot) => slotCard(city, slot)).join("")}
+      </div>
+      <div class="city-meta"><span>${t("intel.magazine")} ${city.magazineLevel || 1}</span><span>${t("intel.blast")} ${city.blastRadiusLevel}/${city.blastLifeLevel}</span></div>
+    </article>
+  `;
+}
+
 function slotCard(city, slot) {
   const color = slot.type ? weaponColor(slot.type) : "rgba(149, 170, 179, 0.45)";
   const ammoPct = slot.type && maxAmmo(city, slot) > 0 ? Math.min(100, (slot.ammo / maxAmmo(city, slot)) * 100) : 0;
@@ -219,15 +215,6 @@ function weaponIcon(type) {
 
 function slotLabel(slot) {
   return slot?.type ? `${t(`weapons.${slot.type}`)} L${slot.level}` : t("intel.empty");
-}
-
-function ammoText(city) {
-  if (!city || city.hp <= 0) return t("intel.destroyed");
-  const slots = installedSlots(city);
-  if (!slots.length) return t("intel.none");
-  const ammo = slots.reduce((sum, slot) => sum + slot.ammo, 0);
-  const max = slots.reduce((sum, slot) => sum + maxAmmo(city, slot), 0);
-  return `${t("intel.ammo")} ${ammo}/${max}`;
 }
 
 // --- Build dialog ---
