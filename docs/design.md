@@ -80,7 +80,7 @@ Ogni base ha quattro slot arma:
 
 Ogni slot ha tipo arma, livello, munizioni, cooldown e usura meccanica. Le armi arrivano al livello 3.
 
-L'usura e calcolata in numero di colpi sparati. Ogni sparo consuma 1 punto vita arma; quando la vita arriva a zero, l'arma si rompe e lo slot torna libero. La ricarica munizioni non ripara l'usura. L'upgrade invece installa componenti nuovi e ripristina la vita massima del livello raggiunto.
+L'usura e calcolata in numero di colpi sparati. Ogni sparo consuma 1 punto vita arma; quando la vita arriva a zero, l'arma si rompe e lo slot torna libero. La ricarica munizioni non ripara l'usura. L'upgrade invece installa componenti nuovi e ripristina la vita massima del livello raggiunto. Se l'arma e gia al livello 3, ricomprarla la rinnova/ripara senza aumentare ulteriormente il livello.
 
 Valori attuali di vita arma:
 

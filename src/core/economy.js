@@ -84,13 +84,16 @@ export function spendUpgrade(kind) {
     const weaponType = kind === "launcher" ? "ballistic" : kind;
     const role = MISSILE_DEFS[weaponType] ? "missile" : "turret";
     const slots = city.slots.filter((slot) => slot.role === role);
-    const existing = slots.find((slot) => slot.type === weaponType && slot.level < MAX_WEAPON_LEVEL);
+    const upgradeable = slots.find((slot) => slot.type === weaponType && slot.level < MAX_WEAPON_LEVEL);
+    const renewable = slots
+      .filter((slot) => slot.type === weaponType && slot.level >= MAX_WEAPON_LEVEL)
+      .sort((a, b) => (a.durability || 0) - (b.durability || 0))[0];
     const empty = slots.find((slot) => !slot.type);
-    const slot = existing || empty;
+    const slot = upgradeable || renewable || empty;
     if (!slot) return;
-    if (slot.type) {
+    if (slot.type && slot.level < MAX_WEAPON_LEVEL) {
       slot.level = Math.min(MAX_WEAPON_LEVEL, slot.level + 1);
-    } else {
+    } else if (!slot.type) {
       installSlot(slot, weaponType);
     }
     refreshDurability(slot);

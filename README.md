@@ -71,7 +71,7 @@ Each weapon can be upgraded up to level 3.
 - **Machine gun**: high rate of fire, useful against drones and agile low-health targets.
 - **Laser**: precise, immediate and piercing, but with the slowest fire rate of all weapons.
 
-Each installed weapon has mechanical durability. Firing consumes durability; when it reaches zero, the weapon breaks and the slot becomes available again. Ammunition resupply does not repair durability, while upgrading a weapon restores it to the maximum value for the new level.
+Each installed weapon has mechanical durability. Firing consumes durability; when it reaches zero, the weapon breaks and the slot becomes available again. Ammunition resupply does not repair durability, while buying/upgrading a weapon restores it to the maximum value for its level. If a weapon is already level 3, buying the same weapon renews it instead of failing.
 
 ## Economy And Upgrades
 
