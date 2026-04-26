@@ -122,21 +122,63 @@ function drawCloudLayers(ctx) {
 
 function drawPixelCloud(ctx, x, y, width, scale, alpha, density, seed) {
   const block = Math.max(5, Math.round(6 * scale));
-  const height = Math.round((20 + density * 26) * scale);
+  const height = Math.round((22 + density * 30) * scale);
+  const random = seededRandom(seed);
+  const puffCount = 7 + Math.floor(density * 6) + Math.floor(random() * 3);
+  const baseY = y + height * 0.55;
+  const puffs = [];
+
+  for (let i = 0; i < puffCount; i += 1) {
+    const t = puffCount === 1 ? 0.5 : i / (puffCount - 1);
+    const arch = Math.sin(t * Math.PI);
+    const jitterX = (random() - 0.5) * block * 4.2;
+    const jitterY = (random() - 0.5) * block * 2.4;
+    const puffWidth = (22 + random() * 34 + arch * 22) * scale * (0.86 + density * 0.3);
+    const puffHeight = (12 + random() * 18 + arch * 18) * scale * (0.88 + density * 0.25);
+    puffs.push({
+      x: x + width * (0.08 + t * 0.84) + jitterX,
+      y: baseY - arch * height * 0.58 + jitterY,
+      w: puffWidth,
+      h: puffHeight,
+    });
+  }
+
   ctx.save();
   ctx.globalAlpha = alpha;
+  ctx.fillStyle = "#718995";
+  puffs.forEach((puff) => drawPixelPuff(ctx, puff.x + block * 0.65, puff.y + block * 0.8, puff.w, puff.h, block));
   ctx.fillStyle = "#b8c6c9";
-  drawPixelRect(ctx, x + block * 1, y + block * 2, width * (0.48 + density * 0.22), height * 0.5);
-  if (seed % 2 === 0) drawPixelRect(ctx, x + block * 5, y + block, width * 0.22, height * (0.45 + density * 0.28));
-  drawPixelRect(ctx, x + width * 0.28, y, width * (0.18 + density * 0.13), height * (0.64 + density * 0.24));
-  if (seed % 3 !== 0) drawPixelRect(ctx, x + width * 0.54, y + block, width * 0.26, height * (0.42 + density * 0.18));
-  if (density > 0.78) drawPixelRect(ctx, x + width * 0.7, y + block * 3, width * 0.18, height * 0.38);
+  puffs.forEach((puff) => drawPixelPuff(ctx, puff.x, puff.y, puff.w, puff.h, block));
   ctx.fillStyle = "#d8e0df";
-  drawPixelRect(ctx, x + width * 0.18, y + block, width * (0.12 + density * 0.08), block * 2);
-  if (seed % 5 !== 0) drawPixelRect(ctx, x + width * 0.48, y + block, width * 0.18, block * 2);
+  puffs
+    .filter((_, index) => index % 3 !== 1)
+    .forEach((puff) => drawPixelPuff(ctx, puff.x - block * 0.35, puff.y - block * 0.28, puff.w * 0.46, puff.h * 0.42, block));
   ctx.fillStyle = "#607984";
-  drawPixelRect(ctx, x + block * 2, y + height, width * (0.44 + density * 0.24), block);
+  for (let i = 0; i < 4; i += 1) {
+    const shadeX = x + width * (0.1 + i * 0.19) + (random() - 0.5) * block * 2;
+    const shadeW = width * (0.11 + random() * 0.13);
+    drawPixelRect(ctx, shadeX, baseY + height * 0.18 + random() * block, shadeW, block);
+  }
   ctx.restore();
+}
+
+function drawPixelPuff(ctx, x, y, width, height, block) {
+  const rows = Math.max(3, Math.round(height / block));
+  for (let row = 0; row < rows; row += 1) {
+    const t = rows === 1 ? 0 : (row / (rows - 1)) * 2 - 1;
+    const rowWidth = width * Math.sqrt(Math.max(0, 1 - t * t * 0.9));
+    const rowX = x - rowWidth / 2;
+    const rowY = y - height / 2 + row * block;
+    drawPixelRect(ctx, rowX, rowY, rowWidth, block);
+  }
+}
+
+function seededRandom(seed) {
+  let value = Math.max(1, Math.floor(seed) % 2147483647);
+  return () => {
+    value = (value * 16807) % 2147483647;
+    return (value - 1) / 2147483646;
+  };
 }
 
 // --- Cities ---
