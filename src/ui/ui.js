@@ -123,7 +123,7 @@ export function renderFooterCities() {
       const durabilityPct = durabilityMax > 0 ? Math.min(100, (durability / durabilityMax) * 100) : 0;
       const dead = durability <= 0;
       const outOfAmmo = !dead && slot.ammo === 0;
-      const recharging = !dead && !outOfAmmo && slot.cooldown > 250;
+      const recharging = !dead && !outOfAmmo && slot.cooldown > 100;
       const stateClass = dead ? " dead" : outOfAmmo ? " out-of-ammo" : recharging ? " recharging" : "";
       const stateLabel = dead ? " — DURATA ESAURITA" : outOfAmmo ? " — MUNIZIONI ESAURITE" : recharging ? ` — RICARICA ${(slot.cooldown / 1000).toFixed(1)}s` : "";
       return `

@@ -39,12 +39,15 @@ export function updateAi(dt, mode, difficultyCfg) {
 
 export function autoTurrets(dt, skill, difficultyCfg, aiCooldownMultiplier = 1) {
   const armedBases = state.cities.filter((city) => city.hp > 0 && firstTurret(city));
-  const target = priorityEnemy();
-  if (!target || !armedBases.length) return;
+  if (!armedBases.length) return;
+  // Independent turrets each pick their own nearest enemy and fire — they
+  // don't need a screen-wide priority target, so don't gate them on it.
   if (state.aiTurretAimMode === "independent") {
     autoTurretsIndependent(armedBases, dt, skill, aiCooldownMultiplier);
     return;
   }
+  const target = priorityEnemy();
+  if (!target) return;
   const referenceBase = nearest(armedBases, target) || armedBases[0];
   const referenceSlot = bestReadyTurret(referenceBase) || firstTurret(referenceBase);
   const referenceMount = turretMount(referenceBase, referenceSlot);
