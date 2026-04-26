@@ -11,7 +11,7 @@ export const DIFFICULTY = {
   cadet: { label: "Cadetto", speed: 0.78, count: 0.78, build: 1.25, ai: 0.9, cityHp: 120 },
   normal: { label: "Normale", speed: 1, count: 1, build: 1, ai: 1.25, cityHp: 100 },
   veteran: { label: "Veterano", speed: 1.18, count: 1.25, build: 0.86, ai: 1.65, cityHp: 90 },
-  nightmare: { label: "Incubo", speed: 1.36, count: 1.52, build: 0.72, ai: 2.1, cityHp: 80 },
+  nightmare: { label: "Incubo", speed: 1.36, count: 3, build: 0.72, ai: 2.1, cityHp: 80 },
 };
 
 export const MISSILE_DEFS = {

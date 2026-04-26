@@ -15,7 +15,7 @@ export function updateAi(dt, mode, difficultyCfg) {
   const skill = AI_SKILLS[state.aiSkill];
   state.aiMissileTimer -= dt;
   state.aiTurretTimer -= dt;
-  const aiCooldownMultiplier = Math.max(0.55, 1 / difficultyCfg.ai);
+  const aiCooldownMultiplier = difficultyCfg.ai;
 
   // AI controls missiles when player controls turrets, or in full AI combat.
   if ((mode === "turret" || mode === "auto") && state.aiMissileTimer <= 0) {
@@ -24,14 +24,14 @@ export function updateAi(dt, mode, difficultyCfg) {
       const preferredType = pickAiMissile(target);
       const aim = aiMissileAim(target, preferredType, skill);
       const fired = launchMissile(aim, preferredType, true, aiCooldownMultiplier);
-      state.aiMissileTimer = fired ? Math.max(210, (470 * skill.delay) / difficultyCfg.ai) : 90;
+      state.aiMissileTimer = fired ? Math.max(210, 470 * skill.delay * difficultyCfg.ai) : 90;
     }
   }
 
   // AI controls turrets when player controls missiles, or in full AI combat.
   if ((mode === "missiles" || mode === "auto") && state.aiTurretTimer <= 0) {
     autoTurrets(dt, skill, difficultyCfg, aiCooldownMultiplier);
-    state.aiTurretTimer = Math.max(36, (85 * skill.delay) / difficultyCfg.ai);
+    state.aiTurretTimer = Math.max(36, 85 * skill.delay * difficultyCfg.ai);
   }
 }
 
