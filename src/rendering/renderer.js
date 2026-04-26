@@ -35,20 +35,7 @@ export function draw(ctx, mode = "missiles") {
 
 function drawSky(ctx) {
   drawPixelSkyGradient(ctx);
-  ctx.strokeStyle = "rgba(85, 214, 190, 0.13)";
-  ctx.lineWidth = 1;
-  for (let x = 0; x < W; x += 64) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, H);
-    ctx.stroke();
-  }
-  for (let y = 40; y < groundY; y += 64) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(W, y);
-    ctx.stroke();
-  }
+  drawStars(ctx);
   if (state.cloudsEnabled) drawCloudLayers(ctx);
   ctx.fillStyle = "#1a241c";
   ctx.fillRect(0, groundY, W, 18);
@@ -82,10 +69,41 @@ function drawPixelSkyGradient(ctx) {
     ctx.fillStyle = band.color;
     ctx.fillRect(0, band.y, W, Math.max(0, band.h));
   });
-  ctx.fillStyle = "rgba(105, 169, 255, 0.05)";
-  for (let y = 72; y < groundY; y += 64) {
-    ctx.fillRect(0, y, W, 4);
+}
+
+const STAR_SEED = 42;
+const STAR_COUNT = 110;
+let starField = null;
+
+function buildStarField() {
+  const stars = [];
+  let seed = STAR_SEED;
+  const pseudoRandom = () => {
+    seed = (seed * 16807) % 2147483647;
+    return (seed - 1) / 2147483646;
+  };
+  for (let i = 0; i < STAR_COUNT; i += 1) {
+    const x = pseudoRandom() * W;
+    const y = pseudoRandom() * (groundY - 50);
+    const size = 1 + Math.floor(pseudoRandom() * 3);
+    const alpha = 0.18 + pseudoRandom() * 0.52;
+    const phase = pseudoRandom() * Math.PI * 2;
+    stars.push({ x, y, size, alpha, phase });
   }
+  starField = stars;
+}
+
+function drawStars(ctx) {
+  if (!starField) buildStarField();
+  const time = performance.now() / 1000;
+  starField.forEach((star) => {
+    const twinkle = 0.5 + 0.5 * Math.sin(time * 1.8 + star.phase);
+    const alpha = star.alpha * (0.45 + twinkle * 0.55);
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = "#e9f6ff";
+    drawPixelRect(ctx, Math.round(star.x), Math.round(star.y), star.size, star.size);
+  });
+  ctx.globalAlpha = 1;
 }
 
 function drawCloudLayers(ctx) {
