@@ -250,6 +250,28 @@ label,
   min-width: 0;
 }
 
+.footer-city.jammed strong {
+  color: #c794ff;
+}
+
+.status-badge.jam {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #1a0d26;
+  background: #c794ff;
+  animation: jam-pulse 700ms ease-in-out infinite;
+}
+
+@keyframes jam-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
 .footer-city-head {
   display: flex;
   justify-content: space-between;

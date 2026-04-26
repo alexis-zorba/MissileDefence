@@ -17,7 +17,7 @@ import { updatePlayerTurret } from "./entities/weapons.js";
 import { updateAi } from "./systems/ai.js";
 import { bindInput } from "./systems/input.js";
 import { startWave, finishWave } from "./core/wave.js";
-import { ui, setOverlay, updateUi, openBuildDialog, closeBuildDialog, openGameModeDialog, bindDialogs, bindStateListeners } from "./ui/ui.js";
+import { ui, setOverlay, updateUi, renderFooterCities, renderCities, openBuildDialog, closeBuildDialog, openGameModeDialog, bindDialogs, bindStateListeners } from "./ui/ui.js";
 import { t } from "./i18n.js";
 import * as logger from "./debug/logger.js";
 
@@ -68,6 +68,14 @@ function update(dt) {
       slot.cooldown = Math.max(0, slot.cooldown - dt);
     });
   });
+
+  // Throttled HUD refresh — keeps city HP / jammed status in sync during combat.
+  state.hudRefreshTimer = (state.hudRefreshTimer || 0) - dt;
+  if (state.hudRefreshTimer <= 0) {
+    state.hudRefreshTimer = 120;
+    renderFooterCities();
+    if (ui.intelDialog.open) renderCities();
+  }
 
   // Wave spawning
   if (!state.betweenWaves) {

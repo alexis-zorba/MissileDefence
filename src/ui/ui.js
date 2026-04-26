@@ -131,10 +131,11 @@ export function renderFooterCities() {
         </div>
       `;
     }).join("");
+    const jammed = city.disabled > 0;
     return `
-      <article class="footer-city">
+      <article class="footer-city${jammed ? " jammed" : ""}">
         <div class="footer-city-head">
-          <strong>${city.name}</strong>
+          <strong>${city.name}${jammed ? ' <span class="status-badge jam">⚠ JAMMED</span>' : ""}</strong>
           <span class="footer-city-name">⌂ ${livingFactories.length}/${factories.length} P${production}</span>
         </div>
         <div class="footer-bars">
