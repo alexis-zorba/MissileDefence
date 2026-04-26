@@ -23,9 +23,9 @@ const FACTORY_LAYOUT = [
 ];
 
 const AI_SKILLS = {
-  normal: { delay: 0.95, aimNoise: 34, lead: 0.82 },
-  expert: { delay: 0.72, aimNoise: 16, lead: 0.94 },
-  pro: { delay: 0.52, aimNoise: 5, lead: 1.04 },
+  normal: { delay: 0.95, aimNoise: 34, lead: 1.0 },
+  expert: { delay: 0.72, aimNoise: 16, lead: 1.0 },
+  pro: { delay: 0.52, aimNoise: 5, lead: 1.05 },
 };
 
 // --- Event Emitter ---

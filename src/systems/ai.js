@@ -66,7 +66,7 @@ function aiMissileAim(target, preferredType, skill) {
   }
   const intercept = predictIntercept(launcher, target, launcher.speed);
   const urgency = Math.min(1, Math.max(0, target.y / GROUND_Y));
-  const noise = skill.aimNoise * (0.25 + urgency * 0.35);
+  const noise = skill.aimNoise * (0.6 - urgency * 0.35);
   return noisyAim(
     target.x + (intercept.x - target.x) * skill.lead,
     target.y + (intercept.y - target.y) * skill.lead,
