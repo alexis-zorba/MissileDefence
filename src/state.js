@@ -16,11 +16,11 @@ const INITIAL_BUILD_CREDIT = 6;
 const MAX_FACTORIES_PER_BASE = 3;
 const MAX_WEAPON_LEVEL = 3;
 const WEAPON_DURABILITY = {
-  ballistic: [36, 52, 68],
-  seeker: [20, 30, 40],
-  cannon: [180, 250, 330],
-  mg: [520, 720, 960],
-  laser: [110, 150, 200],
+  ballistic: [72, 104, 136],
+  seeker: [40, 60, 80],
+  cannon: [360, 500, 660],
+  mg: [1040, 1440, 1920],
+  laser: [220, 300, 400],
 };
 
 const FACTORY_LAYOUT = [

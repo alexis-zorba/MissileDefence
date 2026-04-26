@@ -86,11 +86,11 @@ Valori attuali di vita arma:
 
 | Arma | L1 | L2 | L3 |
 | --- | ---: | ---: | ---: |
-| Razzo balistico | 36 | 52 | 68 |
-| Razzo seeker | 20 | 30 | 40 |
-| Cannoncino | 180 | 250 | 330 |
-| Mitragliatrice | 520 | 720 | 960 |
-| Laser | 110 | 150 | 200 |
+| Razzo balistico | 72 | 104 | 136 |
+| Razzo seeker | 40 | 60 | 80 |
+| Cannoncino | 360 | 500 | 660 |
+| Mitragliatrice | 1040 | 1440 | 1920 |
+| Laser | 220 | 300 | 400 |
 
 ## Armi
 
