@@ -10,6 +10,7 @@ import { createBlast } from "./effects.js";
 // --- Missile movement ---
 
 export function updateMissiles(dt = 16) {
+  const step = dt / (1000 / 60);
   state.friendlyMissiles.forEach((missile) => {
     const def = MISSILE_DEFS[missile.type];
     const stats = missile.stats || def?.levels[Math.max(0, (missile.level || 1) - 1)];
@@ -25,7 +26,7 @@ export function updateMissiles(dt = 16) {
         let angleDiff = desiredAngle - currentAngle;
         while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
         while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-        const maxTurn = (stats.turnRate || 2.5) * (Math.PI / 180);
+        const maxTurn = (stats.turnRate || 2.5) * (Math.PI / 180) * step;
         const turnAmount = Math.max(-maxTurn, Math.min(maxTurn, angleDiff));
         missile.angle = currentAngle + turnAmount;
         missile.targetX += (predictedX - missile.targetX) * 0.06;
@@ -37,7 +38,8 @@ export function updateMissiles(dt = 16) {
     const distance = Math.hypot(dx, dy);
     missile.trail.push({ x: missile.x, y: missile.y });
     if (missile.trail.length > 18) missile.trail.shift();
-    const shouldDetonateAtTarget = missile.type !== "seeker" && distance <= stats.speed;
+    const travel = stats.speed * step;
+    const shouldDetonateAtTarget = missile.type !== "seeker" && distance <= travel;
     if (shouldDetonateAtTarget) {
       const radiusBoost = missile.type === "ballistic" ? 1 + (missile.blastRadiusLevel - 1) * 0.16 : 1;
       const radius = stats.radius * radiusBoost;
@@ -65,11 +67,11 @@ export function updateMissiles(dt = 16) {
         }
       }
     } else if (missile.type === "seeker") {
-      missile.x += Math.cos(missile.angle ?? -Math.PI / 2) * stats.speed;
-      missile.y += Math.sin(missile.angle ?? -Math.PI / 2) * stats.speed;
+      missile.x += Math.cos(missile.angle ?? -Math.PI / 2) * travel;
+      missile.y += Math.sin(missile.angle ?? -Math.PI / 2) * travel;
     } else if (distance > 0) {
-      missile.x += (dx / distance) * stats.speed;
-      missile.y += (dy / distance) * stats.speed;
+      missile.x += (dx / distance) * travel;
+      missile.y += (dy / distance) * travel;
     }
     if (!missile.done && missile.type === "seeker") {
       const nearbyEnemy = state.enemies.find((e) => !e.dead && Math.hypot(e.x - missile.x, e.y - missile.y) < stats.radius * 0.55 + e.radius);
@@ -100,14 +102,15 @@ function isOutsideFrame(missile) {
 // --- Bullet movement ---
 
 export function updateBullets(dt) {
+  const step = dt / (1000 / 60);
   state.friendlyBullets.forEach((bullet) => {
     if (bullet.laser) {
       bullet.life -= dt;
       return;
     }
-    bullet.x += bullet.vx;
-    bullet.y += bullet.vy;
-    bullet.life -= 1;
+    bullet.x += bullet.vx * step;
+    bullet.y += bullet.vy * step;
+    bullet.life -= step;
     state.enemies.forEach((enemy) => {
       if (enemy.dead) return;
       const hit = Math.hypot(enemy.x - bullet.x, enemy.y - bullet.y) < enemy.radius + (bullet.radius || 3);

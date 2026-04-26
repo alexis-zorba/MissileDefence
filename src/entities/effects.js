@@ -60,10 +60,11 @@ export function burst(x, y, color, count) {
 }
 
 export function updateParticles(dt) {
+  const step = dt / (1000 / 60);
   state.particles.forEach((particle) => {
     particle.life -= dt;
-    particle.x += particle.vx || 0;
-    particle.y += particle.vy || 0;
+    particle.x += (particle.vx || 0) * step;
+    particle.y += (particle.vy || 0) * step;
   });
 }
 

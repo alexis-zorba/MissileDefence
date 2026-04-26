@@ -115,12 +115,13 @@ export function dropBomb(enemy, difficultyCfg) {
 // --- Update all enemies: movement, behaviors, damage ---
 
 export function updateEnemies(dt, difficultyCfg, trailDuration) {
+  const step = dt / (1000 / 60);
   state.enemies.forEach((enemy) => {
     const def = ENEMY_DEFS[enemy.type];
     if (enemy.type === "drone") {
-      enemy.wobble += 0.12;
-      enemy.x += Math.sin(enemy.wobble * 1.7) * 2.6 + Math.sin(enemy.wobble * 4.1) * 0.8;
-      enemy.y += Math.cos(enemy.wobble * 2.3) * 1.15;
+      enemy.wobble += 0.12 * step;
+      enemy.x += (Math.sin(enemy.wobble * 1.7) * 2.6 + Math.sin(enemy.wobble * 4.1) * 0.8) * step;
+      enemy.y += Math.cos(enemy.wobble * 2.3) * 1.15 * step;
     } else if (enemy.type !== "bomber") {
       enemy.trail ||= [];
       const isBomb = enemy.type === "bomb";
@@ -135,11 +136,11 @@ export function updateEnemies(dt, difficultyCfg, trailDuration) {
       if (enemy.trail.length > maxTrail) enemy.trail.shift();
     }
     if (enemy.type === "bomb") {
-      enemy.vy += 0.018;
-      enemy.wobble = (enemy.wobble || 0) + 0.08;
+      enemy.vy += 0.018 * step;
+      enemy.wobble = (enemy.wobble || 0) + 0.08 * step;
     }
-    enemy.x += enemy.vx;
-    enemy.y += enemy.vy;
+    enemy.x += enemy.vx * step;
+    enemy.y += enemy.vy * step;
 
     if (enemy.type === "bomber") {
       enemy.bombTimer -= dt;
