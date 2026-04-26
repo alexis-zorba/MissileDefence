@@ -77,7 +77,7 @@ function update(dt) {
     if (state.enemiesToSpawn > 0 && state.spawnTimer <= 0) {
       const spawnCount = Math.min(
         state.enemiesToSpawn,
-        1 + Math.floor((state.wave - 1) * diffCfg.count / 6)
+        Math.max(1, Math.floor(state.wave * diffCfg.count / 4))
       );
       for (let s = 0; s < spawnCount; s += 1) {
         spawnEnemy(state.wave, diffCfg);
