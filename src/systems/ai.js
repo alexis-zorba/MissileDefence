@@ -2,10 +2,11 @@
 // AI — Allied AI behavior for missiles and turrets
 // =============================================================================
 
-import { state, AI_SKILLS, firstTurret, turretSlots } from "../state.js";
+import { state, AI_SKILLS, firstTurret, missileSlots, missileStats, turretSlots } from "../state.js";
 import { nearest, clampAngle } from "../utils.js";
 import { launchMissile, fireTurret, fireTurretSalvo } from "../entities/weapons.js";
 import { priorityEnemy, pickAiMissile } from "./combat.js";
+import { GROUND_Y, SLOT_OFFSETS } from "../config.js";
 import * as logger from "../debug/logger.js";
 
 // --- AI update called from game loop ---
@@ -20,11 +21,10 @@ export function updateAi(dt, mode, difficultyCfg) {
   if ((mode === "turret" || mode === "auto") && state.aiMissileTimer <= 0) {
     const target = priorityEnemy();
     if (target) {
-      const missileLead = skill.lead * 1.35;
-      const missileNoise = skill.aimNoise * 0.38;
-      const aim = noisyAim(target.x + target.vx * missileLead, target.y + target.vy * missileLead, missileNoise);
-      launchMissile(aim, pickAiMissile(target), true, aiCooldownMultiplier);
-      state.aiMissileTimer = Math.max(360, (720 * skill.delay) / difficultyCfg.ai);
+      const preferredType = pickAiMissile(target);
+      const aim = aiMissileAim(target, preferredType, skill);
+      const fired = launchMissile(aim, preferredType, true, aiCooldownMultiplier);
+      state.aiMissileTimer = fired ? Math.max(210, (470 * skill.delay) / difficultyCfg.ai) : 90;
     }
   }
 
@@ -55,6 +55,73 @@ export function autoTurrets(dt, skill, difficultyCfg, aiCooldownMultiplier = 1) 
     });
     fireTurretSalvo(city, dt, true, aiCooldownMultiplier);
   });
+}
+
+// --- Missile interception ---
+
+function aiMissileAim(target, preferredType, skill) {
+  const launcher = bestReadyLauncher(target, preferredType) || bestReadyLauncher(target, null);
+  if (!launcher) {
+    return noisyAim(target.x, target.y, skill.aimNoise);
+  }
+  const intercept = predictIntercept(launcher, target, launcher.speed);
+  const urgency = Math.min(1, Math.max(0, target.y / GROUND_Y));
+  const noise = skill.aimNoise * (0.25 + urgency * 0.35);
+  return noisyAim(
+    target.x + (intercept.x - target.x) * skill.lead,
+    target.y + (intercept.y - target.y) * skill.lead,
+    noise
+  );
+}
+
+function bestReadyLauncher(target, preferredType) {
+  let best = null;
+  state.cities.forEach((city) => {
+    if (city.hp <= 0 || city.disabled > 0) return;
+    missileSlots(city).forEach((slot) => {
+      if (!slot.type || (preferredType && slot.type !== preferredType)) return;
+      const stats = missileStats(slot);
+      if (!stats || slot.cooldown > 0 || slot.ammo < stats.cost) return;
+      const x = city.x + SLOT_OFFSETS.missile[slot.index];
+      const y = city.y - 18;
+      const distance = Math.hypot(target.x - x, target.y - y);
+      if (!best || distance < best.distance) {
+        best = { x, y, speed: stats.speed, distance };
+      }
+    });
+  });
+  return best;
+}
+
+function predictIntercept(origin, target, missileSpeed) {
+  const tx = target.x - origin.x;
+  const ty = target.y - origin.y;
+  const vx = target.vx || 0;
+  const vy = target.vy || 0;
+  const a = vx * vx + vy * vy - missileSpeed * missileSpeed;
+  const b = 2 * (tx * vx + ty * vy);
+  const c = tx * tx + ty * ty;
+  let time = Math.sqrt(c) / Math.max(0.1, missileSpeed);
+
+  if (Math.abs(a) > 0.0001) {
+    const discriminant = b * b - 4 * a * c;
+    if (discriminant >= 0) {
+      const root = Math.sqrt(discriminant);
+      const t1 = (-b - root) / (2 * a);
+      const t2 = (-b + root) / (2 * a);
+      const candidates = [t1, t2].filter((candidate) => candidate > 0);
+      if (candidates.length) time = Math.min(...candidates);
+    }
+  } else if (Math.abs(b) > 0.0001) {
+    const linearTime = -c / b;
+    if (linearTime > 0) time = linearTime;
+  }
+
+  time = Math.min(140, Math.max(0, time));
+  return {
+    x: target.x + vx * time,
+    y: Math.min(GROUND_Y - 10, target.y + vy * time),
+  };
 }
 
 function autoTurretsIndependent(armedBases, dt, skill, aiCooldownMultiplier) {
