@@ -50,7 +50,7 @@ export function pickAiMissile(enemy) {
   return "ballistic";
 }
 
-// --- Laser ray-target intersection ---
+// --- Laser ray-target intersection (single target) ---
 
 export function findTargetAlongRay(city, angle, width, enemies) {
   let best = null;
@@ -67,4 +67,25 @@ export function findTargetAlongRay(city, angle, width, enemies) {
     }
   });
   return best;
+}
+
+// --- Laser pierce: all enemies along ray, sorted by distance ---
+
+export function findTargetsAlongRay(city, angle, width, enemies, maxRange = 900) {
+  const hits = [];
+  const originX = city.x;
+  const originY = city.y - 24;
+  enemies.forEach((enemy) => {
+    if (enemy.dead) return;
+    const dx = enemy.x - originX;
+    const dy = enemy.y - originY;
+    const projection = dx * Math.cos(angle) + dy * Math.sin(angle);
+    if (projection < 0 || projection > maxRange) return;
+    const perpendicular = Math.abs(dx * Math.sin(angle) - dy * Math.cos(angle));
+    if (perpendicular < width + enemy.radius) {
+      hits.push({ enemy, distance: projection });
+    }
+  });
+  hits.sort((a, b) => a.distance - b.distance);
+  return hits;
 }

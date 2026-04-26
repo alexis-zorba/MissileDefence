@@ -12,7 +12,7 @@ import {
 } from "../state.js";
 import { TURRET_DEFS, SLOT_OFFSETS, GROUND_Y } from "../config.js";
 import { clampAngle } from "../utils.js";
-import { findTargetAlongRay } from "../systems/combat.js";
+import { findTargetsAlongRay } from "../systems/combat.js";
 import * as logger from "../debug/logger.js";
 
 // --- Missile launch ---
@@ -70,16 +70,19 @@ export function fireTurret(city, slot, dt, byAi = false, aiMultiplier = 1) {
   const angle = typeof slot.angle === "number" ? slot.angle : city.turretAngle;
   slot.ammo -= stats.ammoCost;
   if (slot.type === "laser") {
-    const target = findTargetAlongRay(city, angle, stats.width, state.enemies);
-    if (target) {
-      target.hp -= stats.damage * dt;
-      state.particles.push({ x: target.x, y: target.y, life: 90, color: def.color, size: 4 });
-    }
+    const hits = findTargetsAlongRay(city, angle, stats.width, state.enemies, 900);
+    const beamEnd = hits.length > 0 ? hits[hits.length - 1].distance : 900;
+    hits.forEach(({ enemy }, index) => {
+      const falloff = Math.max(0.3, 1 - index * 0.25);
+      enemy.hp -= stats.damage * dt * falloff;
+      state.particles.push({ x: enemy.x, y: enemy.y, life: 90, color: def.color, size: 4 });
+    });
     state.friendlyBullets.push({
       x: city.x + SLOT_OFFSETS.turret[slot.index],
       y: city.y - 24,
-      vx: Math.cos(angle) * 900,
-      vy: Math.sin(angle) * 900,
+      vx: Math.cos(angle),
+      vy: Math.sin(angle),
+      beamLength: beamEnd,
       life: 45,
       laser: true,
       color: def.color,

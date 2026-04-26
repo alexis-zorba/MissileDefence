@@ -770,7 +770,7 @@ function drawBullets(ctx) {
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(bullet.x, bullet.y);
-      ctx.lineTo(bullet.x + bullet.vx, bullet.y + bullet.vy);
+      ctx.lineTo(bullet.x + bullet.vx * bullet.beamLength, bullet.y + bullet.vy * bullet.beamLength);
       ctx.stroke();
       ctx.globalAlpha = 1;
     } else {
