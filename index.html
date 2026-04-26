@@ -33,12 +33,35 @@
 
       <footer class="control-footer">
         <div class="footer-actions">
+          <button id="newGameButton">New game</button>
           <button id="startButton">Avvia</button>
           <button id="nextWaveButton" disabled>Prossima ondata</button>
           <button id="pauseButton">Pausa</button>
         </div>
         <div id="footerCities" class="footer-cities" aria-label="Stato citta"></div>
       </footer>
+
+      <dialog id="gameModeDialog" class="dialog game-mode-dialog">
+        <section>
+          <header>
+            <strong>New game</strong>
+          </header>
+          <div class="mode-grid">
+            <button data-mode-preset="missiles">
+              <strong>Umano lanciarazzi</strong>
+              <span>Mouse ai razzi, AI alle torrette con mira indipendente.</span>
+            </button>
+            <button data-mode-preset="turret">
+              <strong>Umano torrette</strong>
+              <span>Mouse alle torrette, click per sparare, AI ai lanciarazzi.</span>
+            </button>
+            <button data-mode-preset="coop">
+              <strong>Co-op umano</strong>
+              <span>Mouse ai razzi, freccette e spazio alle torrette.</span>
+            </button>
+          </div>
+        </section>
+      </dialog>
 
       <dialog id="settingsDialog" class="dialog">
         <form method="dialog">

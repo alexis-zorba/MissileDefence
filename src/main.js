@@ -17,7 +17,7 @@ import { updatePlayerTurret } from "./entities/weapons.js";
 import { updateAi } from "./systems/ai.js";
 import { bindInput } from "./systems/input.js";
 import { startWave, finishWave } from "./core/wave.js";
-import { ui, setOverlay, updateUi, openBuildDialog, closeBuildDialog, bindDialogs, bindStateListeners } from "./ui/ui.js";
+import { ui, setOverlay, updateUi, openBuildDialog, closeBuildDialog, openGameModeDialog, bindDialogs, bindStateListeners } from "./ui/ui.js";
 import * as logger from "./debug/logger.js";
 
 // --- Canvas setup ---
@@ -148,16 +148,16 @@ function boot() {
   // Bind dialogs — Avvia starts the pending wave; after game over it resets the match.
   bindDialogs(() => {
     if (!state.running) {
-      resetGame();
+      openGameModeDialog();
       return;
     }
     if (state.betweenWaves) {
       startWave(getDifficultyCfg(), uiCallbacks());
     }
-  });
+  }, resetGame);
 
-  // Initial reset (shows build dialog, user must click "Avvia ondata")
-  resetGame();
+  setOverlay("Scegli modalita", "Premi New game e seleziona chi controlla lanciarazzi e torrette.");
+  openGameModeDialog();
 
   // First draw
   draw(ctx, getMode());

@@ -27,9 +27,11 @@ export const ui = {
   buildModal: document.getElementById("buildModalLabel"),
   buildCities: document.getElementById("buildCities"),
   footerCities: document.getElementById("footerCities"),
+  newGame: document.getElementById("newGameButton"),
   start: document.getElementById("startButton"),
   next: document.getElementById("nextWaveButton"),
   pause: document.getElementById("pauseButton"),
+  gameModeDialog: document.getElementById("gameModeDialog"),
   mode: document.getElementById("modeSelect"),
   difficultySelect: document.getElementById("difficultySelect"),
   aiSkill: document.getElementById("aiSkillSelect"),
@@ -154,6 +156,14 @@ export function closeBuildDialog() {
   if (ui.buildDialog.open) ui.buildDialog.close();
 }
 
+export function openGameModeDialog() {
+  if (!ui.gameModeDialog.open) ui.gameModeDialog.showModal();
+}
+
+export function closeGameModeDialog() {
+  if (ui.gameModeDialog.open) ui.gameModeDialog.close();
+}
+
 function showCreditBump() {
   const banner = ui.buildModal.closest(".credit-banner");
   banner.classList.add("bump");
@@ -162,13 +172,14 @@ function showCreditBump() {
 
 // --- Dialog event binding ---
 
-export function bindDialogs(onStart) {
+export function bindDialogs(onStart, onNewGame) {
   // Settings
   ui.settings.addEventListener("click", () => ui.settingsDialog.showModal());
   // Intel
   ui.intel.addEventListener("click", () => ui.intelDialog.showModal());
   ui.closeIntel.addEventListener("click", () => ui.intelDialog.close());
   // Start / next wave / pause
+  ui.newGame.addEventListener("click", () => openGameModeDialog());
   ui.start.addEventListener("click", onStart);
   ui.next.addEventListener("click", () => {
     const diffCfg = DIFFICULTY[ui.difficultySelect.value];
@@ -184,6 +195,13 @@ export function bindDialogs(onStart) {
   ui.buildStartWave.addEventListener("click", () => {
     const diffCfg = DIFFICULTY[ui.difficultySelect.value];
     startWave(diffCfg, { closeBuildDialog, setOverlay });
+  });
+  ui.gameModeDialog.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-mode-preset]");
+    if (!button) return;
+    applyModePreset(button.dataset.modePreset);
+    closeGameModeDialog();
+    onNewGame();
   });
   // City selection
   ui.cities.addEventListener("click", (event) => {
@@ -253,9 +271,22 @@ export function bindDialogs(onStart) {
     state.turretAimMode = ui.turretAim.value;
   });
   ui.mode.addEventListener("change", () => {
-    syncControlAvailability();
+    applyModePreset(ui.mode.value);
   });
   ui.difficultySelect.addEventListener("change", updateUi);
+  syncControlAvailability();
+}
+
+function applyModePreset(preset) {
+  ui.mode.value = preset;
+  ui.aiTurretAim.value = "independent";
+  if (preset === "turret") {
+    ui.turretInput.value = "mouse";
+    ui.turretAim.value = "point";
+  } else {
+    ui.turretInput.value = "keyboard";
+    ui.turretAim.value = "parallel";
+  }
   syncControlAvailability();
 }
 

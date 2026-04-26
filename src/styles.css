@@ -95,7 +95,7 @@ canvas {
   left: 12px;
   right: 12px;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr;
   gap: 14px;
   align-items: center;
   pointer-events: none;
@@ -179,8 +179,13 @@ label,
 }
 
 .top-actions {
+  position: fixed;
+  top: 12px;
+  right: 12px;
   display: flex;
+  justify-content: flex-end;
   gap: 8px;
+  pointer-events: auto;
 }
 
 .message-overlay {
@@ -338,7 +343,8 @@ label,
 }
 
 .dialog form,
-.build-dialog section {
+.build-dialog section,
+.game-mode-dialog section {
   display: grid;
   gap: 12px;
   min-width: min(420px, calc(100vw - 32px));
@@ -419,6 +425,28 @@ label {
   display: grid;
   grid-template-columns: 0.9fr 1.1fr;
   gap: 12px;
+}
+
+.mode-grid {
+  display: grid;
+  gap: 10px;
+  min-width: min(520px, calc(100vw - 32px));
+}
+
+.mode-grid button {
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+  text-align: left;
+}
+
+.mode-grid button strong {
+  font-size: 16px;
+}
+
+.mode-grid button span {
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .build-cities,
