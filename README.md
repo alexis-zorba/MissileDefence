@@ -4,6 +4,12 @@ A browser-based arcade defence game inspired by the strategic tension of classic
 
 The game is designed to run as a static site, so it can be deployed directly on Netlify or any static hosting provider.
 
+## Play Online
+
+The game is playable here:
+
+https://missiledefencegame.netlify.app/
+
 ## Current Gameplay
 
 The battlefield is split into three defensive zones. Each zone contains:
