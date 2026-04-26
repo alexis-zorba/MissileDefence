@@ -9,9 +9,9 @@ const W = CANVAS_WIDTH;
 const H = CANVAS_HEIGHT;
 const groundY = GROUND_Y;
 const CLOUD_LAYERS = [
-  { y: 116, speed: 6, scale: 1.2, alpha: 0.14, seed: 0 },
-  { y: 196, speed: 10, scale: 1.55, alpha: 0.18, seed: 420 },
-  { y: 288, speed: 14, scale: 1.9, alpha: 0.22, seed: 860 },
+  { y: 126, speed: 4.2, scale: 1.1, alpha: 0.1, seed: 0, count: 1 },
+  { y: 232, speed: 7.4, scale: 1.55, alpha: 0.15, seed: 420, count: 2 },
+  { y: 342, speed: 10.2, scale: 2.05, alpha: 0.18, seed: 860, count: 1 },
 ];
 
 // --- Main draw orchestrator ---
@@ -49,7 +49,7 @@ function drawSky(ctx) {
     ctx.lineTo(W, y);
     ctx.stroke();
   }
-  drawCloudLayers(ctx);
+  if (state.cloudsEnabled) drawCloudLayers(ctx);
   ctx.fillStyle = "#1a241c";
   ctx.fillRect(0, groundY, W, 18);
   ctx.fillStyle = "#111a14";
@@ -91,30 +91,33 @@ function drawPixelSkyGradient(ctx) {
 function drawCloudLayers(ctx) {
   const time = performance.now() / 1000;
   CLOUD_LAYERS.forEach((layer) => {
-    for (let i = 0; i < 5; i += 1) {
-      const width = (150 + ((i * 47 + layer.seed) % 120)) * layer.scale;
-      const x = (((i * 310 + layer.seed + time * layer.speed) % (W + width + 160)) - width - 80);
+    for (let i = 0; i < layer.count; i += 1) {
+      const shapeSeed = layer.seed + i * 137;
+      const density = 0.58 + ((shapeSeed * 17) % 38) / 100;
+      const width = (170 + ((i * 61 + layer.seed) % 170)) * layer.scale;
+      const x = (((i * 520 + layer.seed + time * layer.speed) % (W + width + 420)) - width - 210);
       const y = layer.y + Math.sin(time * 0.22 + i + layer.seed) * 8;
-      drawPixelCloud(ctx, x, y, width, layer.scale, layer.alpha);
+      drawPixelCloud(ctx, x, y, width, layer.scale, layer.alpha, density, shapeSeed);
     }
   });
 }
 
-function drawPixelCloud(ctx, x, y, width, scale, alpha) {
+function drawPixelCloud(ctx, x, y, width, scale, alpha, density, seed) {
   const block = Math.max(5, Math.round(6 * scale));
-  const height = Math.round(28 * scale);
+  const height = Math.round((20 + density * 26) * scale);
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.fillStyle = "#b8c6c9";
-  drawPixelRect(ctx, x + block * 1, y + block * 2, width * 0.72, height * 0.56);
-  drawPixelRect(ctx, x + block * 5, y + block, width * 0.26, height * 0.72);
-  drawPixelRect(ctx, x + width * 0.32, y, width * 0.24, height * 0.92);
-  drawPixelRect(ctx, x + width * 0.54, y + block, width * 0.3, height * 0.68);
+  drawPixelRect(ctx, x + block * 1, y + block * 2, width * (0.48 + density * 0.22), height * 0.5);
+  if (seed % 2 === 0) drawPixelRect(ctx, x + block * 5, y + block, width * 0.22, height * (0.45 + density * 0.28));
+  drawPixelRect(ctx, x + width * 0.28, y, width * (0.18 + density * 0.13), height * (0.64 + density * 0.24));
+  if (seed % 3 !== 0) drawPixelRect(ctx, x + width * 0.54, y + block, width * 0.26, height * (0.42 + density * 0.18));
+  if (density > 0.78) drawPixelRect(ctx, x + width * 0.7, y + block * 3, width * 0.18, height * 0.38);
   ctx.fillStyle = "#d8e0df";
-  drawPixelRect(ctx, x + width * 0.18, y + block, width * 0.18, block * 2);
-  drawPixelRect(ctx, x + width * 0.48, y + block, width * 0.24, block * 2);
+  drawPixelRect(ctx, x + width * 0.18, y + block, width * (0.12 + density * 0.08), block * 2);
+  if (seed % 5 !== 0) drawPixelRect(ctx, x + width * 0.48, y + block, width * 0.18, block * 2);
   ctx.fillStyle = "#607984";
-  drawPixelRect(ctx, x + block * 2, y + height, width * 0.68, block);
+  drawPixelRect(ctx, x + block * 2, y + height, width * (0.44 + density * 0.24), block);
   ctx.restore();
 }
 

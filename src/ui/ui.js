@@ -46,6 +46,7 @@ export const ui = {
   turretSensitivity: document.getElementById("turretSensitivityInput"),
   turretCurve: document.getElementById("turretCurveInput"),
   trailDuration: document.getElementById("trailDurationInput"),
+  cloudsEnabled: document.getElementById("cloudsEnabledInput"),
   debugMode: document.getElementById("debugModeInput"),
   debugControls: document.getElementById("debugControls"),
   gameSpeed: document.getElementById("gameSpeedInput"),
@@ -309,6 +310,9 @@ export function bindDialogs(onStart, onNewGame) {
   // Settings sliders
   ui.trailDuration.addEventListener("input", () => {
     state.trailDuration = Number(ui.trailDuration.value);
+  });
+  ui.cloudsEnabled.addEventListener("change", () => {
+    state.cloudsEnabled = ui.cloudsEnabled.checked;
   });
   ui.debugMode.addEventListener("change", () => {
     const checked = ui.debugMode.checked;

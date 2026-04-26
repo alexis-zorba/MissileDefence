@@ -69,6 +69,7 @@ const state = {
   aiSkill: "normal",
   aiTurretAimMode: "independent",
   trailDuration: 2.2,
+  cloudsEnabled: true,
   debugMode: false,
   gameSpeed: DEFAULT_GAME_SPEED,
   visualScale: DEFAULT_VISUAL_SCALE,
