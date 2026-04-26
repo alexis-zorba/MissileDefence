@@ -2,10 +2,11 @@
 // UI — DOM element references, HUD updates, dialog management
 // =============================================================================
 
-import { state, on, installedSlots, maxAmmo, weaponColor, slotLabel, activeAmmoText, factorySummary, DEFAULT_GAME_SPEED, DEFAULT_VISUAL_SCALE } from "../state.js";
+import { state, on, installedSlots, maxAmmo, weaponColor, factoriesForBase, DEFAULT_GAME_SPEED, DEFAULT_VISUAL_SCALE } from "../state.js";
 import { DIFFICULTY } from "../config.js";
 import { spendUpgrade } from "../core/economy.js";
 import { startWave } from "../core/wave.js";
+import { applyTranslations, language, setLanguage, t } from "../i18n.js";
 
 // --- DOM element references ---
 
@@ -19,6 +20,9 @@ export const ui = {
   intel: document.getElementById("intelButton"),
   intelDialog: document.getElementById("intelDialog"),
   closeIntel: document.getElementById("closeIntelButton"),
+  help: document.getElementById("helpButton"),
+  helpDialog: document.getElementById("helpDialog"),
+  closeHelp: document.getElementById("closeHelpButton"),
   settings: document.getElementById("settingsButton"),
   settingsDialog: document.getElementById("settingsDialog"),
   buildDialog: document.getElementById("buildDialog"),
@@ -32,6 +36,7 @@ export const ui = {
   next: document.getElementById("nextWaveButton"),
   pause: document.getElementById("pauseButton"),
   gameModeDialog: document.getElementById("gameModeDialog"),
+  language: document.getElementById("languageSelect"),
   mode: document.getElementById("modeSelect"),
   difficultySelect: document.getElementById("difficultySelect"),
   aiSkill: document.getElementById("aiSkillSelect"),
@@ -58,7 +63,7 @@ export function setOverlay(title, text) {
 
 export function updateUi() {
   ui.wave.textContent = state.wave;
-  ui.difficulty.textContent = DIFFICULTY[ui.difficultySelect.value].label;
+  ui.difficulty.textContent = t(`options.${ui.difficultySelect.value}`);
   ui.build.textContent = state.build;
   ui.buildModal.textContent = state.build;
   ui.score.textContent = state.score;
@@ -74,22 +79,23 @@ export function renderCities() {
     .map((city, index) => {
       const selected = index === state.selectedCity ? " selected" : "";
       const hpPct = Math.max(0, (city.hp / city.maxHp) * 100);
-      const heatPct = Math.min(100, Math.max(0, ...city.slots.filter((s) => s.role === "turret" && s.type).map((slot) => slot.heat), 0));
       const installed = installedSlots(city);
+      const factories = factoriesForBase(index);
+      const livingFactories = factories.filter((factory) => factory.hp > 0);
+      const production = livingFactories.reduce((sum, factory) => sum + factory.level, 0);
       return `
         <article class="city-card${selected}" data-city="${index}">
-          <header><strong>${city.name}</strong><span>${installed.length}/4 slot</span></header>
-          <div class="bars">
-            <div class="bar health"><span style="width:${hpPct}%"></span></div>
-            <div class="bar"><span style="width:${heatPct}%"></span></div>
+          <header><strong>${city.name}</strong><span>${t("intel.slots", { count: installed.length })}</span></header>
+          <div class="city-gauges">
+            ${metricBadge("▰", t("intel.health"), `${Math.round(hpPct)}%`, hpPct, hpPct > 35 ? "#55d6be" : "#ff5f5f")}
+            ${metricBadge("⌂", t("intel.factories"), `${livingFactories.length}/${factories.length}`, factories.length ? (livingFactories.length / factories.length) * 100 : 0, "#69a9ff")}
+            ${metricBadge("⚙", t("intel.production"), production, Math.min(100, production * 18), "#f4bf54")}
+            ${metricBadge("◈", t("intel.shield"), city.shield ? t("intel.yes") : t("intel.no"), city.shield ? 100 : 0, "#67e6ff")}
           </div>
-          <div class="city-meta">
-            <span>${factorySummary(index)}</span>
-            <span>${activeAmmoText(city)}</span>
-            <span>Scudo ${city.shield ? "si" : "no"}</span>
-            <span>Blast ${city.blastRadiusLevel}/${city.blastLifeLevel}</span>
+          <div class="slot-grid">
+            ${city.slots.map((slot) => slotCard(city, slot)).join("")}
           </div>
-          <div class="city-meta">${city.slots.map((slot) => `<span>${slotLabel(slot)}</span>`).join("")}</div>
+          <div class="city-meta"><span>${t("intel.magazine")} ${city.magazineLevel || 1}</span><span>${t("intel.blast")} ${city.blastRadiusLevel}/${city.blastLifeLevel}</span></div>
         </article>
       `;
     })
@@ -104,13 +110,16 @@ export function renderBuildCities() {
       const selected = index === state.selectedCity ? " selected" : "";
       const hpPct = Math.round(Math.max(0, (city.hp / city.maxHp) * 100));
       const weapons = installedSlots(city).map(slotLabel).join(", ");
+      const factories = factoriesForBase(index);
+      const livingFactories = factories.filter((factory) => factory.hp > 0);
+      const production = livingFactories.reduce((sum, factory) => sum + factory.level, 0);
       return `
         <article class="build-city${selected}" data-build-city="${index}">
           <strong>${city.name}</strong>
-          <div class="city-meta"><span>Base ${hpPct}%</span><span>${factorySummary(index)}</span></div>
-          <div class="city-meta"><span>${weapons || "Nessuna arma"}</span><span>${activeAmmoText(city)}</span></div>
-          <div class="city-meta"><span>Caricatori ${city.magazineLevel || 1}</span><span>Blast ${city.blastRadiusLevel}/${city.blastLifeLevel}</span></div>
-          <div class="city-meta"><span>Scudo ${city.shield ? "si" : "no"}</span><span></span></div>
+          <div class="city-meta"><span>${t("intel.base")} ${hpPct}%</span><span>${t("intel.factories")} ${livingFactories.length}/${factories.length} P${production}</span></div>
+          <div class="city-meta"><span>${weapons || t("intel.none")}</span><span>${ammoText(city)}</span></div>
+          <div class="city-meta"><span>${t("intel.magazine")} ${city.magazineLevel || 1}</span><span>${t("intel.blast")} ${city.blastRadiusLevel}/${city.blastLifeLevel}</span></div>
+          <div class="city-meta"><span>${t("intel.shield")} ${city.shield ? t("intel.yes") : t("intel.no")}</span><span></span></div>
         </article>
       `;
     })
@@ -122,11 +131,27 @@ export function renderBuildCities() {
 export function renderFooterCities() {
   ui.footerCities.innerHTML = state.cities.map((city, index) => {
     const hpPct = city.maxHp > 0 ? Math.max(0, (city.hp / city.maxHp) * 100) : 0;
-    const weaponBars = installedSlots(city).map((slot) => {
+    const factories = factoriesForBase(index);
+    const livingFactories = factories.filter((factory) => factory.hp > 0);
+    const production = livingFactories.reduce((sum, factory) => sum + factory.level, 0);
+    const weaponBars = city.slots.map((slot) => {
+      if (!slot.type) {
+        return `
+          <div class="footer-slot empty" title="${t("intel.empty")}">
+            <span class="slot-icon">${slot.role === "missile" ? "↟" : "⌁"}</span>
+            <div class="footer-bar"><span style="width:0"></span></div>
+            <small>--</small>
+          </div>
+        `;
+      }
       const ammoPct = maxAmmo(city, slot) > 0 ? Math.min(100, (slot.ammo / maxAmmo(city, slot)) * 100) : 0;
+      const heatPct = slot.role === "turret" ? Math.min(100, slot.heat || 0) : Math.min(100, (slot.cooldown || 0) / 10);
       return `
-        <div class="footer-bar" title="${slotLabel(slot)}">
-          <span style="width:${ammoPct}%; background:${weaponColor(slot.type)}"></span>
+        <div class="footer-slot" title="${slotLabel(slot)}">
+          <span class="slot-icon" style="color:${weaponColor(slot.type)}">${weaponIcon(slot.type)}</span>
+          <div class="footer-bar"><span style="width:${ammoPct}%; background:${weaponColor(slot.type)}"></span></div>
+          <small>${slot.ammo}/${maxAmmo(city, slot)}</small>
+          <div class="footer-bar heat"><span style="width:${heatPct}%; background:${heatPct > 70 ? "#ff5f5f" : "#f4bf54"}"></span></div>
         </div>
       `;
     }).join("");
@@ -134,15 +159,75 @@ export function renderFooterCities() {
       <article class="footer-city">
         <div class="footer-city-head">
           <strong>${city.name}</strong>
-          <span class="footer-city-name">${factorySummary(index)}</span>
+          <span class="footer-city-name">⌂ ${livingFactories.length}/${factories.length} P${production}</span>
         </div>
         <div class="footer-bars">
           <div class="footer-bar health"><span style="width:${hpPct}%; background:${hpPct > 35 ? "#55d6be" : "#ff5f5f"}"></span></div>
+          <div class="footer-slot-grid">
           ${weaponBars}
+          </div>
         </div>
       </article>
     `;
   }).join("");
+}
+
+function metricBadge(icon, label, value, pct, color) {
+  return `
+    <div class="metric-badge">
+      <span class="metric-icon">${icon}</span>
+      <div>
+        <small>${label}</small>
+        <strong>${value}</strong>
+        <div class="mini-gauge"><span style="width:${Math.max(0, Math.min(100, pct))}%; background:${color}"></span></div>
+      </div>
+    </div>
+  `;
+}
+
+function slotCard(city, slot) {
+  const color = slot.type ? weaponColor(slot.type) : "rgba(149, 170, 179, 0.45)";
+  const ammoPct = slot.type && maxAmmo(city, slot) > 0 ? Math.min(100, (slot.ammo / maxAmmo(city, slot)) * 100) : 0;
+  const cooldownPct = slot.type ? Math.min(100, ((slot.cooldown || 0) / 1200) * 100) : 0;
+  const heatPct = slot.role === "turret" ? Math.min(100, slot.heat || 0) : 0;
+  return `
+    <div class="slot-card${slot.type ? "" : " empty"}">
+      <div class="slot-card-head">
+        <span style="color:${color}">${weaponIcon(slot.type || slot.role)}</span>
+        <strong>${slot.type ? slotLabel(slot) : t("intel.empty")}</strong>
+        <small>${t(`roles.${slot.role}`)}</small>
+      </div>
+      <div class="slot-bars">
+        <div><small>${t("intel.ammo")}</small><div class="bar"><span style="width:${ammoPct}%; background:${color}"></span></div></div>
+        <div><small>${slot.role === "turret" ? t("intel.heat") : t("intel.cooling")}</small><div class="bar"><span style="width:${slot.role === "turret" ? heatPct : cooldownPct}%; background:${slot.role === "turret" && heatPct > 70 ? "#ff5f5f" : "#f4bf54"}"></span></div></div>
+      </div>
+    </div>
+  `;
+}
+
+function weaponIcon(type) {
+  return {
+    missile: "↟",
+    turret: "⌁",
+    ballistic: "↟",
+    seeker: "◆",
+    cannon: "▰",
+    mg: "≋",
+    laser: "⌁",
+  }[type] || "·";
+}
+
+function slotLabel(slot) {
+  return slot?.type ? `${t(`weapons.${slot.type}`)} L${slot.level}` : t("intel.empty");
+}
+
+function ammoText(city) {
+  if (!city || city.hp <= 0) return t("intel.destroyed");
+  const slots = installedSlots(city);
+  if (!slots.length) return t("intel.none");
+  const ammo = slots.reduce((sum, slot) => sum + slot.ammo, 0);
+  const max = slots.reduce((sum, slot) => sum + maxAmmo(city, slot), 0);
+  return `${t("intel.ammo")} ${ammo}/${max}`;
 }
 
 // --- Build dialog ---
@@ -176,11 +261,17 @@ function showCreditBump() {
 // --- Dialog event binding ---
 
 export function bindDialogs(onStart, onNewGame) {
+  setLanguage(language());
+  ui.language.value = language();
+  applyTranslations();
   // Settings
   ui.settings.addEventListener("click", () => ui.settingsDialog.showModal());
   // Intel
   ui.intel.addEventListener("click", () => ui.intelDialog.showModal());
   ui.closeIntel.addEventListener("click", () => ui.intelDialog.close());
+  // Guide
+  ui.help.addEventListener("click", () => ui.helpDialog.showModal());
+  ui.closeHelp.addEventListener("click", () => ui.helpDialog.close());
   // Start / next wave / pause
   ui.newGame.addEventListener("click", () => openGameModeDialog());
   ui.start.addEventListener("click", onStart);
@@ -190,8 +281,8 @@ export function bindDialogs(onStart, onNewGame) {
   });
   ui.pause.addEventListener("click", () => {
     state.paused = !state.paused;
-    ui.pause.textContent = state.paused ? "Riprendi" : "Pausa";
-    setOverlay(state.paused ? "Pausa" : "", state.paused ? "Simulazione sospesa." : "");
+    ui.pause.textContent = state.paused ? t("actions.resume") : t("actions.pause");
+    setOverlay(state.paused ? t("overlay.paused") : "", state.paused ? t("overlay.pausedText") : "");
   });
   // Build dialog
   ui.closeBuild.addEventListener("click", () => closeBuildDialog());
@@ -277,6 +368,11 @@ export function bindDialogs(onStart, onNewGame) {
     applyModePreset(ui.mode.value);
   });
   ui.difficultySelect.addEventListener("change", updateUi);
+  ui.language.addEventListener("change", () => {
+    setLanguage(ui.language.value);
+    applyTranslations();
+    updateUi();
+  });
   syncControlAvailability();
 }
 

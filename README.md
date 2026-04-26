@@ -45,6 +45,12 @@ Turrets can be configured depending on the selected game mode:
   - Mouse click fires turrets immediately.
   - Aim can be parallel or independently directed toward the clicked point.
 
+## Interface And Localization
+
+The interface includes a quick in-game guide, a schematic city/arsenal status panel and compact footer telemetry for base health, factory production, weapon slots, ammunition and turret heat.
+
+The UI currently ships with Italian and English dictionaries through `src/i18n.js`. Additional languages can be added by extending the dictionary object without changing game logic.
+
 ## Weapons
 
 Each weapon can be upgraded up to level 3.
@@ -113,6 +119,7 @@ The included `netlify.toml` already matches this setup.
 src/
   main.js                  Entry point: bootstrap, game loop and top-level flow
   state.js                 Centralized observable game state
+  i18n.js                  Translation dictionaries and DOM translation helpers
   config.js                Constants for difficulty, weapons, enemies and costs
   utils.js                 Shared utility functions
   styles.css               UI layout and visual system

@@ -18,6 +18,7 @@ import { updateAi } from "./systems/ai.js";
 import { bindInput } from "./systems/input.js";
 import { startWave, finishWave } from "./core/wave.js";
 import { ui, setOverlay, updateUi, openBuildDialog, closeBuildDialog, openGameModeDialog, bindDialogs, bindStateListeners } from "./ui/ui.js";
+import { t } from "./i18n.js";
 import * as logger from "./debug/logger.js";
 
 // --- Canvas setup ---
@@ -44,10 +45,10 @@ function uiCallbacks() {
 
 function resetGame() {
   const diffCfg = getDifficultyCfg();
-  const citiesConfig = ["Aquila", "Vega", "Orione"];
+  const citiesConfig = ["Jarvis", "Minter", "Miyamoto"];
   resetState(diffCfg, citiesConfig);
   ui.next.disabled = false;
-  setOverlay("Difese pronte", "Spendi il credito costruzione, poi avvia la prossima ondata.");
+  setOverlay(t("overlay.defencesReady"), t("overlay.defencesReadyText"));
   openBuildDialog(true);
   updateUi();
   logger.log("info", "Game reset", { difficulty: diffCfg.label, mode: getMode() });
@@ -96,8 +97,8 @@ function update(dt) {
   if (!state.betweenWaves && state.enemiesToSpawn <= 0 && state.enemies.length === 0) {
     const { produced, factoryProduction } = finishWave(diffCfg, updateUi);
     setOverlay(
-      `Ondata ${state.wave - 1} respinta`,
-      `Bonus ${WAVE_CLEAR_BONUS} + produzione fabbriche ${factoryProduction}: +${produced} credito.`
+      t("overlay.waveRepelled", { wave: state.wave - 1 }),
+      t("overlay.waveReward", { bonus: WAVE_CLEAR_BONUS, factory: factoryProduction, produced })
     );
     showCreditBump();
     openBuildDialog();
@@ -108,7 +109,7 @@ function update(dt) {
   if (state.running && state.cities.every((city) => city.hp <= 0) && state.factories.every((factory) => factory.hp <= 0)) {
     state.running = false;
     state.betweenWaves = true;
-    setOverlay("Citta distrutte", `Punteggio finale: ${state.score}. Premi Avvia per ricominciare.`);
+    setOverlay(t("overlay.gameOver"), t("overlay.gameOverText", { score: state.score }));
     ui.next.disabled = true;
     logger.log("warn", "Game over — all cities destroyed");
   }
@@ -156,7 +157,7 @@ function boot() {
     }
   }, resetGame);
 
-  setOverlay("Scegli modalita", "Premi New game e seleziona chi controlla lanciarazzi e torrette.");
+  setOverlay(t("overlay.chooseMode"), t("overlay.chooseModeText"));
   openGameModeDialog();
 
   // First draw

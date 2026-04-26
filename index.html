@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Missile Defence Multiplayer</title>
-    <link rel="stylesheet" href="src/styles.css?v=20260426-1">
+    <link rel="stylesheet" href="src/styles.css?v=20260426-2">
   </head>
   <body>
     <main class="game-shell">
@@ -15,28 +15,29 @@
           <img src="src/assets/logo-missile-defence.svg" alt="Missile Defence Multiplayer">
         </div>
         <div class="stat-row">
-          <div><span>Ondata</span><strong id="waveLabel">1</strong></div>
-          <div><span>Difficolta</span><strong id="difficultyLabel">Normale</strong></div>
-          <div><span>Credito</span><strong id="buildLabel">0</strong></div>
-          <div><span>Punti</span><strong id="scoreLabel">0</strong></div>
+          <div><span data-i18n="hud.wave">Ondata</span><strong id="waveLabel">1</strong></div>
+          <div><span data-i18n="hud.difficulty">Difficolta</span><strong id="difficultyLabel">Normale</strong></div>
+          <div><span data-i18n="hud.build">Credito</span><strong id="buildLabel">0</strong></div>
+          <div><span data-i18n="hud.score">Punti</span><strong id="scoreLabel">0</strong></div>
         </div>
         <div class="top-actions">
-          <button id="intelButton" class="icon-button" aria-label="Citta e arsenali" title="Citta e arsenali">ⓘ</button>
-          <button id="settingsButton" class="icon-button" aria-label="Impostazioni" title="Impostazioni">⚙</button>
+          <button id="intelButton" class="icon-button" aria-label="Citta e arsenali" title="Citta e arsenali" data-i18n-aria="top.intel" data-i18n-title="top.intel">ⓘ</button>
+          <button id="helpButton" class="icon-button" aria-label="Guida" title="Guida" data-i18n-aria="top.help" data-i18n-title="top.help">?</button>
+          <button id="settingsButton" class="icon-button" aria-label="Impostazioni" title="Impostazioni" data-i18n-aria="top.settings" data-i18n-title="top.settings">⚙</button>
         </div>
       </section>
 
       <div id="overlay" class="message-overlay">
-        <strong>Pronto</strong>
-        <span>Mouse: salva missili. Frecce e spazio: torrette coordinate.</span>
+        <strong data-i18n="overlay.ready">Pronto</strong>
+        <span data-i18n="overlay.readyText">Mouse: salva missili. Frecce e spazio: torrette coordinate.</span>
       </div>
 
       <footer class="control-footer">
         <div class="footer-actions">
-          <button id="newGameButton">New game</button>
-          <button id="startButton">Avvia</button>
-          <button id="nextWaveButton" disabled>Prossima ondata</button>
-          <button id="pauseButton">Pausa</button>
+          <button id="newGameButton" data-i18n="actions.newGame">New game</button>
+          <button id="startButton" data-i18n="actions.start">Avvia</button>
+          <button id="nextWaveButton" disabled data-i18n="actions.nextWave">Prossima ondata</button>
+          <button id="pauseButton" data-i18n="actions.pause">Pausa</button>
         </div>
         <div id="footerCities" class="footer-cities" aria-label="Stato citta"></div>
       </footer>
@@ -44,25 +45,41 @@
       <dialog id="gameModeDialog" class="dialog game-mode-dialog">
         <section>
           <header>
-            <strong>New game</strong>
+            <strong data-i18n="modes.title">New game</strong>
           </header>
           <div class="mode-grid">
             <button data-mode-preset="missiles" autofocus>
-              <strong>Umano lanciarazzi</strong>
-              <span>Mouse ai razzi, AI alle torrette con mira indipendente.</span>
+              <strong data-i18n="modes.missiles">Umano lanciarazzi</strong>
+              <span data-i18n="modes.missilesText">Mouse ai razzi, AI alle torrette con mira indipendente.</span>
             </button>
             <button data-mode-preset="turret">
-              <strong>Umano torrette</strong>
-              <span>Mouse alle torrette, click per sparare, AI ai lanciarazzi.</span>
+              <strong data-i18n="modes.turret">Umano torrette</strong>
+              <span data-i18n="modes.turretText">Mouse alle torrette, click per sparare, AI ai lanciarazzi.</span>
             </button>
             <button data-mode-preset="coop">
-              <strong>Co-op umano</strong>
-              <span>Mouse ai razzi, freccette e spazio alle torrette.</span>
+              <strong data-i18n="modes.coop">Co-op umano</strong>
+              <span data-i18n="modes.coopText">Mouse ai razzi, freccette e spazio alle torrette.</span>
             </button>
             <button data-mode-preset="auto">
-              <strong>Co-op AI</strong>
-              <span>L'AI combatte con razzi e torrette, tu gestisci costruzioni e rifornimenti.</span>
+              <strong data-i18n="modes.auto">Co-op AI</strong>
+              <span data-i18n="modes.autoText">L'AI combatte con razzi e torrette, tu gestisci costruzioni e rifornimenti.</span>
             </button>
+          </div>
+        </section>
+      </dialog>
+
+      <dialog id="helpDialog" class="dialog help-dialog">
+        <section>
+          <header>
+            <strong data-i18n="guide.title">Guida rapida</strong>
+            <button id="closeHelpButton" aria-label="Chiudi" data-i18n-aria="actions.close">×</button>
+          </header>
+          <div class="guide-grid">
+            <article><strong data-i18n="guide.objectiveTitle">Obiettivo</strong><p data-i18n="guide.objective">Proteggi basi e fabbriche dalle ondate. Le fabbriche sopravvissute producono credito tra un'ondata e l'altra.</p></article>
+            <article><strong data-i18n="guide.modesTitle">Modalita</strong><p data-i18n="guide.modes">Puoi controllare i lanciarazzi, le torrette, giocare in co-op locale o lasciare il combattimento all'AI e gestire solo costruzione e rifornimenti.</p></article>
+            <article><strong data-i18n="guide.controlsTitle">Controlli</strong><p data-i18n="guide.controls">Lanciarazzi: click sul campo. Torrette mouse: movimento per mirare e click per sparare. Torrette tastiera: frecce per ruotare e spazio per sparare.</p></article>
+            <article><strong data-i18n="guide.economyTitle">Costruzione</strong><p data-i18n="guide.economy">Ogni base ha due slot missile e due slot torretta. Rifornire costa 1 credito e riempie tutte le armi installate nella base selezionata.</p></article>
+            <article><strong data-i18n="guide.weaponsTitle">Armi</strong><p data-i18n="guide.weapons">Balistico: area e cluster. Seeker: inseguimento, ma ricarica lenta. Cannoncino: pochi colpi potenti. Mitragliatrice: anti-drone. Laser: preciso ma scalda.</p></article>
           </div>
         </section>
       </dialog>
@@ -70,79 +87,86 @@
       <dialog id="settingsDialog" class="dialog">
         <form method="dialog">
           <header>
-            <strong>Impostazioni</strong>
-            <button aria-label="Chiudi">×</button>
+            <strong data-i18n="settings.title">Impostazioni</strong>
+            <button aria-label="Chiudi" data-i18n-aria="actions.close">×</button>
           </header>
           <label>
-            Modalita
+            <span data-i18n="settings.language">Lingua</span>
+            <select id="languageSelect">
+              <option value="it">Italiano</option>
+              <option value="en">English</option>
+            </select>
+          </label>
+          <label>
+            <span data-i18n="settings.mode">Modalita</span>
             <select id="modeSelect">
-              <option value="missiles" selected>Giocatore missili, computer torrette</option>
-              <option value="turret">Giocatore torretta, computer missili</option>
-              <option value="coop">Co-op locale</option>
-              <option value="auto">Co-op AI, solo costruzione</option>
+              <option value="missiles" selected data-i18n="options.modeMissiles">Giocatore missili, computer torrette</option>
+              <option value="turret" data-i18n="options.modeTurret">Giocatore torretta, computer missili</option>
+              <option value="coop" data-i18n="options.modeCoop">Co-op locale</option>
+              <option value="auto" data-i18n="options.modeAuto">Co-op AI, solo costruzione</option>
             </select>
           </label>
           <label>
-            Difficolta
+            <span data-i18n="settings.difficulty">Difficolta</span>
             <select id="difficultySelect">
-              <option value="cadet">Cadetto</option>
-              <option value="normal" selected>Normale</option>
-              <option value="veteran">Veterano</option>
-              <option value="nightmare">Incubo</option>
+              <option value="cadet" data-i18n="options.cadet">Cadetto</option>
+              <option value="normal" selected data-i18n="options.normal">Normale</option>
+              <option value="veteran" data-i18n="options.veteran">Veterano</option>
+              <option value="nightmare" data-i18n="options.nightmare">Incubo</option>
             </select>
           </label>
           <label>
-            AI alleata
+            <span data-i18n="settings.aiSkill">AI alleata</span>
             <select id="aiSkillSelect">
-              <option value="normal" selected>Normale</option>
-              <option value="expert">Esperto</option>
-              <option value="pro">Professionista</option>
+              <option value="normal" selected data-i18n="options.normal">Normale</option>
+              <option value="expert" data-i18n="options.expert">Esperto</option>
+              <option value="pro" data-i18n="options.pro">Professionista</option>
             </select>
           </label>
           <label>
-            Mira AI torrette
+            <span data-i18n="settings.aiTurretAim">Mira AI torrette</span>
             <select id="aiTurretAimSelect">
-              <option value="parallel">Parallela</option>
-              <option value="independent" selected>Indipendente</option>
+              <option value="parallel" data-i18n="options.parallel">Parallela</option>
+              <option value="independent" selected data-i18n="options.independent">Indipendente</option>
             </select>
           </label>
           <label>
-            Controllo torrette
+            <span data-i18n="settings.turretInput">Controllo torrette</span>
             <select id="turretInputSelect">
-              <option value="keyboard" selected>Freccette e spazio</option>
-              <option value="mouse">Mouse</option>
+              <option value="keyboard" selected data-i18n="options.keyboard">Freccette e spazio</option>
+              <option value="mouse" data-i18n="options.mouse">Mouse</option>
             </select>
           </label>
           <label>
-            Mira torrette manuali
+            <span data-i18n="settings.turretAim">Mira torrette manuali</span>
             <select id="turretAimSelect">
-              <option value="parallel" selected>Parallela</option>
-              <option value="point">Indipendente verso punto click</option>
+              <option value="parallel" selected data-i18n="options.parallel">Parallela</option>
+              <option value="point" data-i18n="options.point">Indipendente verso punto click</option>
             </select>
           </label>
           <label>
-            Sensibilita torrette
+            <span data-i18n="settings.turretSensitivity">Sensibilita torrette</span>
             <input id="turretSensitivityInput" type="range" min="0.6" max="2.6" step="0.1" value="1.7">
           </label>
           <label>
-            Curva rotazione
+            <span data-i18n="settings.turretCurve">Curva rotazione</span>
             <input id="turretCurveInput" type="range" min="0.35" max="1.8" step="0.05" value="1">
           </label>
           <label>
-            Persistenza scie
+            <span data-i18n="settings.trailDuration">Persistenza scie</span>
             <input id="trailDurationInput" type="range" min="2.2" max="6" step="0.2" value="2.2">
           </label>
           <label class="check-label">
             <input id="debugModeInput" type="checkbox">
-            Debug calibrazione
+            <span data-i18n="settings.debugMode">Debug calibrazione</span>
           </label>
           <div id="debugControls" class="debug-controls" hidden>
             <label>
-              Game speed
+              <span data-i18n="settings.gameSpeed">Game speed</span>
               <input id="gameSpeedInput" type="range" min="0.35" max="1.25" step="0.05" value="0.35">
             </label>
             <label>
-              Visual scale
+              <span data-i18n="settings.visualScale">Visual scale</span>
               <input id="visualScaleInput" type="range" min="0.45" max="1" step="0.05" value="0.45">
             </label>
           </div>
@@ -152,8 +176,8 @@
       <dialog id="intelDialog" class="dialog intel-dialog">
         <section>
           <header>
-            <strong>Citta e arsenali</strong>
-            <button id="closeIntelButton" aria-label="Chiudi">×</button>
+            <strong data-i18n="intel.title">Citta e arsenali</strong>
+            <button id="closeIntelButton" aria-label="Chiudi" data-i18n-aria="actions.close">×</button>
           </header>
           <div class="city-dock" id="cities" aria-label="Citta e armi installate"></div>
         </section>
@@ -163,39 +187,39 @@
         <section>
           <header>
             <div>
-              <span>Tra un'ondata e l'altra</span>
-              <strong>Costruzione e upgrade</strong>
+              <span data-i18n="build.phase">Tra un'ondata e l'altra</span>
+              <strong data-i18n="build.title">Costruzione e upgrade</strong>
             </div>
-            <button id="closeBuildButton" aria-label="Chiudi">×</button>
+            <button id="closeBuildButton" aria-label="Chiudi" data-i18n-aria="actions.close">×</button>
           </header>
           <div class="credit-banner">
-            <span>Credito disponibile</span>
+            <span data-i18n="build.credit">Credito disponibile</span>
             <strong id="buildModalLabel">0</strong>
           </div>
           <div class="build-layout">
             <div class="build-cities" id="buildCities"></div>
             <div class="upgrade-grid">
-              <button data-upgrade="repair">Ripara zona <span>2</span></button>
-              <button data-upgrade="factory">Fabbrica <span>4</span></button>
-              <button data-upgrade="launcher">Razzo balistico <span>3</span></button>
-              <button data-upgrade="seeker">Razzo seeker <span>5</span></button>
-              <button data-upgrade="cannon">Cannoncino <span>3</span></button>
-              <button data-upgrade="mg">Mitragliatrice <span>3</span></button>
-              <button data-upgrade="laser">Laser <span>5</span></button>
-              <button data-upgrade="shield">Scudo <span>4</span></button>
-              <button data-upgrade="ammo">Munizioni <span>1</span></button>
-              <button data-upgrade="magazine">Caricatori <span>6</span></button>
-              <button data-upgrade="blastRadius">Esplosioni + <span>8</span></button>
-              <button data-upgrade="blastLife">Bolla lenta <span>8</span></button>
+              <button data-upgrade="repair"><span data-i18n="build.repair">Ripara zona</span><span>2</span></button>
+              <button data-upgrade="factory"><span data-i18n="build.factory">Fabbrica</span><span>4</span></button>
+              <button data-upgrade="launcher"><span data-i18n="build.launcher">Razzo balistico</span><span>3</span></button>
+              <button data-upgrade="seeker"><span data-i18n="build.seeker">Razzo seeker</span><span>5</span></button>
+              <button data-upgrade="cannon"><span data-i18n="build.cannon">Cannoncino</span><span>3</span></button>
+              <button data-upgrade="mg"><span data-i18n="build.mg">Mitragliatrice</span><span>3</span></button>
+              <button data-upgrade="laser"><span data-i18n="build.laser">Laser</span><span>5</span></button>
+              <button data-upgrade="shield"><span data-i18n="build.shield">Scudo</span><span>4</span></button>
+              <button data-upgrade="ammo"><span data-i18n="build.ammo">Munizioni</span><span>1</span></button>
+              <button data-upgrade="magazine"><span data-i18n="build.magazine">Caricatori</span><span>6</span></button>
+              <button data-upgrade="blastRadius"><span data-i18n="build.blastRadius">Esplosioni +</span><span>8</span></button>
+              <button data-upgrade="blastLife"><span data-i18n="build.blastLife">Bolla lenta</span><span>8</span></button>
             </div>
           </div>
           <footer class="build-actions">
-            <button id="buildStartWaveButton">Avvia ondata</button>
+            <button id="buildStartWaveButton" data-i18n="actions.startWave">Avvia ondata</button>
           </footer>
         </section>
       </dialog>
     </main>
 
-    <script type="module" src="src/main.js?v=20260426-1"></script>
+    <script type="module" src="src/main.js?v=20260426-2"></script>
   </body>
 </html>
