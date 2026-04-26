@@ -153,12 +153,6 @@ function drawPixelCloud(ctx, x, y, width, scale, alpha, density, seed) {
   puffs
     .filter((_, index) => index % 3 !== 1)
     .forEach((puff) => drawPixelPuff(ctx, puff.x - block * 0.35, puff.y - block * 0.28, puff.w * 0.46, puff.h * 0.42, block));
-  ctx.fillStyle = "#607984";
-  for (let i = 0; i < 4; i += 1) {
-    const shadeX = x + width * (0.1 + i * 0.19) + (random() - 0.5) * block * 2;
-    const shadeW = width * (0.11 + random() * 0.13);
-    drawPixelRect(ctx, shadeX, baseY + height * 0.18 + random() * block, shadeW, block);
-  }
   ctx.restore();
 }
 
