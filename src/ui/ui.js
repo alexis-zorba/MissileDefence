@@ -121,9 +121,13 @@ export function renderFooterCities() {
       const durabilityMax = maxDurability(slot);
       const durability = slot.durability || 0;
       const durabilityPct = durabilityMax > 0 ? Math.min(100, (durability / durabilityMax) * 100) : 0;
-      const recharging = slot.cooldown > 250;
+      const dead = durability <= 0;
+      const outOfAmmo = !dead && slot.ammo === 0;
+      const recharging = !dead && !outOfAmmo && slot.cooldown > 250;
+      const stateClass = dead ? " dead" : outOfAmmo ? " out-of-ammo" : recharging ? " recharging" : "";
+      const stateLabel = dead ? " — DURATA ESAURITA" : outOfAmmo ? " — MUNIZIONI ESAURITE" : recharging ? ` — RICARICA ${(slot.cooldown / 1000).toFixed(1)}s` : "";
       return `
-        <div class="footer-slot${recharging ? " recharging" : ""}" title="${slotLabel(slot)}${recharging ? ` — RICARICA ${(slot.cooldown / 1000).toFixed(1)}s` : ""}">
+        <div class="footer-slot${stateClass}" title="${slotLabel(slot)}${stateLabel}">
           <span class="slot-icon" style="color:${weaponColor(slot.type)}">${weaponIcon(slot.type)}</span>
           <div class="footer-bar"><span style="width:${ammoPct}%; background:${weaponColor(slot.type)}"></span></div>
           <small>${slot.ammo}/${maxAmmo(city, slot)}</small>
@@ -189,7 +193,8 @@ function cityStatusCard(city, index, options) {
 
 function slotCard(city, slot) {
   const color = slot.type ? weaponColor(slot.type) : "rgba(149, 170, 179, 0.45)";
-  const ammoPct = slot.type && maxAmmo(city, slot) > 0 ? Math.min(100, (slot.ammo / maxAmmo(city, slot)) * 100) : 0;
+  const ammoMax = slot.type ? maxAmmo(city, slot) : 0;
+  const ammoPct = ammoMax > 0 ? Math.min(100, (slot.ammo / ammoMax) * 100) : 0;
   const durabilityMax = slot.type ? maxDurability(slot) : 0;
   const durability = slot.durability || 0;
   const durabilityPct = durabilityMax > 0 ? Math.min(100, (durability / durabilityMax) * 100) : 0;
@@ -201,7 +206,7 @@ function slotCard(city, slot) {
         <small>${t(`roles.${slot.role}`)}</small>
       </div>
       <div class="slot-bars">
-        <div><small>${t("intel.ammo")}</small><div class="bar"><span style="width:${ammoPct}%; background:${color}"></span></div></div>
+        <div><small>${t("intel.ammo")} ${slot.type ? `${slot.ammo}/${ammoMax}` : ""}</small><div class="bar"><span style="width:${ammoPct}%; background:${color}"></span></div></div>
         <div><small>${t("intel.durability")} ${slot.type ? `${durability}/${durabilityMax}` : ""}</small><div class="bar"><span style="width:${durabilityPct}%; background:${durabilityPct > 25 ? "#55d6be" : "#ff5f5f"}"></span></div></div>
       </div>
     </div>

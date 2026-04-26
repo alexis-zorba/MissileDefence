@@ -225,11 +225,7 @@ export function consumeDurability(slot, amount = 1) {
   slot.maxDurability ||= maxDurability(slot);
   const currentDurability = typeof slot.durability === "number" ? slot.durability : slot.maxDurability;
   slot.durability = Math.max(0, currentDurability - amount);
-  if (slot.durability <= 0) {
-    clearSlot(slot);
-    return true;
-  }
-  return false;
+  return slot.durability <= 0;
 }
 
 export function replenishAmmo(slot) {

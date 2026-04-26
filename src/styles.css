@@ -325,6 +325,34 @@ label,
   animation: cd-pulse 700ms ease-in-out infinite;
 }
 
+.footer-slot.dead {
+  border-color: rgba(255, 95, 95, 0.6);
+  background: rgba(60, 18, 18, 0.55);
+}
+
+.footer-slot.dead .slot-icon,
+.footer-slot.dead small {
+  color: #ff5f5f !important;
+}
+
+.footer-slot.dead .footer-bar > span {
+  background: #ff5f5f !important;
+}
+
+.footer-slot.out-of-ammo {
+  border-color: rgba(199, 148, 255, 0.6);
+  background: rgba(40, 20, 60, 0.55);
+}
+
+.footer-slot.out-of-ammo .slot-icon,
+.footer-slot.out-of-ammo small {
+  color: #c794ff !important;
+}
+
+.footer-slot.out-of-ammo .footer-bar > span {
+  background: #c794ff !important;
+}
+
 @keyframes cd-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
