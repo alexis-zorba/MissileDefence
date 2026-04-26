@@ -118,6 +118,10 @@ const dictionaries = {
       magazine: "Caricatori",
       blastRadius: "Esplosioni +",
       blastLife: "Bolla lenta",
+      categoryBase: "Base e produzione",
+      categoryMissiles: "Lanciarazzi",
+      categoryTurrets: "Torrette",
+      categoryLogistics: "Munizioni e logistica",
     },
     weapons: {
       ballistic: "Razzo balistico",
@@ -269,6 +273,10 @@ const dictionaries = {
       magazine: "Magazines",
       blastRadius: "Bigger blasts",
       blastLife: "Slow blast cloud",
+      categoryBase: "Base and production",
+      categoryMissiles: "Launchers",
+      categoryTurrets: "Turrets",
+      categoryLogistics: "Ammo and logistics",
     },
     weapons: {
       ballistic: "Ballistic rocket",

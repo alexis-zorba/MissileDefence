@@ -233,19 +233,39 @@
           </div>
           <div class="build-layout">
             <div class="build-cities" id="buildCities"></div>
-            <div class="upgrade-grid">
-              <button data-upgrade="repair"><span data-i18n="build.repair">Ripara zona</span><span>2</span></button>
-              <button data-upgrade="factory"><span data-i18n="build.factory">Fabbrica</span><span>4</span></button>
-              <button data-upgrade="launcher"><span data-i18n="build.launcher">Razzo balistico</span><span>3</span></button>
-              <button data-upgrade="seeker"><span data-i18n="build.seeker">Razzo seeker</span><span>5</span></button>
-              <button data-upgrade="cannon"><span data-i18n="build.cannon">Cannoncino</span><span>3</span></button>
-              <button data-upgrade="mg"><span data-i18n="build.mg">Mitragliatrice</span><span>3</span></button>
-              <button data-upgrade="laser"><span data-i18n="build.laser">Laser</span><span>5</span></button>
-              <button data-upgrade="shield"><span data-i18n="build.shield">Scudo</span><span>4</span></button>
-              <button data-upgrade="ammo"><span data-i18n="build.ammo">Munizioni</span><span>1</span></button>
-              <button data-upgrade="magazine"><span data-i18n="build.magazine">Caricatori</span><span>6</span></button>
-              <button data-upgrade="blastRadius"><span data-i18n="build.blastRadius">Esplosioni +</span><span>8</span></button>
-              <button data-upgrade="blastLife"><span data-i18n="build.blastLife">Bolla lenta</span><span>8</span></button>
+            <div class="upgrade-panel">
+              <section class="upgrade-group">
+                <h3><span>▣</span><strong data-i18n="build.categoryBase">Base e produzione</strong></h3>
+                <div class="upgrade-grid">
+                  <button data-upgrade="repair"><span class="upgrade-icon">✚</span><span data-i18n="build.repair">Ripara zona</span><strong>2</strong></button>
+                  <button data-upgrade="factory"><span class="upgrade-icon">⌂</span><span data-i18n="build.factory">Fabbrica</span><strong>4</strong></button>
+                  <button data-upgrade="shield"><span class="upgrade-icon">◈</span><span data-i18n="build.shield">Scudo</span><strong>4</strong></button>
+                </div>
+              </section>
+              <section class="upgrade-group">
+                <h3><span>↟</span><strong data-i18n="build.categoryMissiles">Lanciarazzi</strong></h3>
+                <div class="upgrade-grid">
+                  <button data-upgrade="launcher"><span class="upgrade-icon">↟</span><span data-i18n="build.launcher">Razzo balistico</span><strong>3</strong></button>
+                  <button data-upgrade="seeker"><span class="upgrade-icon">◆</span><span data-i18n="build.seeker">Razzo seeker</span><strong>5</strong></button>
+                  <button data-upgrade="blastRadius"><span class="upgrade-icon">◎</span><span data-i18n="build.blastRadius">Esplosioni +</span><strong>8</strong></button>
+                  <button data-upgrade="blastLife"><span class="upgrade-icon">◌</span><span data-i18n="build.blastLife">Bolla lenta</span><strong>8</strong></button>
+                </div>
+              </section>
+              <section class="upgrade-group">
+                <h3><span>⌁</span><strong data-i18n="build.categoryTurrets">Torrette</strong></h3>
+                <div class="upgrade-grid">
+                  <button data-upgrade="cannon"><span class="upgrade-icon">▰</span><span data-i18n="build.cannon">Cannoncino</span><strong>3</strong></button>
+                  <button data-upgrade="mg"><span class="upgrade-icon">≋</span><span data-i18n="build.mg">Mitragliatrice</span><strong>3</strong></button>
+                  <button data-upgrade="laser"><span class="upgrade-icon">⌁</span><span data-i18n="build.laser">Laser</span><strong>5</strong></button>
+                </div>
+              </section>
+              <section class="upgrade-group">
+                <h3><span>▤</span><strong data-i18n="build.categoryLogistics">Munizioni e logistica</strong></h3>
+                <div class="upgrade-grid">
+                  <button data-upgrade="ammo"><span class="upgrade-icon">▦</span><span data-i18n="build.ammo">Munizioni</span><strong>1</strong></button>
+                  <button data-upgrade="magazine"><span class="upgrade-icon">▥</span><span data-i18n="build.magazine">Caricatori</span><strong>6</strong></button>
+                </div>
+              </section>
             </div>
           </div>
           <footer class="build-actions">

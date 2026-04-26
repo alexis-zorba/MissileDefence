@@ -649,6 +649,7 @@ label {
 }
 
 .build-cities,
+.upgrade-panel,
 .upgrade-grid {
   display: grid;
   gap: 8px;
@@ -672,23 +673,95 @@ label {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.upgrade-panel {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: start;
+  gap: 10px;
+}
+
+.upgrade-group {
+  display: grid;
+  gap: 8px;
+  min-height: 100%;
+  border: 1px solid rgba(150, 184, 198, 0.16);
+  border-radius: 8px;
+  padding: 9px;
+  background: rgba(8, 16, 22, 0.74);
+}
+
+.upgrade-group h3 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.upgrade-group h3 span {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(85, 214, 190, 0.26);
+  border-radius: 6px;
+  color: var(--accent);
+  background: rgba(18, 42, 47, 0.72);
+}
+
 .upgrade-grid {
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  align-items: stretch;
+  grid-template-columns: 1fr;
+  align-content: start;
 }
 
 .upgrade-grid button {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
-  min-height: 38px;
-  padding: 7px 9px;
+  gap: 7px;
+  min-height: 40px;
+  padding: 7px;
   font-size: 12px;
+  text-align: left;
+  background: rgba(10, 20, 27, 0.88);
+  border-color: rgba(150, 184, 198, 0.18);
 }
 
-.upgrade-grid span {
+.upgrade-grid button:hover {
+  border-color: rgba(85, 214, 190, 0.55);
+  background: rgba(18, 42, 47, 0.86);
+}
+
+.upgrade-grid button span:not(.upgrade-icon) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.upgrade-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(150, 184, 198, 0.18);
+  border-radius: 6px;
+  color: var(--accent);
+  background: rgba(3, 9, 13, 0.72);
+}
+
+.upgrade-grid strong {
+  min-width: 26px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  border: 1px solid rgba(244, 191, 84, 0.34);
+  background: rgba(60, 45, 16, 0.72);
   color: var(--warn);
+  font-size: 13px;
 }
 
 .build-actions {
@@ -699,6 +772,12 @@ label {
 .build-actions button {
   border-color: rgba(85, 214, 190, 0.6);
   background: rgba(25, 76, 72, 0.9);
+}
+
+@media (max-width: 1100px) {
+  .upgrade-panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 900px) {
@@ -735,6 +814,7 @@ label {
   }
 
   .build-cities,
+  .upgrade-panel,
   .upgrade-grid {
     grid-template-columns: 1fr;
   }
