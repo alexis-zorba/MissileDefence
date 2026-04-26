@@ -40,6 +40,7 @@ export function handleCanvasMouseDown(event, canvas, mode) {
     return;
   }
   if (mode === "turret") return;
+  if (mode === "auto") return;
   launchMissile(point);
   logger.log("debug", "Player clicked", point);
 }

@@ -298,7 +298,7 @@ function syncControlAvailability() {
   state.turretAimMode = ui.turretAim.value;
   state.aiTurretAimMode = ui.aiTurretAim.value;
   state.aiSkill = ui.aiSkill.value;
-  const mouseReservedForMissiles = ui.mode.value === "missiles" || ui.mode.value === "coop";
+  const mouseReservedForMissiles = ui.mode.value === "missiles" || ui.mode.value === "coop" || ui.mode.value === "auto";
   if (mouseReservedForMissiles && ui.turretInput.value === "mouse") {
     ui.turretInput.value = "keyboard";
     state.turretInputMode = "keyboard";
