@@ -16,12 +16,18 @@ const W = CANVAS_WIDTH;
 export function spawnEnemy(wave, difficultyCfg) {
   const roll = Math.random();
   let type = "missile";
-  if (wave >= 13 && roll > 0.82) type = "jammer";
-  else if (wave >= 10 && roll > 0.76) type = "bomber";
-  else if (wave >= 8 && roll > 0.72) type = "armored";
-  else if (wave >= 7 && roll > 0.58) type = "mirv";
+  if (wave >= 13 && roll > 0.86) type = "jammer";
+  else if (wave >= 10 && roll > 0.86) type = "bomber";
+  else if (wave >= 8 && roll > 0.78) type = "armored";
+  else if (wave >= 7 && roll > 0.62) type = "mirv";
   else if (wave >= 5 && roll > 0.7) type = "hypersonic";
   else if (wave >= 4 && roll > 0.55) type = "drone";
+
+  // Cap simultaneous bombers — too many at once is unmanageable.
+  if (type === "bomber") {
+    const liveBombers = state.enemies.filter((e) => e.type === "bomber" && !e.dead).length;
+    if (liveBombers >= 3) type = "missile";
+  }
 
   if (type === "bomber") {
     const fromLeft = Math.random() > 0.5;
