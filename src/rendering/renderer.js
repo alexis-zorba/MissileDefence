@@ -43,7 +43,7 @@ function drawSky(ctx) {
     ctx.lineTo(x, H);
     ctx.stroke();
   }
-  for (let y = 40; y < H; y += 64) {
+  for (let y = 40; y < groundY; y += 64) {
     ctx.beginPath();
     ctx.moveTo(0, y);
     ctx.lineTo(W, y);
