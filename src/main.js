@@ -92,7 +92,7 @@ function update(dt) {
   updatePlayerTurret(dt, getMode(), state.turretCurve, state.turretSensitivity, state.keys);
 
   // Physics
-  updateMissiles();
+  updateMissiles(dt);
   updateBullets(dt);
   updateEnemies(dt, diffCfg, state.trailDuration);
   updateBlasts(dt);

@@ -34,6 +34,8 @@ export function launchMissileFromSlot(city, slot, target, byAi, aiMultiplier) {
     stats,
     byAi,
     angle: Math.atan2(target.y - city.y, target.x - city.x),
+    age: 0,
+    maxAge: slot.type === "seeker" ? 7000 : 0,
     blastRadiusLevel: city.blastRadiusLevel,
     blastLifeLevel: city.blastLifeLevel,
     trail: [],

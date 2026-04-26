@@ -3,16 +3,17 @@
 // =============================================================================
 
 import { state } from "../state.js";
-import { MISSILE_DEFS, GROUND_Y } from "../config.js";
+import { MISSILE_DEFS, GROUND_Y, CANVAS_WIDTH, CANVAS_HEIGHT } from "../config.js";
 import { nearest } from "../utils.js";
 import { createBlast } from "./effects.js";
 
 // --- Missile movement ---
 
-export function updateMissiles() {
+export function updateMissiles(dt = 16) {
   state.friendlyMissiles.forEach((missile) => {
     const def = MISSILE_DEFS[missile.type];
     const stats = missile.stats || def?.levels[Math.max(0, (missile.level || 1) - 1)];
+    missile.age = (missile.age || 0) + dt;
     if (missile.type === "seeker") {
       const target = nearest(state.enemies, missile);
       if (target) {
@@ -77,11 +78,23 @@ export function updateMissiles() {
         missile.done = true;
       }
     }
+    if (!missile.done && missile.type === "seeker" && missile.maxAge && missile.age >= missile.maxAge) {
+      createBlast(missile.x, missile.y, stats.radius * 0.82, stats.damage * 0.72, missile.type, missile.blastLifeLevel);
+      missile.done = true;
+    }
+    if (!missile.done && missile.type === "seeker" && isOutsideFrame(missile)) {
+      missile.done = true;
+    }
     if (!missile.done && missile.y >= GROUND_Y - 4) {
       createBlast(missile.x, GROUND_Y - 4, 20, stats.damage * 0.5, missile.type, missile.blastLifeLevel);
       missile.done = true;
     }
   });
+}
+
+function isOutsideFrame(missile) {
+  const margin = 90;
+  return missile.x < -margin || missile.x > CANVAS_WIDTH + margin || missile.y < -margin || missile.y > CANVAS_HEIGHT + margin;
 }
 
 // --- Bullet movement ---

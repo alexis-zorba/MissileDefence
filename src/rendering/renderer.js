@@ -820,19 +820,16 @@ function drawParticles(ctx) {
 }
 
 function drawPixelDisk(ctx, x, y, radius, color, alpha = 1, block = 4) {
-  const step = Math.max(2, block);
-  const left = x - radius;
-  const top = y - radius;
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.fillStyle = color;
-  for (let py = top; py <= y + radius; py += step) {
-    for (let px = left; px <= x + radius; px += step) {
-      const cx = px + step / 2;
-      const cy = py + step / 2;
-      if (Math.hypot(cx - x, cy - y) <= radius) drawPixelRect(ctx, px, py, step, step);
-    }
-  }
+  ctx.beginPath();
+  ctx.arc(Math.round(x), Math.round(y), radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = alpha * 0.68;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = Math.max(1, Math.round(block));
+  ctx.stroke();
   ctx.restore();
 }
 
