@@ -1,0 +1,11 @@
+{
+  "name": "missile-defence-multiplayer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Arcade defense prototype with co-op roles, upgrades, factories, missiles, turrets and escalating waves.",
+  "type": "module",
+  "scripts": {
+    "check": "node --check src/main.js",
+    "serve": "npx serve ."
+  }
+}
