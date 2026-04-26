@@ -485,9 +485,9 @@ label,
 }
 
 .dialog form,
-.build-dialog section,
-.game-mode-dialog section,
-.help-dialog section {
+.build-dialog > section,
+.game-mode-dialog > section,
+.help-dialog > section {
   display: grid;
   gap: 12px;
   min-width: min(420px, calc(100vw - 32px));
@@ -531,7 +531,7 @@ label {
   background: rgba(5, 10, 14, 0.62);
 }
 
-.build-dialog section {
+.build-dialog > section {
   width: min(1180px, calc(100vw - 32px));
   max-height: calc(100vh - 32px);
   overflow: auto;
@@ -674,7 +674,7 @@ label {
 }
 
 .upgrade-panel {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: start;
   gap: 10px;
 }
