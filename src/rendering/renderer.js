@@ -697,11 +697,11 @@ function drawEnemySmokeTrail(ctx, trail) {
     const size = puff.r * (1.45 - fade * 0.35) * state.visualScale;
     if (puff.warm) {
       ctx.fillStyle = "#7d7466";
-      drawPixelRect(ctx, puff.x - size * 0.65, puff.y - size * 0.35, size * 1.3, size * 0.7);
+      drawPixelRect(ctx, puff.x - size * 0.42, puff.y - size * 0.22, size * 0.84, size * 0.44);
       ctx.fillStyle = "#b7a58e";
-      drawPixelRect(ctx, puff.x - size * 0.44, puff.y - size * 0.24, size * 0.88, size * 0.48);
+      drawPixelRect(ctx, puff.x - size * 0.3, puff.y - size * 0.16, size * 0.6, size * 0.32);
       ctx.fillStyle = "#e1c084";
-      drawPixelRect(ctx, puff.x - size * 0.18, puff.y - size * 0.12, size * 0.36, size * 0.24);
+      drawPixelRect(ctx, puff.x - size * 0.12, puff.y - size * 0.08, size * 0.24, size * 0.16);
     } else {
       ctx.fillStyle = "#aab0ad";
       drawPixelRect(ctx, puff.x - size / 2, puff.y - size / 2, size, size);

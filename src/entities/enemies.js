@@ -33,6 +33,7 @@ export function spawnEnemy(wave, difficultyCfg) {
       vy: 0,
       hp: ENEMY_DEFS[type].hp,
       bombTimer: 550 + Math.random() * 900,
+      bombsDropped: 0,
       radius: ENEMY_DEFS[type].radius,
       trail: [],
     });
@@ -104,7 +105,7 @@ export function dropBomb(enemy, difficultyCfg) {
     x: enemy.x,
     y: enemy.y + 14,
     vx: direction * Math.min(1.2, 0.28 + travel / 900),
-    vy: 0.52 * difficultyCfg.speed,
+    vy: 0.416 * difficultyCfg.speed,
     hp: ENEMY_DEFS.bomb.hp,
     radius: ENEMY_DEFS.bomb.radius,
     wobble: Math.random() * Math.PI * 2,
@@ -126,13 +127,13 @@ export function updateEnemies(dt, difficultyCfg, trailDuration) {
       enemy.trail ||= [];
       const isBomb = enemy.type === "bomb";
       enemy.trail.push({
-        x: enemy.x - enemy.vx * (isBomb ? 16 : 7) + Math.sin((enemy.wobble || 0) + enemy.trail.length * 0.42) * (isBomb ? 11 : 2),
-        y: enemy.y - enemy.vy * (isBomb ? 13 : 7) + (Math.random() - 0.5) * (isBomb ? 3 : 4),
-        r: (isBomb ? 8 : 3) + Math.random() * (isBomb ? 10 : 5),
-        a: (isBomb ? 0.42 : 0.28) + Math.random() * (isBomb ? 0.16 : 0.18),
+        x: enemy.x - enemy.vx * (isBomb ? 10 : 7) + Math.sin((enemy.wobble || 0) + enemy.trail.length * 0.42) * (isBomb ? 5 : 2),
+        y: enemy.y - enemy.vy * (isBomb ? 9 : 7) + (Math.random() - 0.5) * (isBomb ? 1.6 : 4),
+        r: (isBomb ? 4 : 3) + Math.random() * (isBomb ? 5 : 5),
+        a: (isBomb ? 0.3 : 0.28) + Math.random() * (isBomb ? 0.12 : 0.18),
         warm: isBomb,
       });
-      const maxTrail = Math.round((isBomb ? 104 : 32) * trailDuration);
+      const maxTrail = Math.round((isBomb ? 86 : 32) * trailDuration);
       if (enemy.trail.length > maxTrail) enemy.trail.shift();
     }
     if (enemy.type === "bomb") {
@@ -144,8 +145,9 @@ export function updateEnemies(dt, difficultyCfg, trailDuration) {
 
     if (enemy.type === "bomber") {
       enemy.bombTimer -= dt;
-      if (enemy.bombTimer <= 0) {
+      if (enemy.bombTimer <= 0 && (enemy.bombsDropped || 0) < 3) {
         dropBomb(enemy, difficultyCfg);
+        enemy.bombsDropped = (enemy.bombsDropped || 0) + 1;
         enemy.bombTimer = 700 + Math.random() * 750;
       }
       if (enemy.x < -80 || enemy.x > W + 80) enemy.dead = true;
