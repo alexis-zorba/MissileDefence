@@ -29,12 +29,10 @@ export function draw(ctx, mode = "missiles") {
 // --- Sky / background ---
 
 function drawSky(ctx) {
-  const gradient = ctx.createLinearGradient(0, 0, 0, H);
-  gradient.addColorStop(0, "#080e16");
-  gradient.addColorStop(0.58, "#020406");
-  gradient.addColorStop(1, "#111712");
-  ctx.fillStyle = gradient;
+  ctx.fillStyle = "#080e16";
   ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = "#020406";
+  ctx.fillRect(0, Math.floor(H * 0.36), W, Math.floor(H * 0.64));
   ctx.strokeStyle = "rgba(85, 214, 190, 0.13)";
   ctx.lineWidth = 1;
   for (let x = 0; x < W; x += 64) {
@@ -49,12 +47,12 @@ function drawSky(ctx) {
     ctx.lineTo(W, y);
     ctx.stroke();
   }
-  const groundGradient = ctx.createLinearGradient(0, groundY, 0, H);
-  groundGradient.addColorStop(0, "#1a241c");
-  groundGradient.addColorStop(0.45, "#111a14");
-  groundGradient.addColorStop(1, "#060908");
-  ctx.fillStyle = groundGradient;
-  ctx.fillRect(0, groundY, W, H - groundY);
+  ctx.fillStyle = "#1a241c";
+  ctx.fillRect(0, groundY, W, 18);
+  ctx.fillStyle = "#111a14";
+  ctx.fillRect(0, groundY + 18, W, H - groundY - 18);
+  ctx.fillStyle = "#060908";
+  ctx.fillRect(0, groundY + 44, W, H - groundY - 44);
   ctx.strokeStyle = "#5a6b5e";
   ctx.beginPath();
   ctx.moveTo(0, groundY);
@@ -81,11 +79,11 @@ function drawCities(ctx) {
     drawGroundShadow(ctx, 0, 9, 94, 13, 0.38);
     drawDefenceBase(ctx, city, alive, index === state.selectedCity);
     if (city.shield && alive) {
-      ctx.strokeStyle = "rgba(102, 168, 255, 0.7)";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(0, -18, 62, Math.PI, Math.PI * 2);
-      ctx.stroke();
+      ctx.fillStyle = "rgba(102, 168, 255, 0.42)";
+      for (let x = -58; x <= 58; x += 8) {
+        const y = -18 - Math.round(Math.sqrt(Math.max(0, 58 * 58 - x * x)) * 0.55);
+        drawPixelRect(ctx, x, y, 6, 5);
+      }
     }
     if (alive && installedSlots(city).length) drawWeapons(ctx, city, isTurretControlled(city));
     drawCityReadout(ctx, city);
@@ -137,9 +135,8 @@ function drawFactories(ctx) {
         const t = performance.now() / 520 + factory.id.charCodeAt(0) + i;
         ctx.globalAlpha = 0.16 + i * 0.08;
         ctx.fillStyle = "#b8c0bf";
-        ctx.beginPath();
-        ctx.arc(chimneyX + 4 + Math.sin(t) * 6, -46 - i * 9 - (t % 1) * 6, 5 + i * 1.5, 0, Math.PI * 2);
-        ctx.fill();
+        const size = 7 + i * 2;
+        drawPixelRect(ctx, chimneyX + Math.sin(t) * 6, -50 - i * 9 - (t % 1) * 6, size, size);
       }
       ctx.globalAlpha = 1;
     }
@@ -171,9 +168,11 @@ function drawGroundShadow(ctx, x, y, width, height, alpha = 0.3) {
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.fillStyle = "#000000";
-  ctx.beginPath();
-  ctx.ellipse(x, y, width / 2, height / 2, 0, 0, Math.PI * 2);
-  ctx.fill();
+  const rows = 3;
+  for (let i = 0; i < rows; i += 1) {
+    const rowWidth = width * (1 - i * 0.18);
+    drawPixelRect(ctx, x - rowWidth / 2, y - height / 2 + i * (height / rows), rowWidth, height / rows);
+  }
   ctx.restore();
 }
 
@@ -182,10 +181,9 @@ function drawAnchorPad(ctx, x, y, width, height, color) {
   ctx.fillStyle = color;
   ctx.strokeStyle = "rgba(112, 132, 116, 0.5)";
   ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.ellipse(x, y, width / 2, height / 2, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
+  drawPixelRect(ctx, x - width / 2, y - height / 2 + 4, width, height - 8);
+  drawPixelRect(ctx, x - width / 2 + 10, y - height / 2, width - 20, 4);
+  drawPixelRect(ctx, x - width / 2 + 10, y + height / 2 - 4, width - 20, 4);
   ctx.strokeStyle = "rgba(0, 0, 0, 0.32)";
   ctx.beginPath();
   ctx.moveTo(x - width * 0.42, y + height * 0.15);
@@ -226,13 +224,9 @@ function drawDefenceBase(ctx, city, alive, selected) {
   ctx.stroke();
 
   ctx.fillStyle = alive ? "#253540" : "#2f2524";
-  ctx.beginPath();
-  ctx.arc(0, -34, 17, Math.PI, Math.PI * 2);
-  ctx.lineTo(17, -34);
-  ctx.lineTo(-17, -34);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
+  drawPixelRect(ctx, -17, -34, 34, 5);
+  drawPixelRect(ctx, -13, -42, 26, 8);
+  drawPixelRect(ctx, -8, -49, 16, 7);
 
   if (alive) {
     const radar = performance.now() / 950;
@@ -303,17 +297,8 @@ function drawWeapons(ctx, city, controlled) {
 }
 
 function roundedRect(ctx, x, y, width, height, radius) {
-  const r = Math.min(radius, width / 2, height / 2);
   ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + width - r, y);
-  ctx.quadraticCurveTo(x + width, y, x + width, y + r);
-  ctx.lineTo(x + width, y + height - r);
-  ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
-  ctx.lineTo(x + r, y + height);
-  ctx.quadraticCurveTo(x, y + height, x, y + height - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.rect(Math.round(x), Math.round(y), Math.round(width), Math.round(height));
 }
 
 // --- Launcher drawing ---
@@ -324,12 +309,11 @@ function drawLauncher(ctx, city, slot, color) {
   ctx.lineWidth = 1.5;
   ctx.strokeStyle = "rgba(4, 9, 12, 0.9)";
 
-  const baseGradient = ctx.createLinearGradient(0, -34, 0, -4);
-  baseGradient.addColorStop(0, "#3e5262");
-  baseGradient.addColorStop(1, "#17232d");
-  ctx.fillStyle = baseGradient;
+  ctx.fillStyle = "#17232d";
   roundedRect(ctx, -43, -22, 86, 16, 4);
   ctx.fill();
+  ctx.fillStyle = "#3e5262";
+  ctx.fillRect(-43, -22, 86, 5);
   ctx.stroke();
 
   ctx.fillStyle = "#0d151b";
@@ -337,30 +321,25 @@ function drawLauncher(ctx, city, slot, color) {
   ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
   ctx.fillRect(-35, -20, 70, 2);
 
-  const podGradient = ctx.createLinearGradient(0, -50, 0, -28);
-  podGradient.addColorStop(0, color);
-  podGradient.addColorStop(1, "#23384c");
   [-24, 24].forEach((x, index) => {
     ctx.save();
     ctx.translate(x, -35);
     ctx.rotate(index === 0 ? -0.22 : 0.22);
-    ctx.fillStyle = podGradient;
+    ctx.fillStyle = "#23384c";
     roundedRect(ctx, -18, -8, 36, 14, 4);
     ctx.fill();
+    ctx.fillStyle = color;
+    ctx.fillRect(-18, -8, 36, 4);
     ctx.stroke();
     ctx.fillStyle = "#05090c";
     roundedRect(ctx, 11, -5, 8, 8, 2);
     ctx.fill();
     ctx.fillStyle = "#05090c";
     [-8, 0, 8].forEach((tubeX) => {
-      ctx.beginPath();
-      ctx.arc(tubeX, -1, 2.6, 0, Math.PI * 2);
-      ctx.fill();
+      drawPixelRect(ctx, tubeX - 3, -4, 6, 6);
     });
     ctx.fillStyle = slot.ammo > 0 && slot.cooldown <= 0 ? "#5cff9d" : "#ff5f5f";
-    ctx.beginPath();
-    ctx.arc(-13, 3, 2.2, 0, Math.PI * 2);
-    ctx.fill();
+    drawPixelRect(ctx, -15, 1, 4, 4);
     ctx.fillStyle = "rgba(255,255,255,0.24)";
     ctx.fillRect(-13, -6, 20, 2);
     ctx.restore();
@@ -384,12 +363,11 @@ function drawTurretBase(ctx, slot, color) {
   drawGroundShadow(ctx, 0, 1, 64, 12, 0.25);
   ctx.lineWidth = 1.5;
   ctx.strokeStyle = "rgba(4, 9, 12, 0.92)";
-  const baseGradient = ctx.createLinearGradient(0, -30, 0, 0);
-  baseGradient.addColorStop(0, "#425769");
-  baseGradient.addColorStop(1, "#17232c");
-  ctx.fillStyle = baseGradient;
+  ctx.fillStyle = "#17232c";
   roundedRect(ctx, -28, -22, 56, 16, 5);
   ctx.fill();
+  ctx.fillStyle = "#425769";
+  ctx.fillRect(-28, -22, 56, 5);
   ctx.stroke();
   ctx.fillStyle = "#0b1218";
   ctx.fillRect(-21, -7, 42, 6);
@@ -399,9 +377,7 @@ function drawTurretBase(ctx, slot, color) {
   ctx.globalAlpha = 1;
   ctx.fillStyle = "rgba(3, 7, 10, 0.82)";
   [-21, -12, 12, 21].forEach((x) => {
-    ctx.beginPath();
-    ctx.arc(x, -14, 1.6, 0, Math.PI * 2);
-    ctx.fill();
+    drawPixelRect(ctx, x - 2, -16, 4, 4);
   });
   ctx.fillStyle = "#f4bf54";
   const level = Math.min(MAX_WEAPON_LEVEL, slot.level || 1);
@@ -423,19 +399,16 @@ function drawTurretCap(ctx, slot, color) {
   ctx.fillStyle = "#2d3e49";
   ctx.strokeStyle = "rgba(4, 9, 12, 0.92)";
   ctx.lineWidth = 1.7;
-  ctx.beginPath();
-  ctx.ellipse(0, -18, 18, 12, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
+  drawPixelRect(ctx, -18, -25, 36, 14);
+  drawPixelRect(ctx, -14, -29, 28, 4);
+  drawPixelRect(ctx, -14, -11, 28, 4);
   ctx.fillStyle = color;
   ctx.globalAlpha = 0.78;
   roundedRect(ctx, -13, -20, 26, 5, 2);
   ctx.fill();
   ctx.globalAlpha = 1;
   ctx.fillStyle = "rgba(255,255,255,0.18)";
-  ctx.beginPath();
-  ctx.ellipse(-5, -22, 7, 3, -0.2, 0, Math.PI * 2);
-  ctx.fill();
+  drawPixelRect(ctx, -11, -24, 12, 3);
   ctx.restore();
 }
 
@@ -445,12 +418,11 @@ function drawCannonBarrel(ctx, slot) {
   ctx.save();
   ctx.strokeStyle = "rgba(4, 9, 12, 0.9)";
   ctx.lineWidth = 1.4;
-  const barrelGradient = ctx.createLinearGradient(-8, -64, 8, -20);
-  barrelGradient.addColorStop(0, "#ffe090");
-  barrelGradient.addColorStop(1, "#7f6435");
-  ctx.fillStyle = barrelGradient;
+  ctx.fillStyle = "#7f6435";
   roundedRect(ctx, -7, -66, 14, 48, 3);
   ctx.fill();
+  ctx.fillStyle = "#ffe090";
+  ctx.fillRect(-7, -66, 5, 48);
   ctx.stroke();
   ctx.fillStyle = "rgba(37, 30, 18, 0.78)";
   [-55, -43, -31].forEach((y) => ctx.fillRect(-8, y, 16, 3));
@@ -502,15 +474,16 @@ function drawMachineGunBarrel(ctx, slot) {
   if (slot.cooldown > 0 && slot.cooldown < 80) {
     ctx.globalAlpha = 0.5;
     ctx.fillStyle = "#ff9d42";
-    ctx.beginPath();
-    ctx.arc(0, -64, 8, 0, Math.PI * 2);
-    ctx.fill();
+    drawPixelRect(ctx, -7, -71, 14, 14);
+    ctx.fillStyle = "#fff0a6";
+    drawPixelRect(ctx, -3, -67, 6, 6);
     ctx.globalAlpha = 1;
   }
   ctx.strokeStyle = "#c79656";
   ctx.beginPath();
   ctx.moveTo(15, -27);
-  ctx.quadraticCurveTo(28, -18, 22, -5);
+  ctx.lineTo(25, -19);
+  ctx.lineTo(22, -5);
   ctx.stroke();
   ctx.fillStyle = "#c79656";
   for (let i = 0; i < 5; i += 1) ctx.fillRect(18 + (i % 2) * 3, -23 + i * 4, 5, 2);
@@ -529,21 +502,19 @@ function drawLaserEmitter(ctx, slot) {
   ctx.save();
   ctx.strokeStyle = "rgba(4, 9, 12, 0.9)";
   ctx.lineWidth = 1.2;
-  const coreGradient = ctx.createLinearGradient(0, -72, 0, -18);
-  coreGradient.addColorStop(0, "#b9fbff");
-  coreGradient.addColorStop(0.35, "#67e6ff");
-  coreGradient.addColorStop(1, "#1b5260");
-  ctx.fillStyle = coreGradient;
+  ctx.fillStyle = "#1b5260";
   roundedRect(ctx, -6, -72, 12, 54, 4);
   ctx.fill();
+  ctx.fillStyle = "#67e6ff";
+  drawPixelRect(ctx, -3, -69, 6, 43);
+  ctx.fillStyle = "#b9fbff";
+  drawPixelRect(ctx, -1, -66, 2, 18);
   ctx.stroke();
   const pulse = 0.35 + 0.25 * Math.sin(performance.now() / 180);
   ctx.strokeStyle = `rgba(103, 230, 255, ${pulse})`;
   ctx.lineWidth = 1.4;
   [-58, -45].forEach((y) => {
-    ctx.beginPath();
-    ctx.ellipse(0, y, 11, 3, 0, 0, Math.PI * 2);
-    ctx.stroke();
+    drawPixelRect(ctx, -11, y - 2, 22, 4);
   });
   ctx.fillStyle = "#12323b";
   roundedRect(ctx, -18, -40, 36, 18, 5);
@@ -557,15 +528,12 @@ function drawLaserEmitter(ctx, slot) {
   ctx.moveTo(-13, -31);
   ctx.lineTo(13, -31);
   ctx.stroke();
-  const lens = ctx.createRadialGradient(0, -76, 1, 0, -76, 7);
-  lens.addColorStop(0, "#ffffff");
-  lens.addColorStop(0.45, "#8ff7ff");
-  lens.addColorStop(1, "#1b6d80");
-  ctx.fillStyle = lens;
-  ctx.beginPath();
-  ctx.arc(0, -76, 7, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
+  ctx.fillStyle = "#1b6d80";
+  drawPixelRect(ctx, -7, -83, 14, 14);
+  ctx.fillStyle = "#8ff7ff";
+  drawPixelRect(ctx, -5, -81, 10, 10);
+  ctx.fillStyle = "#ffffff";
+  drawPixelRect(ctx, -2, -79, 4, 4);
   ctx.restore();
 }
 
@@ -573,24 +541,18 @@ function drawLaserEmitter(ctx, slot) {
 
 function drawFriendlyMissiles(ctx) {
   state.friendlyMissiles.forEach((missile) => {
-    ctx.save();
-    ctx.translate(missile.x, missile.y);
-    ctx.scale(state.visualScale, state.visualScale);
-    ctx.translate(-missile.x, -missile.y);
-    ctx.strokeStyle = MISSILE_DEFS[missile.type].color;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
     missile.trail.forEach((point, index) => {
-      if (index === 0) ctx.moveTo(point.x, point.y);
-      else ctx.lineTo(point.x, point.y);
+      const fade = index / Math.max(1, missile.trail.length - 1);
+      const size = (2 + fade * 5) * state.visualScale;
+      ctx.globalAlpha = 0.16 + fade * 0.62;
+      ctx.fillStyle = missile.type === "seeker" ? "#73a9ff" : "#e9f6ff";
+      drawPixelRect(ctx, point.x - size / 2, point.y - size / 2, size, size);
     });
-    ctx.lineTo(missile.x, missile.y);
-    ctx.stroke();
+    ctx.globalAlpha = 1;
     ctx.fillStyle = MISSILE_DEFS[missile.type].color;
-    ctx.beginPath();
-    ctx.arc(missile.x, missile.y, 4, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
+    drawPixelRect(ctx, missile.x - 3 * state.visualScale, missile.y - 6 * state.visualScale, 6 * state.visualScale, 12 * state.visualScale);
+    ctx.fillStyle = "#ffffff";
+    drawPixelRect(ctx, missile.x - 1 * state.visualScale, missile.y - 4 * state.visualScale, 2 * state.visualScale, 3 * state.visualScale);
   });
 }
 
@@ -601,13 +563,7 @@ function drawEnemies(ctx) {
     const def = ENEMY_DEFS[enemy.type];
     if (enemy.trail?.length) drawEnemySmokeTrail(ctx, enemy.trail);
     if (enemy.type === "bomber") {
-      ctx.fillStyle = def.color;
-      ctx.strokeStyle = "rgba(220, 235, 240, 0.45)";
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.ellipse(enemy.x, enemy.y, 24, 9, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
+      drawBomber(ctx, enemy, def);
     } else if (enemy.type === "drone") {
       drawDrone(ctx, enemy, def);
     } else if (enemy.type === "bomb") {
@@ -625,9 +581,8 @@ function drawEnemySmokeTrail(ctx, trail) {
     const fade = index / trail.length;
     ctx.globalAlpha = puff.a * Math.pow(fade, 1.25);
     ctx.fillStyle = puff.warm ? "#b7a58e" : "#aab0ad";
-    ctx.beginPath();
-    ctx.arc(puff.x, puff.y, puff.r * (1.45 - fade * 0.35) * state.visualScale, 0, Math.PI * 2);
-    ctx.fill();
+    const size = puff.r * (1.45 - fade * 0.35) * state.visualScale;
+    drawPixelRect(ctx, puff.x - size / 2, puff.y - size / 2, size, size);
   });
   ctx.globalAlpha = 1;
 }
@@ -642,33 +597,20 @@ function drawIncomingMissile(ctx, enemy, def) {
   ctx.scale(state.visualScale, state.visualScale);
   ctx.rotate(enemyAngle(enemy));
   ctx.fillStyle = def.color;
-  ctx.strokeStyle = "rgba(255, 220, 210, 0.65)";
-  ctx.lineWidth = 1.4;
-  ctx.beginPath();
-  ctx.moveTo(0, -15);
-  ctx.bezierCurveTo(10, -8, 9, 12, 0, 17);
-  ctx.bezierCurveTo(-9, 12, -10, -8, 0, -15);
-  ctx.fill();
-  ctx.stroke();
+  drawPixelRect(ctx, -6, -11, 12, 24);
+  drawPixelRect(ctx, -4, -15, 8, 4);
+  drawPixelRect(ctx, -9, 6, 3, 9);
+  drawPixelRect(ctx, 6, 6, 3, 9);
   if (enemy.type === "mirv") {
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(0, -15);
-    ctx.bezierCurveTo(10, -8, 9, 12, 0, 17);
-    ctx.bezierCurveTo(-9, 12, -10, -8, 0, -15);
-    ctx.clip();
     for (let y = -10; y < 15; y += 8) {
       ctx.fillStyle = "#f7f4e8";
-      ctx.fillRect(-11, y, 22, 4);
+      drawPixelRect(ctx, -7, y, 14, 4);
       ctx.fillStyle = "#b4262e";
-      ctx.fillRect(-11, y + 4, 22, 4);
+      drawPixelRect(ctx, -7, y + 4, 14, 4);
     }
-    ctx.restore();
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.78)";
-    ctx.stroke();
   } else {
     ctx.fillStyle = "rgba(80, 20, 20, 0.75)";
-    ctx.fillRect(-8, 8, 16, 6);
+    drawPixelRect(ctx, -6, 8, 12, 5);
   }
   ctx.restore();
 }
@@ -679,16 +621,33 @@ function drawIncomingRocket(ctx, enemy, def) {
   ctx.scale(state.visualScale, state.visualScale);
   ctx.rotate(enemyAngle(enemy));
   ctx.fillStyle = def.color;
-  ctx.strokeStyle = "rgba(210, 230, 255, 0.85)";
-  ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  ctx.moveTo(0, -22);
-  ctx.bezierCurveTo(5, -11, 5, 15, 0, 24);
-  ctx.bezierCurveTo(-5, 15, -5, -11, 0, -22);
-  ctx.fill();
-  ctx.stroke();
+  drawPixelRect(ctx, -4, -22, 8, 40);
+  drawPixelRect(ctx, -2, -26, 4, 4);
+  drawPixelRect(ctx, -7, 10, 3, 10);
+  drawPixelRect(ctx, 4, 10, 3, 10);
   ctx.fillStyle = "#e35f45";
-  ctx.fillRect(-5, 12, 10, 5);
+  drawPixelRect(ctx, -5, 14, 10, 5);
+  ctx.restore();
+}
+
+function drawBomber(ctx, enemy, def) {
+  const scale = state.visualScale;
+  ctx.save();
+  ctx.translate(enemy.x, enemy.y);
+  ctx.scale(scale, scale);
+  ctx.fillStyle = "#1d2b35";
+  drawPixelRect(ctx, -28, -5, 56, 10);
+  ctx.fillStyle = def.color;
+  drawPixelRect(ctx, -22, -8, 38, 16);
+  drawPixelRect(ctx, 16, -4, 12, 8);
+  drawPixelRect(ctx, -4, -19, 24, 7);
+  drawPixelRect(ctx, -8, 12, 24, 7);
+  ctx.fillStyle = "#e9f6ff";
+  drawPixelRect(ctx, -17, -3, 5, 4);
+  drawPixelRect(ctx, -7, -3, 5, 4);
+  drawPixelRect(ctx, 3, -3, 5, 4);
+  ctx.fillStyle = "#ff5f5f";
+  drawPixelRect(ctx, 20, -8, 6, 4);
   ctx.restore();
 }
 
@@ -698,16 +657,13 @@ function drawBomb(ctx, enemy, def) {
   ctx.scale(state.visualScale, state.visualScale);
   ctx.rotate(enemyAngle(enemy) + 0.12);
   ctx.fillStyle = "#6d6658";
-  ctx.strokeStyle = "#d8c783";
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(0, -19);
-  ctx.bezierCurveTo(13, -11, 14, 10, 0, 22);
-  ctx.bezierCurveTo(-14, 10, -13, -11, 0, -19);
-  ctx.fill();
-  ctx.stroke();
+  drawPixelRect(ctx, -8, -15, 16, 30);
+  drawPixelRect(ctx, -12, -7, 24, 18);
+  ctx.fillStyle = def.color;
+  drawPixelRect(ctx, -5, -20, 10, 5);
+  drawPixelRect(ctx, -9, 15, 18, 5);
   ctx.fillStyle = "#302d29";
-  ctx.fillRect(-12, 9, 24, 6);
+  drawPixelRect(ctx, -12, 8, 24, 5);
   ctx.restore();
 }
 
@@ -719,15 +675,14 @@ function drawDrone(ctx, enemy, def) {
   ctx.strokeStyle = "rgba(124, 255, 191, 0.72)";
   ctx.fillStyle = def.color;
   ctx.lineWidth = 1.4;
-  ctx.fillRect(-4, -3, 8, 6);
+  drawPixelRect(ctx, -5, -4, 10, 8);
   [[-11, -8], [11, -8], [-11, 8], [11, 8]].forEach(([x, y]) => {
     ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.lineTo(x, y);
     ctx.stroke();
-    ctx.beginPath();
-    ctx.ellipse(x, y, 5, 2, enemy.wobble, 0, Math.PI * 2);
-    ctx.stroke();
+    drawPixelRect(ctx, x - 5, y - 1, 10, 2);
+    drawPixelRect(ctx, x - 1, y - 5, 2, 10);
   });
   ctx.restore();
 }
@@ -747,9 +702,8 @@ function drawBullets(ctx) {
       ctx.stroke();
       ctx.globalAlpha = 1;
     } else {
-      ctx.beginPath();
-      ctx.arc(bullet.x, bullet.y, (bullet.radius || 3) * state.visualScale, 0, Math.PI * 2);
-      ctx.fill();
+      const size = (bullet.radius || 3) * 2 * state.visualScale;
+      drawPixelRect(ctx, bullet.x - size / 2, bullet.y - size / 2, size, size);
     }
   });
 }
@@ -761,20 +715,8 @@ function drawBlasts(ctx) {
     const radius = blast.currentRadius * state.visualScale;
     if (radius <= 0.5) return;
     const alpha = Math.max(0, Math.min(1, 1 - blast.age / blast.life));
-    const gradient = ctx.createRadialGradient(blast.x, blast.y, radius * 0.12, blast.x, blast.y, radius);
-    if (blast.type === "emp") {
-      gradient.addColorStop(0, `rgba(238, 232, 255, ${0.82 * alpha})`);
-      gradient.addColorStop(0.58, `rgba(177, 140, 255, ${0.62 * alpha})`);
-      gradient.addColorStop(1, `rgba(91, 68, 145, ${0.24 * alpha})`);
-    } else {
-      gradient.addColorStop(0, `rgba(255, 244, 178, ${0.9 * alpha})`);
-      gradient.addColorStop(0.56, `rgba(255, 189, 82, ${0.7 * alpha})`);
-      gradient.addColorStop(1, `rgba(255, 95, 95, ${0.28 * alpha})`);
-    }
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(blast.x, blast.y, radius, 0, Math.PI * 2);
-    ctx.fill();
+    const color = blast.type === "emp" ? "#b18cff" : "#ffd56b";
+    drawPixelDisk(ctx, blast.x, blast.y, radius, color, alpha, 5 * state.visualScale);
   });
 
   ctx.fillStyle = "rgba(1, 3, 5, 0.92)";
@@ -788,14 +730,7 @@ function drawBlasts(ctx) {
       if (br <= 0.5) continue;
       const distance = Math.hypot(b.x - a.x, b.y - a.y);
       if (distance >= ar + br || distance <= Math.abs(ar - br) * 0.25) continue;
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(a.x, a.y, ar, 0, Math.PI * 2);
-      ctx.clip();
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, br, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
+      drawPixelIntersection(ctx, a, ar, b, br, 5 * state.visualScale);
     }
   }
 }
@@ -806,9 +741,46 @@ function drawParticles(ctx) {
   state.particles.forEach((particle) => {
     ctx.globalAlpha = Math.max(0, Math.min(1, particle.life / 280));
     ctx.fillStyle = particle.color;
-    ctx.beginPath();
-    ctx.arc(particle.x, particle.y, particle.size * state.visualScale, 0, Math.PI * 2);
-    ctx.fill();
+    const size = particle.size * state.visualScale;
+    drawPixelRect(ctx, particle.x - size / 2, particle.y - size / 2, size, size);
     ctx.globalAlpha = 1;
   });
+}
+
+function drawPixelDisk(ctx, x, y, radius, color, alpha = 1, block = 4) {
+  const step = Math.max(2, block);
+  const left = x - radius;
+  const top = y - radius;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+  for (let py = top; py <= y + radius; py += step) {
+    for (let px = left; px <= x + radius; px += step) {
+      const cx = px + step / 2;
+      const cy = py + step / 2;
+      if (Math.hypot(cx - x, cy - y) <= radius) drawPixelRect(ctx, px, py, step, step);
+    }
+  }
+  ctx.restore();
+}
+
+function drawPixelIntersection(ctx, a, ar, b, br, block = 4) {
+  const step = Math.max(2, block);
+  const left = Math.max(a.x - ar, b.x - br);
+  const right = Math.min(a.x + ar, b.x + br);
+  const top = Math.max(a.y - ar, b.y - br);
+  const bottom = Math.min(a.y + ar, b.y + br);
+  for (let py = top; py <= bottom; py += step) {
+    for (let px = left; px <= right; px += step) {
+      const cx = px + step / 2;
+      const cy = py + step / 2;
+      if (Math.hypot(cx - a.x, cy - a.y) <= ar && Math.hypot(cx - b.x, cy - b.y) <= br) {
+        drawPixelRect(ctx, px, py, step, step);
+      }
+    }
+  }
+}
+
+function drawPixelRect(ctx, x, y, width, height) {
+  ctx.fillRect(Math.round(x), Math.round(y), Math.max(1, Math.round(width)), Math.max(1, Math.round(height)));
 }
