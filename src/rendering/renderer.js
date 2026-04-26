@@ -83,7 +83,7 @@ function drawPixelSkyGradient(ctx) {
     ctx.fillRect(0, band.y, W, Math.max(0, band.h));
   });
   ctx.fillStyle = "rgba(105, 169, 255, 0.05)";
-  for (let y = 96; y < groundY; y += 32) {
+  for (let y = 72; y < groundY; y += 64) {
     ctx.fillRect(0, y, W, 4);
   }
 }
