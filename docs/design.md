@@ -103,7 +103,7 @@ Torrette:
 
 - Cannoncino AA: colpi lenti ad alto danno, efficace contro bersagli resistenti e bombe.
 - Mitragliatrice: raffica rapida, ottima contro droni e missili leggeri, consuma molte munizioni.
-- Laser: istantaneo e preciso, forte sui bersagli veloci, limitato da energia e vita meccanica.
+- Laser: istantaneo, preciso e perforante, ma con il rateo di fuoco piu lento di tutte le armi.
 
 ## Nemici
 

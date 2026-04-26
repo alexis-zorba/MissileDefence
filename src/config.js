@@ -58,9 +58,9 @@ export const TURRET_DEFS = {
     label: "Laser",
     color: "#67e6ff",
     levels: [
-      { cooldown: 220, damage: 0.12, speed: 0, ammoCost: 1, width: 15 },
-      { cooldown: 195, damage: 0.15, speed: 0, ammoCost: 1, width: 18 },
-      { cooldown: 170, damage: 0.18, speed: 0, ammoCost: 1, width: 21 },
+      { cooldown: 1350, damage: 0.12, speed: 0, ammoCost: 1, width: 15 },
+      { cooldown: 1150, damage: 0.15, speed: 0, ammoCost: 1, width: 18 },
+      { cooldown: 950, damage: 0.18, speed: 0, ammoCost: 1, width: 21 },
     ],
   },
 };
