@@ -2,7 +2,7 @@
 // Combat — Damage calculation, collision detection, targeting priority
 // =============================================================================
 
-import { state } from "../state.js";
+import { state, clearSlot } from "../state.js";
 import { ENEMY_DEFS, GROUND_Y } from "../config.js";
 import { nearest } from "../utils.js";
 
@@ -29,7 +29,7 @@ export function damageCity(enemy) {
     }
     city.hp = Math.max(0, city.hp - damage);
     if (city.hp <= 0) {
-      city.slots = city.slots.map((slot) => ({ ...slot, type: null, level: 0, ammo: 0, cooldown: 0, heat: 0 }));
+      city.slots.forEach(clearSlot);
     }
   }
 }

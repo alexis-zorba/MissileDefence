@@ -506,7 +506,7 @@ function drawCannonBarrel(ctx, slot) {
   ctx.lineTo(-8, -63);
   ctx.closePath();
   ctx.fill();
-  if (slot.cooldown > 0 && slot.heat > 7) {
+  if (slot.cooldown > 0 && slot.cooldown < 90) {
     ctx.strokeStyle = "rgba(255, 210, 92, 0.9)";
     ctx.lineWidth = 2;
     [[0, -80, 0, -68], [-8, -76, 8, -70], [8, -76, -8, -70]].forEach(([x1, y1, x2, y2]) => {
@@ -529,7 +529,7 @@ function drawMachineGunBarrel(ctx, slot) {
   ctx.save();
   ctx.strokeStyle = "rgba(4, 9, 12, 0.9)";
   ctx.lineWidth = 1.1;
-  const spin = slot.heat > 4 ? performance.now() / 80 : 0;
+  const spin = slot.cooldown > 0 ? performance.now() / 80 : 0;
   ctx.save();
   ctx.translate(0, -38);
   ctx.rotate(spin);

@@ -9,6 +9,7 @@ import {
   firstTurret,
   missileStats,
   turretStats,
+  consumeDurability,
 } from "../state.js";
 import { TURRET_DEFS, SLOT_OFFSETS, GROUND_Y } from "../config.js";
 import { clampAngle } from "../utils.js";
@@ -22,15 +23,18 @@ export function launchMissileFromSlot(city, slot, target, byAi, aiMultiplier) {
   if (!city || city.hp <= 0 || city.disabled > 0 || !slot?.type) return false;
   const stats = missileStats(slot);
   if (!stats || slot.cooldown > 0 || slot.ammo < stats.cost) return false;
+  const launchedType = slot.type;
+  const launchedLevel = slot.level;
   slot.ammo -= stats.cost;
+  const remainingAmmo = slot.ammo;
   slot.cooldown = stats.cooldown * (byAi ? aiMultiplier : 1);
   state.friendlyMissiles.push({
     x: city.x + SLOT_OFFSETS.missile[slot.index],
     y: city.y - 18,
     targetX: target.x,
     targetY: Math.min(target.y, GROUND_Y),
-    type: slot.type,
-    level: slot.level,
+    type: launchedType,
+    level: launchedLevel,
     stats,
     byAi,
     angle: Math.atan2(target.y - city.y, target.x - city.x),
@@ -40,7 +44,8 @@ export function launchMissileFromSlot(city, slot, target, byAi, aiMultiplier) {
     blastLifeLevel: city.blastLifeLevel,
     trail: [],
   });
-  logger.log("debug", `Missile launched from ${city.name}`, { type: slot.type, level: slot.level, ammo: slot.ammo });
+  consumeDurability(slot);
+  logger.log("debug", `Missile launched from ${city.name}`, { type: launchedType, level: launchedLevel, ammo: remainingAmmo });
   return true;
 }
 
@@ -68,7 +73,7 @@ export function fireTurret(city, slot, dt, byAi = false, aiMultiplier = 1) {
   if (!city || city.hp <= 0 || city.disabled > 0 || !slot?.type) return false;
   const def = TURRET_DEFS[slot.type];
   const stats = turretStats(slot);
-  if (!def || !stats || slot.cooldown > 0 || slot.heat >= 100) return false;
+  if (!def || !stats || slot.cooldown > 0) return false;
   if (slot.ammo < stats.ammoCost) return false;
   const angle = typeof slot.angle === "number" ? slot.angle : city.turretAngle;
   slot.ammo -= stats.ammoCost;
@@ -102,8 +107,8 @@ export function fireTurret(city, slot, dt, byAi = false, aiMultiplier = 1) {
       color: def.color,
     });
   }
-  slot.heat += stats.heat;
   slot.cooldown = stats.cooldown * (byAi ? aiMultiplier : 1);
+  consumeDurability(slot);
   return true;
 }
 

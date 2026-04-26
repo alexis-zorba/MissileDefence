@@ -59,15 +59,13 @@ function resetGame() {
 function update(dt) {
   if (!state.running || state.paused) return;
   dt *= state.gameSpeed;
-  const seconds = dt / 1000;
   const diffCfg = getDifficultyCfg();
 
-  // Cooldowns and heat decay
+  // Cooldowns
   state.cities.forEach((city) => {
     city.disabled = Math.max(0, city.disabled - dt);
     installedSlots(city).forEach((slot) => {
       slot.cooldown = Math.max(0, slot.cooldown - dt);
-      if (slot.role === "turret") slot.heat = Math.max(0, slot.heat - seconds * 16);
     });
   });
 

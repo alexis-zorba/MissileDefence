@@ -13,6 +13,7 @@ import {
   initialWeaponSlots,
   installSlot,
   maxAmmo,
+  refreshDurability,
   seedAmmo,
   createFactory,
 } from "../state.js";
@@ -92,6 +93,7 @@ export function spendUpgrade(kind) {
     } else {
       installSlot(slot, weaponType);
     }
+    refreshDurability(slot);
     seedAmmo(city, slot);
   }
 

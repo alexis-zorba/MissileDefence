@@ -2,7 +2,7 @@
 // UI — DOM element references, HUD updates, dialog management
 // =============================================================================
 
-import { state, on, installedSlots, maxAmmo, weaponColor, factoriesForBase, DEFAULT_GAME_SPEED, DEFAULT_VISUAL_SCALE } from "../state.js";
+import { state, on, installedSlots, maxAmmo, maxDurability, weaponColor, factoriesForBase, DEFAULT_GAME_SPEED, DEFAULT_VISUAL_SCALE } from "../state.js";
 import { DIFFICULTY } from "../config.js";
 import { spendUpgrade } from "../core/economy.js";
 import { startWave } from "../core/wave.js";
@@ -118,13 +118,14 @@ export function renderFooterCities() {
         `;
       }
       const ammoPct = maxAmmo(city, slot) > 0 ? Math.min(100, (slot.ammo / maxAmmo(city, slot)) * 100) : 0;
-      const heatPct = slot.role === "turret" ? Math.min(100, slot.heat || 0) : Math.min(100, (slot.cooldown || 0) / 10);
+      const durabilityMax = maxDurability(slot);
+      const durabilityPct = durabilityMax > 0 ? Math.min(100, ((slot.durability || 0) / durabilityMax) * 100) : 0;
       return `
         <div class="footer-slot" title="${slotLabel(slot)}">
           <span class="slot-icon" style="color:${weaponColor(slot.type)}">${weaponIcon(slot.type)}</span>
           <div class="footer-bar"><span style="width:${ammoPct}%; background:${weaponColor(slot.type)}"></span></div>
           <small>${slot.ammo}/${maxAmmo(city, slot)}</small>
-          <div class="footer-bar heat"><span style="width:${heatPct}%; background:${heatPct > 70 ? "#ff5f5f" : "#f4bf54"}"></span></div>
+          <div class="footer-bar durability"><span style="width:${durabilityPct}%; background:${durabilityPct > 25 ? "#55d6be" : "#ff5f5f"}"></span></div>
         </div>
       `;
     }).join("");
@@ -185,8 +186,8 @@ function cityStatusCard(city, index, options) {
 function slotCard(city, slot) {
   const color = slot.type ? weaponColor(slot.type) : "rgba(149, 170, 179, 0.45)";
   const ammoPct = slot.type && maxAmmo(city, slot) > 0 ? Math.min(100, (slot.ammo / maxAmmo(city, slot)) * 100) : 0;
-  const cooldownPct = slot.type ? Math.min(100, ((slot.cooldown || 0) / 1200) * 100) : 0;
-  const heatPct = slot.role === "turret" ? Math.min(100, slot.heat || 0) : 0;
+  const durabilityMax = slot.type ? maxDurability(slot) : 0;
+  const durabilityPct = durabilityMax > 0 ? Math.min(100, ((slot.durability || 0) / durabilityMax) * 100) : 0;
   return `
     <div class="slot-card${slot.type ? "" : " empty"}">
       <div class="slot-card-head">
@@ -196,7 +197,7 @@ function slotCard(city, slot) {
       </div>
       <div class="slot-bars">
         <div><small>${t("intel.ammo")}</small><div class="bar"><span style="width:${ammoPct}%; background:${color}"></span></div></div>
-        <div><small>${slot.role === "turret" ? t("intel.heat") : t("intel.cooling")}</small><div class="bar"><span style="width:${slot.role === "turret" ? heatPct : cooldownPct}%; background:${slot.role === "turret" && heatPct > 70 ? "#ff5f5f" : "#f4bf54"}"></span></div></div>
+        <div><small>${t("intel.durability")}</small><div class="bar"><span style="width:${durabilityPct}%; background:${durabilityPct > 25 ? "#55d6be" : "#ff5f5f"}"></span></div></div>
       </div>
     </div>
   `;

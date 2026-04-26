@@ -2,7 +2,7 @@
 // Wave — Wave start/finish, spawn timing, credit production
 // =============================================================================
 
-import { state, WAVE_CLEAR_BONUS, installedSlots, maxAmmo, replenishAmmo, turretSlots, factoriesForBase } from "../state.js";
+import { state, WAVE_CLEAR_BONUS, installedSlots, maxAmmo, replenishAmmo } from "../state.js";
 import * as logger from "../debug/logger.js";
 
 // --- Start a new wave ---
@@ -42,9 +42,6 @@ export function finishWave(difficultyCfg, onUpdateUi) {
         slot.cooldown = 0;
       });
       city.disabled = 0;
-      turretSlots(city).forEach((slot) => {
-        slot.heat = Math.max(0, slot.heat - 40);
-      });
       city.shield = Math.min(city.shield, 1);
     }
   });

@@ -308,7 +308,7 @@ label,
   height: 8px;
 }
 
-.footer-bar.heat {
+.footer-bar.durability {
   grid-column: 2 / 4;
   height: 2px;
   opacity: 0.8;

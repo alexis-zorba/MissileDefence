@@ -40,27 +40,27 @@ export const TURRET_DEFS = {
     label: "Cannoncino",
     color: "#f8d16b",
     levels: [
-      { cooldown: 500, heat: 14, damage: 1.3, speed: 8.6, ammoCost: 1, radius: 4 },
-      { cooldown: 430, heat: 15, damage: 1.6, speed: 9, ammoCost: 1, radius: 4.5 },
-      { cooldown: 360, heat: 17, damage: 2, speed: 9.3, ammoCost: 1, radius: 5 },
+      { cooldown: 500, damage: 1.3, speed: 8.6, ammoCost: 1, radius: 4 },
+      { cooldown: 430, damage: 1.6, speed: 9, ammoCost: 1, radius: 4.5 },
+      { cooldown: 360, damage: 2, speed: 9.3, ammoCost: 1, radius: 5 },
     ],
   },
   mg: {
     label: "Mitragliatrice",
     color: "#d8f2ff",
     levels: [
-      { cooldown: 96, heat: 6, damage: 0.34, speed: 11, ammoCost: 1, radius: 2.4 },
-      { cooldown: 78, heat: 6.5, damage: 0.42, speed: 11.4, ammoCost: 1, radius: 2.6 },
-      { cooldown: 62, heat: 7, damage: 0.5, speed: 11.8, ammoCost: 1, radius: 2.8 },
+      { cooldown: 96, damage: 0.34, speed: 11, ammoCost: 1, radius: 2.4 },
+      { cooldown: 78, damage: 0.42, speed: 11.4, ammoCost: 1, radius: 2.6 },
+      { cooldown: 62, damage: 0.5, speed: 11.8, ammoCost: 1, radius: 2.8 },
     ],
   },
   laser: {
     label: "Laser",
     color: "#67e6ff",
     levels: [
-      { cooldown: 220, heat: 14, damage: 0.12, speed: 0, ammoCost: 1, width: 15 },
-      { cooldown: 195, heat: 13, damage: 0.15, speed: 0, ammoCost: 1, width: 18 },
-      { cooldown: 170, heat: 12, damage: 0.18, speed: 0, ammoCost: 1, width: 21 },
+      { cooldown: 220, damage: 0.12, speed: 0, ammoCost: 1, width: 15 },
+      { cooldown: 195, damage: 0.15, speed: 0, ammoCost: 1, width: 18 },
+      { cooldown: 170, damage: 0.18, speed: 0, ammoCost: 1, width: 21 },
     ],
   },
 };

@@ -15,6 +15,13 @@ const WAVE_CLEAR_BONUS = 4;
 const INITIAL_BUILD_CREDIT = 6;
 const MAX_FACTORIES_PER_BASE = 3;
 const MAX_WEAPON_LEVEL = 3;
+const WEAPON_DURABILITY = {
+  ballistic: [18, 26, 34],
+  seeker: [10, 15, 20],
+  cannon: [90, 125, 165],
+  mg: [260, 360, 480],
+  laser: [55, 75, 100],
+};
 
 const FACTORY_LAYOUT = [
   { dx: -58, y: GROUND_Y },
@@ -94,7 +101,8 @@ export function createWeaponSlot(role, index) {
     level: 0,
     ammo: 0,
     cooldown: 0,
-    heat: 0,
+    durability: 0,
+    maxDurability: 0,
   };
 }
 
@@ -103,7 +111,18 @@ export function installSlot(slot, type) {
   slot.level = 1;
   slot.ammo = 0;
   slot.cooldown = 0;
-  slot.heat = 0;
+  slot.maxDurability = maxDurability(slot);
+  slot.durability = slot.maxDurability;
+  return slot;
+}
+
+export function clearSlot(slot) {
+  slot.type = null;
+  slot.level = 0;
+  slot.ammo = 0;
+  slot.cooldown = 0;
+  slot.durability = 0;
+  slot.maxDurability = 0;
   return slot;
 }
 
@@ -189,6 +208,30 @@ export function maxAmmo(city, slot) {
   return 0;
 }
 
+export function maxDurability(slot) {
+  if (!slot?.type) return 0;
+  const levels = WEAPON_DURABILITY[slot.type];
+  return levels?.[Math.max(0, slot.level - 1)] || 0;
+}
+
+export function refreshDurability(slot) {
+  slot.maxDurability = maxDurability(slot);
+  slot.durability = slot.maxDurability;
+  return slot;
+}
+
+export function consumeDurability(slot, amount = 1) {
+  if (!slot?.type) return false;
+  slot.maxDurability ||= maxDurability(slot);
+  const currentDurability = typeof slot.durability === "number" ? slot.durability : slot.maxDurability;
+  slot.durability = Math.max(0, currentDurability - amount);
+  if (slot.durability <= 0) {
+    clearSlot(slot);
+    return true;
+  }
+  return false;
+}
+
 export function replenishAmmo(slot) {
   if (slot.type === "ballistic") return 12;
   if (slot.type === "seeker") return 5;
@@ -266,6 +309,7 @@ export function resetState(difficultyCfg, citiesConfig) {
   }));
   state.cities.forEach((city) => installedSlots(city).forEach((slot) => {
     slot.ammo = Math.ceil(maxAmmo(city, slot) * 0.65);
+    refreshDurability(slot);
   }));
   state.factories = state.cities.map((_, i) => createFactory(i, 0, factoryHp));
   emit("reset", { state });
