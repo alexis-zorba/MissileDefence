@@ -11,7 +11,7 @@ import { makeId } from "./utils.js";
 // --- Constants (only used internally by state) ---
 const DEFAULT_GAME_SPEED = 1.25;
 const DEFAULT_VISUAL_SCALE = 0.45;
-const WAVE_CLEAR_BONUS = 4;
+const WAVE_CLEAR_BONUS = 6;
 const INITIAL_BUILD_CREDIT = 6;
 const MAX_FACTORIES_PER_BASE = 3;
 const MAX_WEAPON_LEVEL = 3;

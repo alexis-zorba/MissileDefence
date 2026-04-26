@@ -5,7 +5,7 @@
 import { state, WAVE_CLEAR_BONUS, installedSlots, maxAmmo, replenishAmmo } from "../state.js";
 import * as logger from "../debug/logger.js";
 
-const WAVE_ENEMY_MULTIPLIER = 2;
+const WAVE_ENEMY_MULTIPLIER = 1.6;
 
 // --- Start a new wave ---
 
