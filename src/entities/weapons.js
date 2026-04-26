@@ -14,6 +14,7 @@ import {
 import { TURRET_DEFS, SLOT_OFFSETS, GROUND_Y } from "../config.js";
 import { clampAngle } from "../utils.js";
 import { findTargetsAlongRay } from "../systems/combat.js";
+import { sparkBurst } from "./effects.js";
 import * as logger from "../debug/logger.js";
 
 // --- Missile launch ---
@@ -83,7 +84,7 @@ export function fireTurret(city, slot, dt, byAi = false, aiMultiplier = 1) {
     hits.forEach(({ enemy }, index) => {
       const falloff = Math.max(0.3, 1 - index * 0.25);
       enemy.hp -= stats.damage * dt * falloff;
-      state.particles.push({ x: enemy.x, y: enemy.y, life: 90, color: def.color, size: 4 });
+      sparkBurst(enemy.x, enemy.y, 4);
     });
     state.friendlyBullets.push({
       x: city.x + SLOT_OFFSETS.turret[slot.index],

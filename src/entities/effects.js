@@ -36,6 +36,7 @@ export function updateBlasts(dt) {
         enemy.hp -= damage;
         enemy.hitBy ||= new Set();
         enemy.hitBy.add(blast.id);
+        sparkBurst(enemy.x, enemy.y);
       }
     });
   });
@@ -55,6 +56,23 @@ export function burst(x, y, color, count) {
       life: 260 + Math.random() * 220,
       color,
       size: 2 + Math.random() * 4,
+    });
+  }
+}
+
+export function sparkBurst(x, y, count = 7) {
+  const palette = ["#ffffff", "#ffe98a", "#ffb152", "#ffefb1"];
+  for (let i = 0; i < count; i += 1) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 1.4 + Math.random() * 3.4;
+    state.particles.push({
+      x: x + (Math.random() - 0.5) * 2,
+      y: y + (Math.random() - 0.5) * 2,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 140 + Math.random() * 160,
+      color: palette[(Math.random() * palette.length) | 0],
+      size: 1 + Math.random() * 2.4,
     });
   }
 }

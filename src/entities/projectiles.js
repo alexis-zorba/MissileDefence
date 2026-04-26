@@ -5,7 +5,7 @@
 import { state } from "../state.js";
 import { MISSILE_DEFS, GROUND_Y, CANVAS_WIDTH, CANVAS_HEIGHT } from "../config.js";
 import { nearest } from "../utils.js";
-import { createBlast } from "./effects.js";
+import { createBlast, sparkBurst } from "./effects.js";
 
 // --- Missile movement ---
 
@@ -126,7 +126,7 @@ export function updateBullets(dt) {
       if (hit) {
         enemy.hp -= bullet.damage;
         bullet.done = true;
-        state.particles.push({ x: bullet.x, y: bullet.y, life: 150, color: bullet.color, size: 5 });
+        sparkBurst(bullet.x, bullet.y);
       }
     });
   });
