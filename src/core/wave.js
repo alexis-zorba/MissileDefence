@@ -5,12 +5,14 @@
 import { state, WAVE_CLEAR_BONUS, installedSlots, maxAmmo, replenishAmmo } from "../state.js";
 import * as logger from "../debug/logger.js";
 
+const WAVE_ENEMY_MULTIPLIER = 2;
+
 // --- Start a new wave ---
 
 export function startWave(difficultyCfg, uiCallbacks = {}) {
   if (!state.running) return; // resetGame must be called first
   state.betweenWaves = false;
-  state.enemiesToSpawn = Math.ceil((8 + state.wave * 2.15) * difficultyCfg.count);
+  state.enemiesToSpawn = Math.ceil((8 + state.wave * 2.15) * difficultyCfg.count * WAVE_ENEMY_MULTIPLIER);
   state.spawnTimer = 350;
   state.aiMissileTimer = 0;
   state.aiTurretTimer = 0;
