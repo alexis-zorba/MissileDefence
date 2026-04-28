@@ -39,6 +39,11 @@
           <button id="nextWaveButton" disabled data-i18n="actions.nextWave">Prossima ondata</button>
           <button id="pauseButton" data-i18n="actions.pause">Pausa</button>
         </div>
+        <div class="music-actions" aria-label="Musica">
+          <button id="musicMuteButton" class="icon-button" aria-label="Muto" title="Muto">♪</button>
+          <button id="musicNextButton" class="icon-button" aria-label="Prossima traccia" title="Prossima traccia">⏭</button>
+          <span id="musicTrackLabel" class="music-track">Crateri di Polvere</span>
+        </div>
         <div id="footerCities" class="footer-cities" aria-label="Stato citta"></div>
       </footer>
 
@@ -127,6 +132,18 @@
               <option value="it">Italiano</option>
               <option value="en">English</option>
             </select>
+          </label>
+          <label>
+            <span data-i18n="settings.soundtrack">Traccia musicale</span>
+            <select id="soundtrackSelect"></select>
+          </label>
+          <label>
+            <span data-i18n="settings.musicVolume">Volume musica</span>
+            <input id="musicVolumeInput" type="range" min="0" max="1" step="0.01" value="0.42">
+          </label>
+          <label class="check-label">
+            <input id="musicDisabledInput" type="checkbox">
+            <span data-i18n="settings.musicDisabled">Escludi musica</span>
           </label>
           <label>
             <span data-i18n="settings.mode">Modalita</span>

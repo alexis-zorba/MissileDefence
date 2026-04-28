@@ -232,10 +232,37 @@ label,
   flex: 0 0 auto;
 }
 
-.footer-actions button {
+.footer-actions button,
+.music-actions button {
   height: 28px;
   padding: 4px 8px;
   font-size: 12px;
+}
+
+.music-actions {
+  display: grid;
+  grid-template-columns: 28px 28px minmax(92px, 150px);
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.music-actions .icon-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.music-track {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .footer-cities {
@@ -883,6 +910,11 @@ label {
     flex-wrap: wrap;
     min-height: var(--footer-h);
     align-content: center;
+  }
+
+  .music-actions {
+    grid-template-columns: 28px 28px minmax(80px, 1fr);
+    flex: 1 1 160px;
   }
 
   .footer-cities {

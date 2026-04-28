@@ -51,6 +51,9 @@ const dictionaries = {
     settings: {
       title: "Impostazioni",
       language: "Lingua",
+      soundtrack: "Traccia musicale",
+      musicVolume: "Volume musica",
+      musicDisabled: "Escludi musica",
       mode: "Modalita",
       difficulty: "Difficolta",
       aiSkill: "AI alleata",
@@ -64,6 +67,11 @@ const dictionaries = {
       debugMode: "Debug calibrazione",
       gameSpeed: "Game speed",
       visualScale: "Visual scale",
+    },
+    music: {
+      mute: "Muto",
+      unmute: "Riattiva musica",
+      next: "Prossima traccia",
     },
     options: {
       modeMissiles: "Giocatore missili, computer torrette",
@@ -206,6 +214,9 @@ const dictionaries = {
     settings: {
       title: "Settings",
       language: "Language",
+      soundtrack: "Music track",
+      musicVolume: "Music volume",
+      musicDisabled: "Disable music",
       mode: "Mode",
       difficulty: "Difficulty",
       aiSkill: "Allied AI",
@@ -219,6 +230,11 @@ const dictionaries = {
       debugMode: "Debug calibration",
       gameSpeed: "Game speed",
       visualScale: "Visual scale",
+    },
+    music: {
+      mute: "Mute",
+      unmute: "Enable music",
+      next: "Next track",
     },
     options: {
       modeMissiles: "Player missiles, computer turrets",

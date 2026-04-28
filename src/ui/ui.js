@@ -7,6 +7,7 @@ import { DIFFICULTY } from "../config.js";
 import { spendUpgrade } from "../core/economy.js";
 import { startWave } from "../core/wave.js";
 import { applyTranslations, language, setLanguage, t } from "../i18n.js";
+import { SOUNDTRACK, audioSettings, ensureMusicPlaying, nextTrack, onAudioChange, setMusicDisabled, setMusicMuted, setTrack, setVolume, toggleMusicMuted, trackTitle } from "../audio.js";
 
 // --- DOM element references ---
 
@@ -35,8 +36,14 @@ export const ui = {
   start: document.getElementById("startButton"),
   next: document.getElementById("nextWaveButton"),
   pause: document.getElementById("pauseButton"),
+  musicMute: document.getElementById("musicMuteButton"),
+  musicNext: document.getElementById("musicNextButton"),
+  musicTrackLabel: document.getElementById("musicTrackLabel"),
   gameModeDialog: document.getElementById("gameModeDialog"),
   language: document.getElementById("languageSelect"),
+  soundtrackSelect: document.getElementById("soundtrackSelect"),
+  musicVolume: document.getElementById("musicVolumeInput"),
+  musicDisabled: document.getElementById("musicDisabledInput"),
   mode: document.getElementById("modeSelect"),
   difficultySelect: document.getElementById("difficultySelect"),
   aiSkill: document.getElementById("aiSkillSelect"),
@@ -262,6 +269,7 @@ function showCreditBump() {
 export function bindDialogs(onStart, onNewGame) {
   setLanguage(language());
   ui.language.value = language();
+  initAudioControls();
   applyTranslations();
   // Settings
   ui.settings.addEventListener("click", () => ui.settingsDialog.showModal());
@@ -273,8 +281,12 @@ export function bindDialogs(onStart, onNewGame) {
   ui.closeHelp.addEventListener("click", () => ui.helpDialog.close());
   // Start / next wave / pause
   ui.newGame.addEventListener("click", () => openGameModeDialog());
-  ui.start.addEventListener("click", onStart);
+  ui.start.addEventListener("click", () => {
+    ensureMusicPlaying();
+    onStart();
+  });
   ui.next.addEventListener("click", () => {
+    ensureMusicPlaying();
     const diffCfg = DIFFICULTY[ui.difficultySelect.value];
     startWave(diffCfg, { closeBuildDialog, setOverlay });
   });
@@ -286,6 +298,7 @@ export function bindDialogs(onStart, onNewGame) {
   // Build dialog
   ui.closeBuild.addEventListener("click", () => closeBuildDialog());
   ui.buildStartWave.addEventListener("click", () => {
+    ensureMusicPlaying();
     const diffCfg = DIFFICULTY[ui.difficultySelect.value];
     startWave(diffCfg, { closeBuildDialog, setOverlay });
   });
@@ -294,6 +307,7 @@ export function bindDialogs(onStart, onNewGame) {
     if (!button) return;
     applyModePreset(button.dataset.modePreset);
     closeGameModeDialog();
+    ensureMusicPlaying();
     onNewGame();
   });
   // City selection
@@ -376,6 +390,57 @@ export function bindDialogs(onStart, onNewGame) {
     updateUi();
   });
   syncControlAvailability();
+}
+
+function initAudioControls() {
+  ui.soundtrackSelect.innerHTML = SOUNDTRACK
+    .map((track) => `<option value="${escapeAttribute(track)}">${trackTitle(track)}</option>`)
+    .join("");
+
+  renderAudioControls();
+  onAudioChange(renderAudioControls);
+
+  ui.soundtrackSelect.addEventListener("change", () => {
+    setTrack(ui.soundtrackSelect.value);
+    ensureMusicPlaying();
+  });
+  ui.musicVolume.addEventListener("input", () => {
+    setVolume(Number(ui.musicVolume.value));
+  });
+  ui.musicDisabled.addEventListener("change", () => {
+    setMusicDisabled(ui.musicDisabled.checked);
+  });
+  ui.musicMute.addEventListener("click", () => {
+    const settings = audioSettings();
+    if (settings.disabled) {
+      setMusicDisabled(false);
+      setMusicMuted(false);
+    } else {
+      toggleMusicMuted();
+    }
+    ensureMusicPlaying();
+  });
+  ui.musicNext.addEventListener("click", () => {
+    nextTrack();
+  });
+}
+
+function renderAudioControls() {
+  const settings = audioSettings();
+  ui.soundtrackSelect.value = settings.track;
+  ui.musicVolume.value = String(settings.volume);
+  ui.musicDisabled.checked = settings.disabled;
+  ui.musicMute.textContent = settings.muted || settings.disabled ? "×" : "♪";
+  ui.musicMute.classList.toggle("active", !settings.muted && !settings.disabled);
+  ui.musicMute.setAttribute("aria-label", settings.muted || settings.disabled ? t("music.unmute") : t("music.mute"));
+  ui.musicMute.title = settings.muted || settings.disabled ? t("music.unmute") : t("music.mute");
+  ui.musicNext.title = t("music.next");
+  ui.musicNext.setAttribute("aria-label", t("music.next"));
+  ui.musicTrackLabel.textContent = trackTitle(settings.track);
+}
+
+function escapeAttribute(value) {
+  return String(value).replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;");
 }
 
 function applyModePreset(preset) {
